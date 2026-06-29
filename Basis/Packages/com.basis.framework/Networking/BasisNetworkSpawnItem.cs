@@ -172,6 +172,12 @@ public static class BasisNetworkSpawnItem
 
         Scene scene = await BasisSceneLoad.LoadSceneAssetBundle(loadBundle);
         _loadCts.Token.ThrowIfCancellationRequested();
+        if (!scene.IsValid())
+        {
+            BasisDebug.LogWarning($"Skipping network scene spawn because the scene failed to load: {localLoadResource.CombinedURL}", BasisDebug.LogTag.Networking);
+            return scene;
+        }
+
         BasisDebug.Log($"LoadSceneAssetBundle Complete now Starting Scene Traversal", BasisDebug.LogTag.Networking);
         SceneTraverseNetIdAssign(scene, localLoadResource);
 

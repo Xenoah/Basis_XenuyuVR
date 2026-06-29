@@ -145,7 +145,7 @@ public static class BasisBeeManagement
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError(ex);
+            BasisDebug.LogWarning($"Bundle load failed for {wrapper?.LoadableBundle?.BasisRemoteBundleEncrypted?.RemoteBeeFileLocation ?? "unknown"}: {ex.Message}", BasisDebug.LogTag.System);
             throw;
         }
     }

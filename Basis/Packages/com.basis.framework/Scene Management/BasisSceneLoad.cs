@@ -61,10 +61,18 @@ namespace Basis.Scripts.Drivers
         public static async Task<Scene> LoadSceneAssetBundle(BasisLoadableBundle BasisLoadableBundle, bool SpawnPlayerOnSceneLoad = true, bool MakeSceneActiveScene = true)
         {
             SetIfPlayerShouldSpawnOnSceneLoad(SpawnPlayerOnSceneLoad);
-            BasisDebug.Log("Loading Scene ", BasisDebug.LogTag.Scene);
-            Scene Scene = await BasisLoadHandler.LoadSceneBundle(MakeSceneActiveScene, BasisLoadableBundle, progressCallback, new CancellationToken());
-            BasisDebug.Log("Loaded Scene ", BasisDebug.LogTag.Scene);
-            return Scene;
+            try
+            {
+                BasisDebug.Log("Loading Scene ", BasisDebug.LogTag.Scene);
+                Scene Scene = await BasisLoadHandler.LoadSceneBundle(MakeSceneActiveScene, BasisLoadableBundle, progressCallback, new CancellationToken());
+                BasisDebug.Log("Loaded Scene ", BasisDebug.LogTag.Scene);
+                return Scene;
+            }
+            catch (System.Exception ex)
+            {
+                BasisDebug.LogWarning($"Scene AssetBundle load failed and was skipped: {ex.Message}", BasisDebug.LogTag.Scene);
+                return new Scene();
+            }
         }
         /// <summary>
         /// turning this off for loading in additional levels is recommended. :) 

@@ -390,6 +390,10 @@ public static class BasisNetworkGenericMessages
         {
             BasisDebug.Log($"Load cancelled for {LocalLoadResource.LoadedNetID} (disconnected)", BasisDebug.LogTag.Networking);
         }
+        catch (Exception ex)
+        {
+            BasisDebug.LogWarning($"Network resource load failed and was skipped. NetID={LocalLoadResource.LoadedNetID}, Mode={LocalLoadResource.Mode}, Url={LocalLoadResource.CombinedURL}, Error={ex.Message}", BasisDebug.LogTag.Networking);
+        }
     }
 
     /// <summary>
