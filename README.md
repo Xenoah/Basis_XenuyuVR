@@ -31,17 +31,58 @@ XenuyuVR は、BasisVR のオープンな Social VR / Networked VR 基盤を活�
 
 BasisVR 本体の思想、ライセンス、クレジット、第三者ソフトウェア表記、商標ガイドラインは `LICENSE`、`TRADEMARK.md`、および各関連ファイルを参照してください。
 
-## セットアップ
+## 開発者向けセットアップ
 
-このプロジェクトは Unity 6 を使用しています。Unity Hub から `Basis/` フォルダーを開き、指定バージョンに合わせてください。
+このリポジトリは Unity プロジェクト本体が `Basis/` にあります。リポジトリのルートではなく、Unity Hub では必ず `Basis/` フォルダーを開いてください。
+
+### 必要環境
+
+- Git
+- Unity Hub
+- Unity `6000.5.1f1`
+- Windows ビルドを作成する場合は Unity の Windows Build Support / IL2CPP Support
+
+推奨 Unity バージョン:
+
+```txt
+m_EditorVersion: 6000.5.1f1
+m_EditorVersionWithRevision: 6000.5.1f1 (0d9463e84828)
+```
+
+### 初回セットアップ
 
 1. リポジトリを clone します。
+
    ```sh
    git clone https://github.com/Xenoah/Basis_XenuyuVR.git
+   cd Basis_XenuyuVR
    ```
+
 2. Unity Hub で `Basis/` フォルダーを開きます。
-3. `Packages/com.basis.framework/Scenes/initialization.unity` を読み込みます。
-4. Play モードで動作を確認します。
+3. Unity の初回インポートが終わるまで待ちます。
+4. 起動シーン `Packages/com.basis.framework/Scenes/initialization.unity` を開きます。
+5. Play モードで起動確認します。
+
+### 開発時の確認
+
+- Unity Editor で Play する前に、`initialization.unity` が開かれていることを確認してください。
+- 依存パッケージや Addressables の再インポートが走る場合があります。Unity の処理が止まっていないか Console と Progress を確認してください。
+- UI、サーバー接続、ローカライズ、ビルド設定を変更した場合は、Editor Play と Windows Player の両方で確認してください。
+- 生成された `Builds/`、`Artifacts/`、Unity のログ類は通常コミットしません。
+
+### Windows ビルド
+
+Unity Editor からビルドする場合:
+
+1. `Basis/` を Unity で開きます。
+2. `File > Build Settings` を開きます。
+3. Platform を Windows にします。
+4. `initialization.unity` が有効なシーンに含まれていることを確認します。
+5. Build を実行します。
+
+ヘッドレスビルドを使う場合は、プロジェクト内の `BasisHeadlessBuild` を利用します。Addressables もビルド対象に含める必要があります。
+
+### 起動オプション
 
 VR モードの起動を無効化する場合:
 
