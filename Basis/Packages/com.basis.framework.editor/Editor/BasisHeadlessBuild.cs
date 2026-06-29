@@ -7,6 +7,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Build;
+using UnityEditor.AddressableAssets.Build.DataBuilders;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 
@@ -31,6 +32,7 @@ public static class BasisHeadlessBuild
         string projectPath = GetArgument("projectPath") ?? Directory.GetCurrentDirectory();
         string standaloneSubtargetArg = GetArgument("standaloneBuildSubtarget") ?? "Server";
         string linuxArchitectureArg = GetArgument("linuxArchitecture");
+        bool skipAddressables = IsTruthy(GetArgument("skipAddressables"));
 
         Debug.Log($"[BasisHeadlessBuild] Starting {target} build");
         Debug.Log($"[BasisHeadlessBuild] projectPath={projectPath}");
@@ -40,6 +42,7 @@ public static class BasisHeadlessBuild
         Debug.Log($"[BasisHeadlessBuild] activeBuildTargetGroup(before)={BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget)}");
         Debug.Log($"[BasisHeadlessBuild] standaloneBuildSubtarget(arg)={standaloneSubtargetArg}");
         Debug.Log($"[BasisHeadlessBuild] linuxArchitecture(arg)={linuxArchitectureArg ?? "<default>"}");
+        Debug.Log($"[BasisHeadlessBuild] skipAddressables(arg)={skipAddressables}");
 
         BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (!BuildPipeline.IsBuildTargetSupported(targetGroup, target))
@@ -74,7 +77,8 @@ public static class BasisHeadlessBuild
         {
             originalBuildAddressablesWithPlayerBuild = addressableSettings.BuildAddressablesWithPlayerBuild;
             restoreBuildAddressablesWithPlayerBuild = true;
-            if (ShouldBuildAddressablesWithPlayerBuild(originalBuildAddressablesWithPlayerBuild))
+            ForcePackedModeDataBuilder(addressableSettings);
+            if (!skipAddressables)
             {
                 BuildAddressables(target, addressableSettings);
             }
@@ -117,6 +121,21 @@ public static class BasisHeadlessBuild
                 Debug.Log($"[BasisHeadlessBuild] Restored BuildAddressablesWithPlayerBuild={addressableSettings.BuildAddressablesWithPlayerBuild}");
             }
         }
+    }
+
+    private static void ForcePackedModeDataBuilder(AddressableAssetSettings settings)
+    {
+        for (int index = 0; index < settings.DataBuilders.Count; index++)
+        {
+            if (settings.GetDataBuilder(index) is BuildScriptPackedMode)
+            {
+                settings.ActivePlayerDataBuilderIndex = index;
+                Debug.Log($"[BasisHeadlessBuild] ActivePlayerDataBuilderIndex(set)={index}");
+                return;
+            }
+        }
+
+        throw new BuildFailedException("Addressables BuildScriptPackedMode data builder was not found.");
     }
 
     private static bool ShouldBuildAddressablesWithPlayerBuild(AddressableAssetSettings.PlayerBuildOption option)
@@ -216,5 +235,24 @@ public static class BasisHeadlessBuild
         }
 
         return null;
+    }
+
+    private static bool IsTruthy(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        switch (value.Trim().ToLowerInvariant())
+        {
+            case "1":
+            case "true":
+            case "yes":
+            case "y":
+                return true;
+            default:
+                return false;
+        }
     }
 }
