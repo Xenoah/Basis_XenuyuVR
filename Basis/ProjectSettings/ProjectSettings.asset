@@ -12,8 +12,8 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: Basis Unity
-  productName: Basis Unity
+  companyName: XenuyuVR
+  productName: XenuyuVR
   defaultCursor: {fileID: 2800000, guid: b6a94fc18d631d9ffa4a97234f1fefec, type: 3}
   cursorHotspot: {x: 9, y: 5}
   m_SplashScreenBackgroundColor: {r: 0.12156863, g: 0.12156863, b: 0.1254902, a: 1}
@@ -171,9 +171,9 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.BasisUnity.BasisUnity
-    Standalone: com.Basis-Unity.Basis-Unity
-    iPhone: com.Basis-Unity.Basis-Unity
+    Android: com.XenuyuVR.XenuyuVR
+    Standalone: com.XenuyuVR.XenuyuVR
+    iPhone: com.XenuyuVR.XenuyuVR
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -876,14 +876,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 3
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Basis Unity
+  metroPackageName: XenuyuVR
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Basis Unity
+  metroApplicationDescription: XenuyuVR
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0

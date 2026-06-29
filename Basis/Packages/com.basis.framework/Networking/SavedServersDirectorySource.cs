@@ -15,9 +15,10 @@ namespace Basis.Scripts.Networking
         public const string Id = "savedServers";
 
         public const string DefaultServerId = "__default__";
-        public const string DefaultServerAddress = "server1.basisvr.org";
+        public const string DefaultServerName = "まるさんかくしかくサーバー";
+        public const string DefaultServerAddress = "35.221.113.49";
         public const ushort DefaultServerPort = 4296;
-        public const string DefaultServerPassword = "default_password";
+        public const string DefaultServerPassword = "testPassWord";
 
         public string SourceId => Id;
         public string DisplayName => BasisLocalization.Get("menu.servers.source.savedServers");
@@ -70,7 +71,7 @@ namespace Basis.Scripts.Networking
             {
                 Id = DefaultServerId,
                 SourceId = Id,
-                DisplayName = BasisLocalization.Get("menu.servers.list.default"),
+                DisplayName = DefaultServerName,
                 Target = target,
                 Password = DefaultServerPassword,
                 HasPassword = true,

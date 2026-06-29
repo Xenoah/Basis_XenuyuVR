@@ -35,6 +35,7 @@ namespace Basis.BasisUI
     public static class BasisLocalization
     {
         public const string DefaultLanguage = "en";
+        public const string InitialLanguage = "ja";
         public const string LanguageLabel = "language";
 
         private static readonly Dictionary<string, string> _fallback = new();
@@ -129,9 +130,9 @@ namespace Basis.BasisUI
 
             LoadAllTables();
 
-            var languageCode = BasisSettingsSystem.LoadString("language", DefaultLanguage);
+            var languageCode = BasisSettingsSystem.LoadString("language", InitialLanguage);
             if (string.IsNullOrEmpty(languageCode))
-                languageCode = DetectSystemLanguage();
+                languageCode = InitialLanguage;
 
             SetLanguage(languageCode, notify: false);
         }
