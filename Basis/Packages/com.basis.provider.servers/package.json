@@ -1,11 +1,11 @@
 {
   "name": "com.basis.provider.servers",
-  "displayName": "Basis Servers Panel",
+  "displayName": "XenuyuVR Servers Panel",
   "version": "0.0.1",
-  "description": "Optional Servers menu panel for Basis: the server directory, connect, and host UI built on top of the framework's BasisConnectionService. Remove this package to ship a Basis application with no Servers panel; headless --connection= launching keeps working without it.",
+  "description": "Optional XenuyuVR servers menu panel: server directory, connect, and host UI. Remove this package to ship an application with no Servers panel; headless --connection= launching keeps working without it.",
   "author": {
-    "name": "BasisVR",
-    "url": "https://github.com/BasisVR"
+    "name": "XenuyuVR",
+    "url": "https://github.com/Xenoah/Basis_XenuyuVR"
   },
   "license": "MIT",
   "vpmDependencies": {

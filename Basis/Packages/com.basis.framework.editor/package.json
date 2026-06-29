@@ -1,11 +1,11 @@
 {
   "name": "com.basis.framework.editor",
-  "displayName": "Basis Framework Editor",
+  "displayName": "XenuyuVR Framework Editor",
   "version": "0.0.1",
-  "description": "Editor Folder for basis framework",
+  "description": "XenuyuVR framework editor tools",
   "author": {
-    "name": "BasisVR",
-    "url": "https://github.com/BasisVR"
+    "name": "XenuyuVR",
+    "url": "https://github.com/Xenoah/Basis_XenuyuVR"
   },
   "license": "MIT",
   "dependencies": {

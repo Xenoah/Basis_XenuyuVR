@@ -1,11 +1,11 @@
 {
   "name": "com.basis.framework",
-  "displayName": "Basis Framework",
+  "displayName": "XenuyuVR Framework Core",
   "version": "0.0.1",
-  "description": "Basis framework",
+  "description": "XenuyuVR framework core",
   "author": {
-    "name": "BasisVR",
-    "url": "https://github.com/BasisVR"
+    "name": "XenuyuVR",
+    "url": "https://github.com/Xenoah/Basis_XenuyuVR"
   },
   "license": "MIT",
   "dependencies": {

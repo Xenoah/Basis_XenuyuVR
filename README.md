@@ -1,39 +1,45 @@
 # XenuyuVR
 
-[XenuyuVR](https://github.com/Xenoah/Basis_XenuyuVR) は、[BasisVR](https://github.com/BasisVR/Basis) フレームワークをベースにした、チル・ゲーム対応の VRSNS「ゼヌユVR」です。
+[XenuyuVR](https://github.com/Xenoah/Basis_XenuyuVR) は、チル・ゲーム対応の VRSNS「ゼヌユVR」です。
 
 ゆったり過ごせる空間づくりと、みんなで遊べるネットワーク体験の両方を大切にしながら、VR 上での交流、アバター表現、ワールド体験、ゲーム的なインタラクションを組み合わせていくことを目指しています。
 
-<table border="0">
- <tr>
-    <td><div align="center"><img src="./Basis/Images/BasisLogo.png" alt="Basis Logo" width="160" height="160"></div></td>
-    <td><div align="center"><h3><strong>XenuyuVR</strong></h3>
-BasisVR ベースのチル・ゲーム対応 SNS</br>
-<a href="https://github.com/Xenoah/Basis_XenuyuVR/releases"><strong>ダウンロード(Windows)</strong></a></div></td>
- </tr>
-</table>
+<p align="center">
+  <img src="./1782709126879.png" alt="XenuyuVR Logo" width="160" height="160"><br>
+  <strong>XenuyuVR</strong><br>
+  チル・ゲーム対応 VRSNS<br>
+  <a href="https://github.com/Xenoah/Basis_XenuyuVR/releases"><strong>ダウンロード(Windows)</strong></a>
+</p>
+
+**Built with Basis**
 
 ## 概要
 
-XenuyuVR は、BasisVR のオープンな Social VR / Networked VR 基盤を活用し、ユーザー同士が自然に集まり、話し、遊び、表現できる場所を作るためのプロジェクトです。
+XenuyuVR は、Social VR / Networked VR の仕組みを活用し、ユーザー同士が自然に集まり、話し、遊び、表現できる場所を作るためのプロジェクトです。
 
 主な方向性:
 
 - チルできるソーシャル VR 体験
 - ネットワーク対応のゲーム・ミニゲーム体験
 - アバターやワールドを中心にしたコミュニケーション
-- BasisVR フレームワークを活かした拡張しやすい構成
+- 拡張しやすい構成
 - 日本語ユーザーにも使いやすい SNS 的な体験設計
 
-## ベースフレームワーク
+## 実装予定
 
-このプロジェクトは BasisVR をベースにしています。BasisVR は MIT ライセンスのオープンソース Social VR フレームワークで、VR クリエイターが独自のソーシャル VR やネットワーク対応ゲームを構築するための土台を提供しています。
-
-BasisVR 本体の思想、ライセンス、クレジット、第三者ソフトウェア表記、商標ガイドラインは `LICENSE`、`TRADEMARK.md`、および各関連ファイルを参照してください。
+- ペン
+- 使いやすい動画プレーヤー
+- カラオケ向け遅延調整システム
+- フェイスミラー
+- 姿勢変更ツール
+- 撫で音
+- VRM アバター変換ツール
+- チルワールド
+- ゲームワールド
 
 ## 開発者向けセットアップ
 
-このリポジトリは Unity プロジェクト本体が `Basis/` にあります。リポジトリのルートではなく、Unity Hub では必ず `Basis/` フォルダーを開いてください。
+このリポジトリは Unity プロジェクトを含んでいます。Unity Hub ではリポジトリのルートではなく、Unity プロジェクト本体のフォルダーを開いてください。
 
 ### 必要環境
 
@@ -58,9 +64,9 @@ m_EditorVersionWithRevision: 6000.5.1f1 (0d9463e84828)
    cd Basis_XenuyuVR
    ```
 
-2. Unity Hub で `Basis/` フォルダーを開きます。
+2. Unity Hub で Unity プロジェクト本体のフォルダーを開きます。
 3. Unity の初回インポートが終わるまで待ちます。
-4. 起動シーン `Packages/com.basis.framework/Scenes/initialization.unity` を開きます。
+4. 起動シーン `initialization.unity` を開きます。
 5. Play モードで起動確認します。
 
 ### 開発時の確認
@@ -74,13 +80,13 @@ m_EditorVersionWithRevision: 6000.5.1f1 (0d9463e84828)
 
 Unity Editor からビルドする場合:
 
-1. `Basis/` を Unity で開きます。
+1. Unity プロジェクト本体のフォルダーを Unity で開きます。
 2. `File > Build Settings` を開きます。
 3. Platform を Windows にします。
 4. `initialization.unity` が有効なシーンに含まれていることを確認します。
 5. Build を実行します。
 
-ヘッドレスビルドを使う場合は、プロジェクト内の `BasisHeadlessBuild` を利用します。Addressables もビルド対象に含める必要があります。
+ヘッドレスビルドを使う場合は、プロジェクト内のビルド用 Editor スクリプトを利用します。Addressables もビルド対象に含める必要があります。
 
 ### 起動オプション
 
