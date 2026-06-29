@@ -1,86 +1,67 @@
- ### Basis lets you set up your own Social VR and Networked VR games with ease.
+# XenuyuVR
+
+[XenuyuVR](https://github.com/Xenoah/Basis_XenuyuVR) は、[BasisVR](https://github.com/BasisVR/Basis) フレームワークをベースにした、チル・ゲーム対応のソーシャル VR / SNS プロジェクトです。
+
+ゆったり過ごせる空間づくりと、みんなで遊べるネットワーク体験の両方を大切にしながら、VR 上での交流、アバター表現、ワールド体験、ゲーム的なインタラクションを組み合わせていくことを目指しています。
 
 <table border="0">
  <tr>
-    <td><div align="center"><img src="./Basis/Images/BasisLogo.png" alt="Logo" width="160" height="160"></td>
-    <td><div align="center"><h3><strong>Basis</strong></h3>
-The Social VR Framework</br>
-<a href="https://discord.gg/F35u3cUMqt"><strong>Join our Discord!»</strong></a></br></br>
-<a href="https://github.com/BasisVR/Basis/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> -
-<a href="https://github.com/BasisVR/Basis/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a></div></td>
+    <td><div align="center"><img src="./Basis/Images/BasisLogo.png" alt="Basis Logo" width="160" height="160"></div></td>
+    <td><div align="center"><h3><strong>XenuyuVR</strong></h3>
+BasisVR ベースのチル・ゲーム対応 SNS</br>
+<a href="https://github.com/Xenoah/Basis_XenuyuVR"><strong>GitHub Repository</strong></a></div></td>
  </tr>
 </table>
 
- ## About Basis
+## 概要
 
-[Basis Philosophy](https://basisvr.org/philosophy) <- read our Philosophy here!
+XenuyuVR は、BasisVR のオープンな Social VR / Networked VR 基盤を活用し、ユーザー同士が自然に集まり、話し、遊び、表現できる場所を作るためのプロジェクトです。
 
-We are an MIT-Licensed Open-Source project with a focus on open development and full access to any optional modification desired or required.
+主な方向性:
 
-Our goal is to help equip VR Creators, so we can accelerate the growth of VR.
+- チルできるソーシャル VR 体験
+- ネットワーク対応のゲーム・ミニゲーム体験
+- アバターやワールドを中心にしたコミュニケーション
+- BasisVR フレームワークを活かした拡張しやすい構成
+- 日本語ユーザーにも扱いやすい SNS 的な体験設計
 
-<img src="./Basis/Images/Banner.png" alt="Banner" width="550" height="155">
+## ベースフレームワーク
 
-We are actively working on Basis. If you like what you see, please consider contributing in any way you can.
+このプロジェクトは BasisVR をベースにしています。BasisVR は MIT ライセンスのオープンソース Social VR フレームワークで、VR クリエイターが独自のソーシャル VR やネットワーク対応ゲームを構築するための土台を提供しています。
 
- ## How you can Contribute
+BasisVR 本体の思想やライセンス、クレジット、第三者ソフトウェア表記、商標ガイドラインは下記の各セクションおよび関連ファイルを参照してください。
 
-Do you have a suggestion for improving Basis? Please fork the repo and create a pull request! You can also open an issue with the tag “improvement”.
-Not sure how to contribute, but still wanting to help out? Consider donating! We appreciate any help possible.
+## セットアップ
 
-<noscript><a href="https://liberapay.com/dooly/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript> [Github Sponsor](https://github.com/sponsors/dooly123)</br>[KoFi](https://ko-fi.com/dooly)</br>
+このプロジェクトは Unity 6 を使用しています。Unity Hub からプロジェクトを開き、指定バージョンに合わせてください。
 
-Please help shape the future of Basis and leave your mark on its foundation.
-
- #### Creating a Fork
-
-1. Fork the Project
-2. Optionally, [Setup CI Secrets](./CI.md).
-3. Create your Feature Branch (`git checkout -b feature/ACrazyNewFeature`)
-4. Commit your Changes (`git commit -m 'Add some ACrazyNewFeature'`)
-5. Push to the Branch (`git push origin feature/ACrazyNewFeature`)
-6. Open a Pull Request
-
- ## Installation
-
-This project is currently using Unity 6 (open the project through Unity Hub to see the version)
-Other Unity versions may work, but will require changes and adaptations.
-Currently, OPENXR and SteamVR are supported, as well as OPENXR Quest.
-
-As a note, command line args for basis are:
-
-to disable booting a VR mode.
- --disable-OpenVRLoader
- --disable-OpenXRLoader
-
-to force a VR mode from boot.
- --force-OpenXRLoader
- --force-OpenVRLoader
-
-1. Make sure you have the correct Unity version installed.
-2. Clone the repository
+1. リポジトリを clone します。
    ```sh
-   git clone https://github.com/BasisVR/Basis.git
+   git clone https://github.com/Xenoah/Basis_XenuyuVR.git
    ```
-3. Open the project and make sure to load the scene Initialisation
-4. Enter play!
+2. Unity Hub でプロジェクトを開きます。
+3. `Initialisation` シーンを読み込みます。
+4. Play モードで動作を確認します。
 
- ## Contact
+VR モードの起動を無効化する場合:
 
-basis enquiries - developerbasis@gmail.com
-Luke Dooly - [@lukedooly](https://x.com/lukedooly) - doolanl208@gmail.com
+```sh
+--disable-OpenVRLoader
+--disable-OpenXRLoader
+```
 
-Discord:</br>
-[Our Discord Community](https://discord.gg/F35u3cUMqt)</br>
-[Doolys Discord Account](https://discord.com/users/170859544782700544)
+VR モードを起動時に強制する場合:
 
-Thank you to everyone who has helped Basis become something remarkable.
+```sh
+--force-OpenXRLoader
+--force-OpenVRLoader
+```
 
- ## License
+## License
 
 Distributed under the MIT License. See [MIT License](https://opensource.org/licenses/MIT) for more information.
 
- ### Built With
+### Built With
 
 This would not be possible without the following:
 - [ULipSync](https://github.com/hecomi/uLipSync)
