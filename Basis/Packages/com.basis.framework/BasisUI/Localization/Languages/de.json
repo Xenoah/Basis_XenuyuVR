@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "Rotationsglättung-Halbwertszeit" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "Zeitliche Glättung für die fusionierte Rotation des verknüpften Paars. Höher = ruhigere Hüften, aber mehr Rotationsverzögerung; niedriger = knackiger, wenn die zwei Tracker auseinanderflexen. 0 = keine Glättung. Standard: 0,08 s." },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "Möchtest du Basis wirklich schließen?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Basis beenden" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "Möchtest du Xenuyu wirklich schließen?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Xenuyu beenden" },
     { "key": "menu.exit.dialog.reboot", "value": "Neu starten und neu verbinden" },
     { "key": "menu.exit.dialog.restart", "value": "Neu starten" },
 

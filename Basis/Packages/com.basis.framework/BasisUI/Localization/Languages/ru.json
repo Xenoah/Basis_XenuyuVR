@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "Период полусглаживания вращения" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "Временное сглаживание слитого вращения связанной пары. Выше = более плавные бёдра, но больше задержки вращения; ниже = резче, когда два трекера расходятся. 0 = без сглаживания. По умолчанию: 0,08 s." },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "Вы уверены, что хотите закрыть Basis?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Выйти из Basis" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "Вы уверены, что хотите закрыть Xenuyu?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Выйти из Xenuyu" },
     { "key": "menu.exit.dialog.reboot", "value": "Перезапустить и переподключиться" },
     { "key": "menu.exit.dialog.restart", "value": "Перезапустить" },
 

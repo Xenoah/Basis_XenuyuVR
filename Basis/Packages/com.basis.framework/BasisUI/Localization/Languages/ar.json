@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "نصف عمر تنعيم الدوران" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "تنعيم زمني للدوران المدموج للزوج المرتبط. أعلى = ورك أنعم لكن تأخر دوراني أكبر؛ أدنى = استجابة أسرع عند تباعد المتتبعَين. 0 = بدون تنعيم. الافتراضي: 0.08 s." },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "هل أنت متأكد من أنك تريد إغلاق Basis؟" },
-    { "key": "menu.exit.dialog.confirm", "value": "الخروج من Basis" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "هل أنت متأكد من أنك تريد إغلاق Xenuyu؟" },
+    { "key": "menu.exit.dialog.confirm", "value": "الخروج من Xenuyu" },
     { "key": "menu.exit.dialog.reboot", "value": "إعادة التشغيل وإعادة الاتصال" },
     { "key": "menu.exit.dialog.restart", "value": "إعادة التشغيل" },
 

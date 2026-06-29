@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "旋转平滑半衰期" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "对关联对融合后旋转的时间平滑。越高 = 髋部更平滑但旋转延迟更大；越低 = 两个追踪器偏离时反应更迅速。0 = 不平滑。默认：0.08 s。" },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "确定要关闭 Basis 吗？" },
-    { "key": "menu.exit.dialog.confirm", "value": "退出 Basis" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "确定要关闭 Xenuyu 吗？" },
+    { "key": "menu.exit.dialog.confirm", "value": "退出 Xenuyu" },
     { "key": "menu.exit.dialog.reboot", "value": "重启并重新连接" },
     { "key": "menu.exit.dialog.restart", "value": "重启" },
 

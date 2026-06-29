@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "Emivita smoothing rotazione" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "Smoothing temporale per la rotazione fusa della coppia collegata. Più alto = anche più fluide ma maggiore ritardo di rotazione; più basso = più scattante quando i due tracker si flettono in modo divergente. 0 = nessuno smoothing. Predefinito: 0,08 s." },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "Sei sicuro di voler chiudere Basis?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Chiudi Basis" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "Sei sicuro di voler chiudere Xenuyu?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Chiudi Xenuyu" },
     { "key": "menu.exit.dialog.reboot", "value": "Riavvia e riconnetti" },
     { "key": "menu.exit.dialog.restart", "value": "Riavvia" },
 

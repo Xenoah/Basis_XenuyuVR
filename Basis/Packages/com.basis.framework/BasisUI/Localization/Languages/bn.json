@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "ঘূর্ণন স্মুথিং অর্ধ-জীবন" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "লিঙ্কড জোড়ার ফিউজড ঘূর্ণনের জন্য সময়গত স্মুথিং। উচ্চতর = স্মুথ হিপস কিন্তু আরও ঘূর্ণন ল্যাগ; নিম্নতর = দুটি ট্র্যাকার আলাদা হলে আরও স্ন্যাপি। 0 = কোনো স্মুথিং নেই। ডিফল্ট: 0.08 s।" },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "আপনি কি নিশ্চিত যে আপনি Basis বন্ধ করতে চান?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Basis থেকে প্রস্থান" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "আপনি কি নিশ্চিত যে আপনি Xenuyu বন্ধ করতে চান?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Xenuyu থেকে প্রস্থান" },
     { "key": "menu.exit.dialog.reboot", "value": "রিস্টার্ট ও পুনঃসংযোগ" },
     { "key": "menu.exit.dialog.restart", "value": "রিস্টার্ট" },
 

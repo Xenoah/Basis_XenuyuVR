@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "रोटेशन स्मूथिंग अर्ध-जीवन" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "लिंक की गई जोड़ी के फ्यूज़ किए गए रोटेशन के लिए टेम्पोरल स्मूथिंग। उच्चतर = स्मूथ कूल्हे लेकिन अधिक रोटेशनल लैग; निचला = जब दोनों ट्रैकर अलग फ्लेक्स करते हैं तो अधिक स्नैपी। 0 = कोई स्मूथिंग नहीं। डिफ़ॉल्ट: 0.08 s।" },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "क्या आप वाकई Basis बंद करना चाहते हैं?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Basis से बाहर निकलें" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "क्या आप वाकई Xenuyu बंद करना चाहते हैं?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Xenuyu से बाहर निकलें" },
     { "key": "menu.exit.dialog.reboot", "value": "पुनः आरंभ करें और फिर से कनेक्ट करें" },
     { "key": "menu.exit.dialog.restart", "value": "पुनः आरंभ करें" },
 

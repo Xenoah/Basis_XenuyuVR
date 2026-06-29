@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "Rotatie-smoothing halfwaardetijd" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "Temporele smoothing voor de gefuseerde rotatie van het gekoppelde paar. Hoger = vloeiendere heupen maar meer rotatievertraging; lager = sneller wanneer de twee trackers uit elkaar buigen. 0 = geen smoothing. Standaard: 0,08 s." },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "Weet je zeker dat je Basis wilt sluiten?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Basis Afsluiten" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "Weet je zeker dat je Xenuyu wilt sluiten?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Xenuyu Afsluiten" },
     { "key": "menu.exit.dialog.reboot", "value": "Opnieuw starten en opnieuw verbinden" },
     { "key": "menu.exit.dialog.restart", "value": "Opnieuw starten" },
 

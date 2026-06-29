@@ -535,10 +535,10 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "回転スムージング半減期" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "リンクされたペアの融合回転に対する時間的スムージング。高いほど腰は滑らかになりますが回転の遅延が増え、低いほど2つのトラッカーが離れるように動いたときキビキビします。0 = スムージングなし。デフォルト: 0.08 s。" },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "Basisを終了してもよろしいですか？" },
-    { "key": "menu.exit.dialog.confirm", "value": "Basisを終了" },
-    { "key": "menu.exit.dialog.reboot", "value": "再起動して再接続" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "Xenuyuを終了してもよろしいですか？" },
+    { "key": "menu.exit.dialog.confirm", "value": "Xenuyuを終了" },
+    { "key": "menu.exit.dialog.reboot", "value": "再起動再接続" },
     { "key": "menu.exit.dialog.restart", "value": "再起動" },
 
     { "key": "calibration.calibrate", "value": "キャリブレーション" },

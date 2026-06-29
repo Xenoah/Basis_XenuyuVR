@@ -535,9 +535,9 @@
     { "key": "trackerLinking.tuning.rotationHalfLife", "value": "Demi-vie du lissage de rotation" },
     { "key": "trackerLinking.tuning.rotationHalfLife.description", "value": "Lissage temporel pour la rotation fusionnée de la paire liée. Plus élevé = hanches plus lisses mais plus de retard de rotation ; plus bas = plus réactif quand les deux trackers fléchissent en s'écartant. 0 = aucun lissage. Par défaut : 0.08 s." },
 
-    { "key": "menu.exit.dialog.title", "value": "Basis VR" },
-    { "key": "menu.exit.dialog.body", "value": "Êtes-vous sûr de vouloir fermer Basis ?" },
-    { "key": "menu.exit.dialog.confirm", "value": "Quitter Basis" },
+    { "key": "menu.exit.dialog.title", "value": "Xenuyu VR" },
+    { "key": "menu.exit.dialog.body", "value": "Êtes-vous sûr de vouloir fermer Xenuyu ?" },
+    { "key": "menu.exit.dialog.confirm", "value": "Quitter Xenuyu" },
     { "key": "menu.exit.dialog.reboot", "value": "Redémarrer et se reconnecter" },
     { "key": "menu.exit.dialog.restart", "value": "Redémarrer" },
 
