@@ -23,6 +23,7 @@ namespace Basis.Scripts.Networking
     public static class BasisConnectionService
     {
         public const string UsernameFileName = "CachedUserName.BAS";
+        public const string DefaultUsername = "XenuyuUser";
         public const string LastConnectedServerIdFile = "LastConnectedServerId.BAS";
 
         public static bool AutoConnectAttempted;
@@ -67,6 +68,18 @@ namespace Basis.Scripts.Networking
 
         public static void CompleteConnectionProgress() =>
             BasisSceneLoad.progressCallback.ReportProgress(ConnectionProgressKey, 100f, string.Empty);
+
+        public static string LoadOrCreateUsername()
+        {
+            string userName = BasisDataStore.LoadString(UsernameFileName, string.Empty);
+            if (!string.IsNullOrWhiteSpace(userName))
+            {
+                return userName.Trim();
+            }
+
+            BasisDataStore.SaveString(DefaultUsername, UsernameFileName);
+            return DefaultUsername;
+        }
 
         /// <summary>
         /// Panel-independent connection routine. Reports progress through the loading bar,
@@ -227,12 +240,7 @@ namespace Basis.Scripts.Networking
 
                 if (BasisNetworkConnection.LocalPlayerIsConnected) return;
 
-                string userName = BasisDataStore.LoadString(UsernameFileName, string.Empty);
-                if (string.IsNullOrWhiteSpace(userName))
-                {
-                    ReportConnectionError("Set a username before joining a server.");
-                    return;
-                }
+                string userName = LoadOrCreateUsername();
 
                 _ = ConnectAsync(target, userName);
             }

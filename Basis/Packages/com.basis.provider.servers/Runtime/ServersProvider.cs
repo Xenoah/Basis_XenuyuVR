@@ -213,7 +213,7 @@ namespace Basis.BasisUI
         {
             _usernameField = PanelTextField.CreateNewEntry(container);
             _usernameField.Descriptor.SetTitle(BasisLocalization.Get("menu.servers.username"));
-            _usernameField.SetValueWithoutNotify(BasisDataStore.LoadString(BasisConnectionService.UsernameFileName, string.Empty));
+            _usernameField.SetValueWithoutNotify(BasisConnectionService.LoadOrCreateUsername());
             if (_usernameField._placeholderLabel != null)
                 _usernameField._placeholderLabel.text = BasisLocalization.Get("menu.servers.username.hint");
             _usernameField._inputField.onSubmit.AddListener(_ => OnUsernameSubmitted());
@@ -885,11 +885,11 @@ namespace Basis.BasisUI
             // worth attempting.
             string userName = _usernameField != null
                 ? _usernameField._inputField.text
-                : BasisDataStore.LoadString(BasisConnectionService.UsernameFileName, string.Empty);
+                : BasisConnectionService.LoadOrCreateUsername();
             if (string.IsNullOrWhiteSpace(userName))
             {
-                PromptForUsername(entry, isHostMode);
-                return;
+                userName = BasisConnectionService.LoadOrCreateUsername();
+                _usernameField?.SetValueWithoutNotify(userName);
             }
             _pendingUsernameEntry = null;
 
