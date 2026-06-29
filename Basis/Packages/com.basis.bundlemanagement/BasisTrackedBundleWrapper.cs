@@ -16,6 +16,7 @@ public class BasisTrackedBundleWrapper
     private int _requestedTimes = 0;
     public bool IsInUse => Volatile.Read(ref _requestedTimes) > 0;
     public bool DidErrorOccur = false;
+    public Task BundleLoadTask;
     public static TimeSpan TimeSpan = TimeSpan.FromSeconds(BasisBeeConstants.TimeUntilMemoryRemoval);
     /// <summary>
     /// for example this is the scene path. we can use this to see 

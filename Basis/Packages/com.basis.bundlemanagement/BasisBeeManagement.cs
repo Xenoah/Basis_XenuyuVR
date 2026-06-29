@@ -97,27 +97,11 @@ public static class BasisBeeManagement
         {
             throw new Exception($"Bundle load failed for {wrapper?.LoadableBundle?.BasisRemoteBundleEncrypted?.RemoteBeeFileLocation ?? "unknown"}: {output.Item3}");
         }
-        IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
-        foreach (AssetBundle assetBundle in AssetBundles)
+        if (TryUseAlreadyLoadedBundle(wrapper, output.Item1, out string reusedReason))
         {
-            if (output.Item1 == null || output.Item1.AssetToLoadName == null)
-            {
-                throw new Exception($"Missing AssetToName! in obtained file! corrupted?");
-            }
-            else
-            {
-                string AssetToLoadName = output.Item1.AssetToLoadName;
-                if (assetBundle != null && assetBundle.Contains(AssetToLoadName))
-                {
-                    wrapper.AssetBundle = assetBundle;
-                    #if UNITY_BUNDLEUNLOAD
-                    wrapper.IsBundleBackingStoreReleased = false;
-                    #endif
-                    BasisDebug.Log($"we already have this AssetToLoadName in our loaded bundles using that instead! {AssetToLoadName}");
-                    await SaveMetaIfNeeded(wrapper, shouldUseOnDiskMeta, didForceRedownload, output.Item1.Platform);
-                    return;
-                }
-            }
+            BasisDebug.Log($"Reusing already-loaded AssetBundle: {reusedReason}", BasisDebug.LogTag.System);
+            await SaveMetaIfNeeded(wrapper, shouldUseOnDiskMeta, didForceRedownload, output.Item1.Platform);
+            return;
         }
         BasisDebug.Log("Calling Load Request", BasisDebug.LogTag.System);
         try
@@ -141,6 +125,13 @@ public static class BasisBeeManagement
 
                 if (bundleRequest == null || bundleRequest.assetBundle == null)
                 {
+                    if (TryUseAlreadyLoadedBundle(wrapper, output.Item1, out reusedReason))
+                    {
+                        BasisDebug.Log($"AssetBundle load returned null because it was already loaded; reusing: {reusedReason}", BasisDebug.LogTag.System);
+                        await SaveMetaIfNeeded(wrapper, shouldUseOnDiskMeta, didForceRedownload, output.Item1.Platform);
+                        return;
+                    }
+
                     throw new Exception("AssetBundle creation failed after attempting to refresh the cached bundle.");
                 }
             }
@@ -157,6 +148,80 @@ public static class BasisBeeManagement
             BasisDebug.LogError(ex);
             throw;
         }
+    }
+
+    private static bool TryUseAlreadyLoadedBundle(BasisTrackedBundleWrapper wrapper, BasisBundleGenerated generated, out string reason)
+    {
+        reason = null;
+        if (generated == null)
+        {
+            return false;
+        }
+
+        string assetToLoadName = generated.AssetToLoadName;
+        if (string.IsNullOrEmpty(assetToLoadName))
+        {
+            return false;
+        }
+
+        string normalizedAssetName = NormalizeBundlePath(assetToLoadName);
+        string prefabAssetName = NormalizeBundlePath(assetToLoadName.Replace(".bundle", ".prefab"));
+        foreach (AssetBundle assetBundle in AssetBundle.GetAllLoadedAssetBundles())
+        {
+            if (assetBundle == null)
+            {
+                continue;
+            }
+
+            if (assetBundle.Contains(assetToLoadName))
+            {
+                wrapper.AssetBundle = assetBundle;
+                #if UNITY_BUNDLEUNLOAD
+                wrapper.IsBundleBackingStoreReleased = false;
+                #endif
+                reason = assetToLoadName;
+                return true;
+            }
+
+            foreach (string assetName in assetBundle.GetAllAssetNames())
+            {
+                string normalizedLoadedName = NormalizeBundlePath(assetName);
+                if (normalizedLoadedName == normalizedAssetName || normalizedLoadedName == prefabAssetName)
+                {
+                    wrapper.AssetBundle = assetBundle;
+                    #if UNITY_BUNDLEUNLOAD
+                    wrapper.IsBundleBackingStoreReleased = false;
+                    #endif
+                    reason = assetName;
+                    return true;
+                }
+            }
+
+            foreach (string scenePath in assetBundle.GetAllScenePaths())
+            {
+                string normalizedScenePath = NormalizeBundlePath(scenePath);
+                if (normalizedScenePath == normalizedAssetName ||
+                    normalizedScenePath.EndsWith("/" + normalizedAssetName, StringComparison.OrdinalIgnoreCase) ||
+                    normalizedAssetName.EndsWith("/" + normalizedScenePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    wrapper.AssetBundle = assetBundle;
+                    #if UNITY_BUNDLEUNLOAD
+                    wrapper.IsBundleBackingStoreReleased = false;
+                    #endif
+                    reason = scenePath;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizeBundlePath(string value)
+    {
+        return string.IsNullOrEmpty(value)
+            ? string.Empty
+            : value.Replace('\\', '/').TrimStart('/').ToLowerInvariant();
     }
     /// <summary>
     /// Loads a BEE that lives on the local filesystem (no download, no on-disc cache copy).

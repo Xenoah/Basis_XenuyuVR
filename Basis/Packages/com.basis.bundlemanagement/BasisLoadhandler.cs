@@ -101,7 +101,14 @@ public static class BasisLoadHandler
         {
             try
             {
-                await wrapper.WaitForBundleLoadAsync();
+                if (wrapper.BundleLoadTask != null)
+                {
+                    await wrapper.BundleLoadTask;
+                }
+                else
+                {
+                    await wrapper.WaitForBundleLoadAsync();
+                }
 
                 // ensure the bundle connector is updated from the wrapper
                 loadableBundle.BasisBundleConnector = wrapper.LoadableBundle.BasisBundleConnector;
@@ -128,7 +135,15 @@ public static class BasisLoadHandler
             BasisDebug.Log($"Bundle On Disc Loading", BasisDebug.LogTag.Networking);
             if (wrapper.AssetBundle == null)
             {
-                await BasisBeeManagement.HandleBundleAndMetaLoading(wrapper, report, cancellationToken, MaxDownloadSizeInMB);
+                if (wrapper.BundleLoadTask != null)
+                {
+                    await wrapper.BundleLoadTask;
+                }
+                else
+                {
+                    wrapper.BundleLoadTask = BasisBeeManagement.HandleBundleAndMetaLoading(wrapper, report, cancellationToken, MaxDownloadSizeInMB);
+                    await wrapper.BundleLoadTask;
+                }
             }
             else
             {
@@ -160,7 +175,8 @@ public static class BasisLoadHandler
 
         try
         {
-            await BasisBeeManagement.HandleBundleAndMetaLoading(wrapper, report, cancellationToken, MaxDownloadSizeInMB);
+            wrapper.BundleLoadTask = BasisBeeManagement.HandleBundleAndMetaLoading(wrapper, report, cancellationToken, MaxDownloadSizeInMB);
+            await wrapper.BundleLoadTask;
             return await BasisBundleLoadAsset.LoadSceneFromBundleAsync(wrapper, makeActiveScene, report);
         }
         catch
@@ -193,7 +209,8 @@ public static class BasisLoadHandler
 
         try
         {
-            await BasisBeeManagement.HandleBundleAndMetaLoading(wrapper, report, cancellationToken, MaxDownloadSizeInMB);
+            wrapper.BundleLoadTask = BasisBeeManagement.HandleBundleAndMetaLoading(wrapper, report, cancellationToken, MaxDownloadSizeInMB);
+            await wrapper.BundleLoadTask;
             return await BasisBundleLoadAsset.LoadFromWrapper(DisabledGameobject, wrapper, useContentRemoval, Position, Rotation, ModifyScale, Scale, Selector, Parent, DestroyColliders, ChangeColidersToCorrectLayer, HarvestedHeadChop);
         }
         catch (Exception ex)
