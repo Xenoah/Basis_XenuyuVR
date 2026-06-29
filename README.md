@@ -6,7 +6,7 @@
 
 <table border="0">
  <tr>
-    <td><div align="center"><img src="./Basis/Images/BasisLogo.png" alt="Basis Logo" width="160" height="160"></div></td>
+    <td><div align="center"><img src="./1782709126879.png" alt="Basis Logo" width="160" height="160"></div></td>
     <td><div align="center"><h3><strong>XenuyuVR</strong></h3>
 BasisVR ベースのチル・ゲーム対応 SNS</br>
 <a href="https://github.com/Xenoah/Basis_XenuyuVR/releases"><strong>ダウンロード(Windows)</strong></a></div></td>
