@@ -11,7 +11,7 @@ public static partial class SerializableBasis
 
         public void Deserialize(NetDataReader reader)
         {
-            // Read the messageIndex safely
+            // messageIndex を安全に読む。
             if (!reader.TryGetUShort(out messageIndex))
             {
                 throw new ArgumentException("Failed to read messageIndex.");

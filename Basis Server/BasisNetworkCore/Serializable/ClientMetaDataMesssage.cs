@@ -4,8 +4,8 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// contains all necessary data to go along with the players return message locally.
-    /// this message is more async and the goal is that you can use it to change things about a local player.
+    /// player の local return message に添えるために必要な data をすべて含む。
+    /// この message はより async で、local player に関する変更に使えることを目的とする。
     /// </summary>
     public struct ServerMetaDataMessage
     {
@@ -16,13 +16,13 @@ public static partial class SerializableBasis
         public float IncreaseRate;
         public float SlowestSendRate;
         public int PeerLimit;
-        //want to include what permissions this player has to the client
+        // この player が持つ permission を client へ含めたい。
         public byte[] PermissionsBitset;     // fast, fixed — known nodes as bits
         public string[] ExtraPermissions;    // dynamic fallback — compressed on the wire
 
         /// <summary>
-        /// Populate bitset + extras from a collection of allowed permission node strings.
-        /// Call this on the server before serializing.
+        /// allowed permission node string の collection から bitset + extras を populate する。
+        /// serialize 前に server 側で呼ぶ。
         /// </summary>
         public void SetPermissions(IReadOnlyCollection<string> allowedNodes, IReadOnlyCollection<string> deniedNodes = null)
         {
@@ -30,8 +30,8 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Decode bitset + extras back into the full set of permission node strings.
-        /// Call this on the client after deserializing.
+        /// bitset + extras を full set の permission node string へ decode する。
+        /// deserialize 後に client 側で呼ぶ。
         /// </summary>
         public HashSet<string> GetPermissions()
         {
@@ -48,7 +48,7 @@ public static partial class SerializableBasis
             Writer.Get(out SlowestSendRate);
             Writer.Get(out PeerLimit);
 
-            // Permissions (backward compatible — skip if no more data)
+            // permissions (backward compatible。data が残っていなければ skip)。
             if (Writer.AvailableBytes > 0)
             {
                 PermissionsBitset = Writer.GetBytesWithLength();
@@ -101,10 +101,10 @@ public static partial class SerializableBasis
             Writer.Put(SlowestSendRate);
             Writer.Put(PeerLimit);
 
-            // Permissions bitset (ushort length prefix + raw bytes via PutBytesWithLength)
+            // permissions bitset (ushort length prefix + PutBytesWithLength 経由の raw bytes)。
             Writer.PutBytesWithLength(PermissionsBitset ?? Array.Empty<byte>());
 
-            // Extra permissions (compressed)
+            // extra permissions (compressed)。
             ushort extraCount = (ushort)(ExtraPermissions != null ? ExtraPermissions.Length : 0);
             Writer.Put(extraCount);
             if (extraCount > 0)

@@ -15,7 +15,7 @@ public static partial class SerializableBasis
             avatarSerialization.Deserialize(Writer);
         }
         /// <summary>
-        /// Deserialize when quality and additional-data presence are derived from the channel (server→client path).
+        /// quality と additional-data の有無が channel から derive される場合に deserialize する (server->client path)。
         /// </summary>
         public void Deserialize(NetDataReader Writer, byte channelDerivedQuality, bool hasAdditionalData)
         {
@@ -25,7 +25,7 @@ public static partial class SerializableBasis
             avatarSerialization.Deserialize(Writer, channelDerivedQuality, hasAdditionalData);
         }
         /// <summary>
-        /// Deserialize with byte/ushort playerID based on channel variant.
+        /// channel variant に基づき、byte / ushort playerID で deserialize する。
         /// </summary>
         public void Deserialize(NetDataReader Writer, byte channelDerivedQuality, bool hasAdditionalData, bool largeId)
         {

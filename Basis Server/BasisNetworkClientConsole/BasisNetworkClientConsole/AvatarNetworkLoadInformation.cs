@@ -9,7 +9,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public string UnlockPassword;
 
         /// <summary>
-        /// Encodes the structure to compressed byte data using custom string serialization and DeflateStream compression.
+        /// custom string serialization と DeflateStream compression を使い、structure を compressed byte data に encode する。
         /// </summary>
         public byte[] EncodeToBytes()
         {
@@ -32,7 +32,7 @@ namespace Basis.Scripts.BasisSdk.Players
         }
 
         /// <summary>
-        /// Decodes from compressed byte data back to the structure using custom string deserialization and DeflateStream decompression.
+        /// custom string deserialization と DeflateStream decompression を使い、compressed byte data から structure に decode する。
         /// </summary>
         public static BasisAvatarNetworkLoad DecodeFromBytes(byte[] compressedData)
         {
@@ -54,23 +54,23 @@ namespace Basis.Scripts.BasisSdk.Players
         }
 
         /// <summary>
-        /// Writes a string to the BinaryWriter with its length as a ushort.
+        /// string を ushort の length 付きで BinaryWriter に書き込む。
         /// </summary>
         private static void WriteString(BinaryWriter writer, string value)
         {
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(value ?? string.Empty);
-            writer.Write((ushort)bytes.Length); // Write the length as a ushort
-            writer.Write(bytes); // Write the string bytes
+            writer.Write((ushort)bytes.Length); // length を ushort として書き込む。
+            writer.Write(bytes); // string byte を書き込む。
         }
 
         /// <summary>
-        /// Reads a string from the BinaryReader based on its length (stored as a ushort).
+        /// ushort として保存された length に基づいて BinaryReader から string を読む。
         /// </summary> 
         private static string ReadString(BinaryReader reader)
         {
-            ushort length = reader.ReadUInt16(); // Read the length
-            byte[] bytes = reader.ReadBytes(length); // Read the string bytes
-            return System.Text.Encoding.UTF8.GetString(bytes); // Convert back to a string
+            ushort length = reader.ReadUInt16(); // length を読む。
+            byte[] bytes = reader.ReadBytes(length); // string byte を読む。
+            return System.Text.Encoding.UTF8.GetString(bytes); // string に戻す。
         }
     }
 }

@@ -1,6 +1,5 @@
-# Core APIs for handles
+# handle 用 core API
 
-This forms the core API for handles. Different handle resolvers should implement
-these APIs.
+これは handle の core API です。異なる handle resolver は、これらの API を実装してください。
 
-TODO: Put these in basis core
+TODO: これらを Basis core に移す。

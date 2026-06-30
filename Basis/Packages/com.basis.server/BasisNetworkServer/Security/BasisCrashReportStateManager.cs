@@ -5,9 +5,9 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Server toggle for client error/exception reporting. Seeded from
-    /// Configuration.CrashReportingEnabled at boot and pushed to clients so they only
-    /// transmit reports while it is on. Persisted via the admin path that flips it.
+    /// client error/exception reporting 用の server toggle。
+    /// boot 時に Configuration.CrashReportingEnabled から seed され、client へ push されるため、
+    /// client はこれが on の間だけ report を送る。変更時は admin path 経由で persist される。
     /// </summary>
     public static class BasisCrashReportStateManager
     {

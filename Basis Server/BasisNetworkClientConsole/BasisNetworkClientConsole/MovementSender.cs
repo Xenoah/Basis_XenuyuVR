@@ -15,24 +15,23 @@ namespace Basis.Network
         public static Vector3[] PlayersCurrentPosition;
         public static PlayerData[] ActivePlayerData;
 
-        // Animation timer — shared across all players, per-player phase offsets provide variety
+        // animation timer は全 player で共有し、player ごとの phase offset で揺らぎを付ける。
         private static readonly Stopwatch AnimTimer = Stopwatch.StartNew();
 
-        // Precomputed byte offsets into the packet for High quality
+        // High quality packet 内の byte offset を事前計算する。
         private static readonly int RotationRegionOffset = BasisAvatarBitPacking.WritePosition; // 12
         private static readonly int ScaleOffset = BasisAvatarBitPacking.WritePosition
             + BasisBoneRotationCompression.RotationBytes(BitQuality.High);
-        // After flip: this is the HIPS WORLD rotation slot (was "body rotation"
-        // = root world rotation). 7-byte smallest-three quaternion.
+        // flip 後は、ここが HIPS WORLD rotation slot になる。
+        // 以前の "body rotation" (= root world rotation)。7-byte smallest-three quaternion。
         private static readonly int HipsRotationOffset = ScaleOffset + BasisAvatarBitPacking.WriteScale;
-        // 6 bytes — 3 signed shorts at ±1m. Default zero bytes already decode
-        // to zero delta thanks to the signed encoding, so we don't need to
-        // write anything synthetic here for fake clients.
+        // 6 bytes。±1m の signed short が 3 つ。signed encoding のおかげで default の zero byte は
+        // すでに zero delta に decode されるため、fake client 用に人工的な値を書かなくてよい。
         private static readonly int HipsLocalDeltaOffset = HipsRotationOffset + BasisAvatarBitPacking.WriteRotation;
-        // 7-byte smallest-three quaternion for hips local-rotation delta.
-        // Default zero bytes do NOT decode to identity (the encoding treats
-        // them as a saturated-low drop-X quat) — so the test client writes an
-        // explicit identity once at init.
+        // hips local-rotation delta 用の 7-byte smallest-three quaternion。
+        // default の zero byte は identity に decode されない
+        // (encoding では saturated-low drop-X quat として扱われる) ため、
+        // test client は init 時に explicit identity を一度書く。
         private static readonly int HipsLocalRotationOffset = HipsLocalDeltaOffset + BasisAvatarBitPacking.WriteHipsDelta;
 
         public struct PlayerData
@@ -43,7 +42,7 @@ namespace Basis.Network
             public float PhaseOffset;
         }
 
-        // Precompute compressed scale once; reused for all messages.
+        // compressed scale は一度だけ事前計算し、すべての message で再利用する。
         private static readonly ushort CompressedScale = CompressScaleOnce(1f);
 
         public static void Initialize(int clientCount)
@@ -68,10 +67,10 @@ namespace Basis.Network
                 array = new byte[ClientManager.Size],
             };
 
-            // Per-player random phase offset so idle animations aren't synchronized
+            // idle animation が同期しないよう、player ごとの random phase offset を使う。
             float phase = (float)(Random.Shared.NextDouble() * MathF.PI * 2f);
 
-            // Build the full initial payload (position, bone rotations, scale, hips rotation)
+            // full initial payload (position、bone rotations、scale、hips rotation) を組み立てる。
             WriteInitialPayload(ref message, phase);
 
             return new PlayerData
@@ -84,45 +83,45 @@ namespace Basis.Network
 
         private static void WriteInitialPayload(ref LocalAvatarSyncMessage message, float phase)
         {
-            // Make sure buffer is correct size for High
+            // buffer が High 用の正しい size であることを保証する。
             int size = BasisAvatarBitPacking.ConvertToSize(BitQuality.High);
             if (message.array == null || message.array.Length != size)
                 message.array = new byte[size];
 
             double time = AnimTimer.Elapsed.TotalSeconds;
 
-            // 1) Position (after the recent flip this is the HIPS WORLD position)
+            // 1) position (最近の flip 後は HIPS WORLD position)
             int offset = 0;
             WritePosition(Randomizer.GetRandomOffset(), ref message.array, ref offset);
 
-            // 2) Bone rotations: natural standing pose with idle animation
+            // 2) bone rotations: idle animation 付きの natural standing pose。
             FakePoseGenerator.WriteBoneRotations(message.array, RotationRegionOffset, BitQuality.High, time, phase);
 
-            // 3) Scale
+            // 3) scale。
             WriteScaleUShort(CompressedScale, message.array, ScaleOffset);
 
-            // 4) Hips world rotation: slight body orientation
+            // 4) hips world rotation: わずかな body orientation。
             FakePoseGenerator.WriteCompressedHipsRotation(message.array, HipsRotationOffset, time, phase);
 
-            // 5) Hips local-position delta — left as zero bytes; the receiver's
-            //    signed-short decode treats that as a zero delta, so no synthetic
-            //    write is required for fake clients.
+            // 5) hips local-position delta は zero byte のままにする。
+            //    receiver 側の signed-short decode では zero delta として扱われるため、
+            //    fake client 用の人工的な書き込みは不要。
 
-            // 6) Hips local-rotation delta — must be an explicit identity, since
-            //    smallest-three on all-zero bytes does NOT decode to identity.
-            //    Set once here; the test client never animates this channel.
+            // 6) hips local-rotation delta は explicit identity にする必要がある。
+            //    all-zero byte に対する smallest-three は identity に decode されない。
+            //    test client はこの channel を animate しないため、ここで一度だけ設定する。
             WriteIdentityQuaternion(message.array, HipsLocalRotationOffset);
         }
 
         /// <summary>
-        /// Writes the identity quaternion (0,0,0,1) into a 7-byte smallest-three
-        /// slot. Identity has w as the largest component (= 1), so:
-        ///   index byte = 3 (drop w)
-        ///   three small components = 0 → quantized = midpoint = 32768
+        /// identity quaternion (0,0,0,1) を 7-byte smallest-three slot へ書き込む。
+        /// identity では w が最大 component (= 1) なので:
+        ///   index byte = 3 (w を drop)
+        ///   3 つの small component = 0 -> quantized = midpoint = 32768
         /// </summary>
         private static void WriteIdentityQuaternion(byte[] dst, int offset)
         {
-            // QuantizeSmall(0f) = midpoint = 32768 = 0x8000 → lo 0x00, hi 0x80
+            // QuantizeSmall(0f) = midpoint = 32768 = 0x8000 -> lo 0x00, hi 0x80。
             dst[offset] = 3;
             dst[offset + 1] = 0x00;
             dst[offset + 2] = 0x80;
@@ -143,24 +142,24 @@ namespace Basis.Network
             double time = AnimTimer.Elapsed.TotalSeconds;
             float phase = ActivePlayerData[index].PhaseOffset;
 
-            // Update position
+            // position を更新する。
             PlayersCurrentPosition[index] += Randomizer.GetRandomOffset();
 
             var msg = ActivePlayerData[index].Message;
 
-            // 1) Position (first 12 bytes)
+            // 1) position (先頭 12 bytes)
             int offset = 0;
             WritePosition(PlayersCurrentPosition[index], ref msg.array, ref offset);
 
-            // 2) Animated bone rotations (natural pose + idle animation)
+            // 2) animated bone rotations (natural pose + idle animation)
             FakePoseGenerator.WriteBoneRotations(msg.array, RotationRegionOffset, BitQuality.High, time, phase);
 
-            // 3) Scale unchanged
+            // 3) scale は変更しない。
 
-            // 4) Animated hips rotation
+            // 4) animated hips rotation。
             FakePoseGenerator.WriteCompressedHipsRotation(msg.array, HipsRotationOffset, time, phase);
 
-            // Serialize and send — channel encodes quality (High) and no additional data
+            // serialize して送信する。channel は quality (High) と additional data なしを encode する。
             var writer = ActivePlayerData[index].Writer;
             writer.Reset();
             writer.Put(ActivePlayerData[index].SequenceByte);

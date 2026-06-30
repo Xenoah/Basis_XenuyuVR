@@ -115,7 +115,7 @@ public static partial class SerializableBasis
                 else if (type == typeof(decimal))
                 {
                     writer.Put((byte)SerializedType.Decimal);
-                    // No direct Put for decimal, serialize as string
+                    // decimal 用の direct Put はないため、string として serialize する。
                     writer.Put(((decimal)kvp.Value).ToString(System.Globalization.CultureInfo.InvariantCulture));
                 }
                 else
@@ -181,7 +181,7 @@ public static partial class SerializableBasis
                         jsonPayload[key] = reader.GetChar();
                         break;
                     case SerializedType.Decimal:
-                        // Read decimal from string
+                        // string から decimal を読む。
                         jsonPayload[key] = decimal.TryParse(reader.GetString(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out decimal decValue) ? decValue : 0m;
                         break;
                     default:

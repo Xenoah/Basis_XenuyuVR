@@ -5,12 +5,12 @@ using static Basis.Network.Core.Compression.BasisAvatarBitPacking;
 namespace BasisNetworkClientConsole
 {
     /// <summary>
-    /// Generates realistic human-like avatar pose data for fake clients.
-    /// Produces a natural standing pose (arms at sides, relaxed fingers, natural spine)
-    /// with subtle idle animation (breathing, swaying, head micro-movements).
+    /// fake client 用に、人間らしい avatar pose data を生成する。
+    /// 腕を横に下ろし、指を軽く緩め、自然な spine を持つ standing pose に、
+    /// 呼吸、揺れ、head の微細な動きといった subtle idle animation を加える。
     ///
-    /// Replaces the old zeroed-byte-array approach which produced T-pose avatars.
-    /// Uses the same smallest-three quaternion compression as the real client.
+    /// T-pose avatar を生んでいた古い zeroed-byte-array 方式の置き換え。
+    /// real client と同じ smallest-three quaternion compression を使う。
     /// </summary>
     public static class FakePoseGenerator
     {
@@ -19,12 +19,12 @@ namespace BasisNetworkClientConsole
         private const float InvSqrt2 = 0.70710678118f;
         private const int BoneCount = BasisBoneRotationCompression.SyncBoneCount; // 51
 
-        // Base natural standing pose: 51 quaternions stored as flat float array.
-        // Layout: [slot * 4 + 0] = x, [slot * 4 + 1] = y, [slot * 4 + 2] = z, [slot * 4 + 3] = w
-        // These are T-pose-relative delta quaternions — identity means T-pose, non-identity means deviation.
+        // base の自然な standing pose。51 個の quaternion を flat float array として保持する。
+        // layout: [slot * 4 + 0] = x, [slot * 4 + 1] = y, [slot * 4 + 2] = z, [slot * 4 + 3] = w
+        // T-pose relative の delta quaternion。identity は T-pose、non-identity はそこからの偏差を意味する。
         private static readonly float[] BasePose;
 
-        // Slots GetIdleDelta animates; every other slot encodes to a constant per quality.
+        // GetIdleDelta が animate する slot。それ以外の slot は quality ごとの定数として encode される。
         private static readonly bool[] IsAnimated;
         private static readonly ulong[][] BasePackedByQuality;
 
@@ -51,7 +51,7 @@ namespace BasisNetworkClientConsole
             IsAnimated[7] = true; // Left upper leg
             IsAnimated[8] = true; // Right upper leg
             for (int slot = 21; slot <= 30; slot++)
-                IsAnimated[slot] = true; // Finger proximal
+                IsAnimated[slot] = true; // finger proximal
         }
 
         private static void PrecomputeBasePacked()
@@ -76,99 +76,100 @@ namespace BasisNetworkClientConsole
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Natural standing pose definition
+        //  natural standing pose の定義
         //
-        //  BONE_WRITE_ORDER slot assignments:
+        //  BONE_WRITE_ORDER の slot 割り当て:
         //   0:Spine  1:Chest  2:UpperChest  3:Neck  4:Head
         //   5:LUpperArm  6:RUpperArm  7:LUpperLeg  8:RUpperLeg
         //   9:LLowerArm  10:RLowerArm  11:LLowerLeg  12:RLowerLeg
         //  13:LShoulder  14:RShoulder  15:LHand  16:RHand  17:LFoot  18:RFoot
         //  19:LToes  20:RToes
-        //  21-30: Finger proximal (L-Thumb,L-Index,L-Mid,L-Ring,L-Little, R-same)
-        //  31-40: Finger intermediate
-        //  41-50: Finger distal
+        //  21-30: finger proximal (L-Thumb,L-Index,L-Mid,L-Ring,L-Little, R-same)
+        //  31-40: finger intermediate
+        //  41-50: finger distal
         // ────────────────────────────────────────────────────────────
 
         private static void BuildNaturalStandingPose()
         {
-            // Initialize all 51 bones to identity (T-pose)
+            // 51 bone すべてを identity (T-pose) で初期化する。
             for (int i = 0; i < BoneCount; i++)
                 SetQuat(i, 0f, 0f, 0f, 1f);
 
-            // ── Spine chain: natural S-curve ──
-            SetAxisAngle(0, 1, 0, 0, 5f);     // Spine: slight forward lean
-            SetAxisAngle(1, 1, 0, 0, -3f);    // Chest: slight extension (compensate)
-            SetAxisAngle(2, 1, 0, 0, 2f);     // UpperChest: slight forward
-            SetAxisAngle(3, 1, 0, 0, 8f);     // Neck: forward tilt
-            SetAxisAngle(4, 1, 0, 0, -3f);    // Head: slight back (eyes level)
+            // ── Spine chain: 自然な S curve ──
+            SetAxisAngle(0, 1, 0, 0, 5f);     // Spine: わずかに前傾
+            SetAxisAngle(1, 1, 0, 0, -3f);    // Chest: 補正用のわずかな伸展
+            SetAxisAngle(2, 1, 0, 0, 2f);     // UpperChest: わずかに前へ
+            SetAxisAngle(3, 1, 0, 0, 8f);     // Neck: 前方 tilt
+            SetAxisAngle(4, 1, 0, 0, -3f);    // Head: 目線を水平にするため少し後ろへ
 
-            // ── Upper arms: down from T-pose ──
-            // In the bone's local T-pose frame, -Z rotation swings the arm downward.
-            // Both arms use the same local delta since they mirror structurally.
-            SetAxisAngle(5, 0, 0, 1, -72f);   // Left upper arm: down ~72 degrees
-            SetAxisAngle(6, 0, 0, 1, -72f);   // Right upper arm: down ~72 degrees
+            // ── Upper arms: T-pose から下げる ──
+            // bone の local T-pose frame では、-Z rotation で腕が下方向へ swing する。
+            // 両腕は構造的に mirror しているため、同じ local delta を使う。
+            SetAxisAngle(5, 0, 0, 1, -72f);   // left upper arm: 約 72 degree 下げる
+            SetAxisAngle(6, 0, 0, 1, -72f);   // right upper arm: 約 72 degree 下げる
 
-            // ── Upper legs: standing straight with tiny forward tilt ──
+            // ── Upper legs: わずかな前傾を持つ直立姿勢 ──
             SetAxisAngle(7, 1, 0, 0, 2f);
             SetAxisAngle(8, 1, 0, 0, 2f);
 
-            // ── Lower arms: slight elbow bend ──
-            SetAxisAngle(9, 0, 1, 0, 20f);    // Left elbow
-            SetAxisAngle(10, 0, 1, 0, -20f);  // Right elbow (mirrored)
+            // ── Lower arms: elbow を少し曲げる ──
+            SetAxisAngle(9, 0, 1, 0, 20f);    // left elbow
+            SetAxisAngle(10, 0, 1, 0, -20f);  // right elbow (mirrored)
 
-            // ── Lower legs: very slight knee bend ──
+            // ── Lower legs: knee をごくわずかに曲げる ──
             SetAxisAngle(11, 1, 0, 0, 5f);
             SetAxisAngle(12, 1, 0, 0, 5f);
 
-            // ── Shoulders: slight depression ──
+            // ── Shoulders: わずかに下げる ──
             SetAxisAngle(13, 0, 0, 1, -3f);
             SetAxisAngle(14, 0, 0, 1, 3f);
 
-            // ── Hands: slight natural wrist angle ──
+            // ── Hands: 自然な wrist angle を少し付ける ──
             SetAxisAngle(15, 0, 0, 1, 5f);
             SetAxisAngle(16, 0, 0, 1, -5f);
 
-            // ── Feet: slight dorsiflexion for standing ──
+            // ── Feet: standing 用にわずかに dorsiflexion させる ──
             SetAxisAngle(17, 1, 0, 0, -8f);
             SetAxisAngle(18, 1, 0, 0, -8f);
 
-            // ── Toes: flat on ground (identity) ──
-            // Slots 19-20 already identity
+            // ── Toes: ground に平らに置く (identity) ──
+            // slot 19-20 はすでに identity。
 
-            // ── Fingers: relaxed/slightly curled ──
-            // Proximal bones: ~20 degree curl (includes thumb which has different axis)
+            // ── Fingers: relaxed / slightly curled ──
+            // proximal bone: 約 20 degree curl (axis が異なる thumb も含む)
             for (int i = 21; i <= 30; i++)
                 SetAxisAngle(i, 1, 0, 0, 20f);
 
-            // Intermediate bones: ~30 degree curl
+            // intermediate bone: 約 30 degree curl
             for (int i = 31; i <= 40; i++)
                 SetAxisAngle(i, 1, 0, 0, 30f);
 
-            // Distal bones: ~15 degree curl
+            // distal bone: 約 15 degree curl
             for (int i = 41; i <= 50; i++)
                 SetAxisAngle(i, 1, 0, 0, 15f);
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Bone rotation encoding (writes into the packet byte buffer)
+        //  bone rotation encoding (packet byte buffer へ書く)
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Writes all 51 bone rotations (base pose + idle animation) into the packet buffer
-        /// using smallest-three compression. Clears the rotation region before writing.
+        /// 51 個すべての bone rotation (base pose + idle animation) を、
+        /// smallest-three compression を使って packet buffer へ書き込む。
+        /// 書き込み前に rotation region を clear する。
         /// </summary>
-        /// <param name="dst">Packet byte array.</param>
-        /// <param name="byteOffset">Start of the bone rotation region (after position bytes).</param>
-        /// <param name="quality">Compression quality level.</param>
-        /// <param name="timeSec">Elapsed time in seconds (for animation).</param>
-        /// <param name="phase">Per-player phase offset (prevents synchronized animation).</param>
+        /// <param name="dst">packet byte array。</param>
+        /// <param name="byteOffset">bone rotation region の開始位置 (position bytes の後)。</param>
+        /// <param name="quality">compression quality level。</param>
+        /// <param name="timeSec">animation 用の経過秒数。</param>
+        /// <param name="phase">player ごとの phase offset (animation の同期を避ける)。</param>
         public static void WriteBoneRotations(byte[] dst, int byteOffset, BitQuality quality, double timeSec, float phase)
         {
             byte[] bpc = BasisBoneRotationCompression.GetBpcTable(quality);
             float[] ranges = BasisBoneRotationCompression.MAX_COMPONENT;
             ulong[] basePacked = BasePackedByQuality[(int)quality];
 
-            // Clear the rotation region (WriteBits ORs into bytes, so must start clean)
+            // rotation region を clear する。WriteBits は byte に OR するため、clean な状態で始める必要がある。
             int rotBytes = BasisBoneRotationCompression.RotationBytes(quality);
             Array.Clear(dst, byteOffset, rotBytes);
 
@@ -182,14 +183,14 @@ namespace BasisNetworkClientConsole
                 ulong packed;
                 if (IsAnimated[slot])
                 {
-                    // Base pose quaternion
+                    // base pose quaternion
                     int idx = slot * 4;
                     float bx = BasePose[idx], by = BasePose[idx + 1], bz = BasePose[idx + 2], bw = BasePose[idx + 3];
 
-                    // Idle animation delta
+                    // idle animation delta
                     GetIdleDelta(slot, timeSec, phase, out float dx, out float dy, out float dz, out float dw);
 
-                    // Combined = base * delta
+                    // combined = base * delta
                     QuatMul(bx, by, bz, bw, dx, dy, dz, dw, out float rx, out float ry, out float rz, out float rw);
                     Normalize(ref rx, ref ry, ref rz, ref rw);
 
@@ -206,22 +207,22 @@ namespace BasisNetworkClientConsole
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Hips (body) rotation — 7-byte compressed quaternion tail
+        //  Hips (body) rotation - 7-byte compressed quaternion tail
         //
-        //  Format matches WriteCompressedQuaternionToBytes on the Unity side:
-        //   [1 byte: largest component index]
+        //  Unity 側の WriteCompressedQuaternionToBytes と同じ format:
+        //   [1 byte: 最大 component index]
         //   [2 bytes: ushort comp a]
         //   [2 bytes: ushort comp b]
         //   [2 bytes: ushort comp c]
-        //  Each component quantized from [-InvSqrt2, +InvSqrt2] to [0, 65535].
+        //  各 component は [-InvSqrt2, +InvSqrt2] から [0, 65535] へ quantize される。
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Writes an animated hips rotation into the 7-byte tail of the packet.
+        /// animated hips rotation を packet の 7-byte tail へ書き込む。
         /// </summary>
         public static void WriteCompressedHipsRotation(byte[] dst, int offset, double timeSec, float phase)
         {
-            // Subtle body yaw sway + slight lateral tilt
+            // subtle な body yaw sway と、わずかな lateral tilt。
             float yaw = 3f * MathF.Sin((float)(timeSec * 0.06 * TwoPi + phase * 1.7));
             float tilt = 1f * MathF.Sin((float)(timeSec * 0.04 * TwoPi + phase * 2.3));
 
@@ -235,7 +236,7 @@ namespace BasisNetworkClientConsole
 
         private static void WriteCompressedQuat(byte[] dst, int offset, float qx, float qy, float qz, float qw)
         {
-            // Find largest absolute component
+            // 絶対値が最大の component を探す。
             float ax = MathF.Abs(qx), ay = MathF.Abs(qy), az = MathF.Abs(qz), aw = MathF.Abs(qw);
             int largest = 0;
             float max = ax;
@@ -243,11 +244,11 @@ namespace BasisNetworkClientConsole
             if (az > max) { largest = 2; max = az; }
             if (aw > max) { largest = 3; }
 
-            // Ensure largest component is positive (double-cover equivalence)
+            // 最大 component が正になるようにする (double-cover equivalence)。
             float sign = largest switch { 0 => qx, 1 => qy, 2 => qz, _ => qw };
             if (sign < 0f) { qx = -qx; qy = -qy; qz = -qz; qw = -qw; }
 
-            // Extract three smallest components
+            // 3 つの smallest component を取り出す。
             float a, b, c;
             switch (largest)
             {
@@ -271,39 +272,38 @@ namespace BasisNetworkClientConsole
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Idle animation
+        //  idle animation
         //
-        //  Each animated bone gets a small time-varying delta quaternion
-        //  layered on top of the base pose. Frequencies are sub-1 Hz
-        //  to produce slow, natural-looking motion at the 11 Hz send rate.
+        //  animate される各 bone には、base pose の上に重ねる小さな time-varying delta quaternion を与える。
+        //  frequency は 1 Hz 未満で、11 Hz の send rate でもゆっくり自然に見える motion にする。
         //
-        //  Breathing: ~0.25 Hz (15 breaths/min) on spine/chest
-        //  Head look: ~0.08-0.15 Hz slow gaze drift
-        //  Arm sway:  ~0.1 Hz subtle pendulum, L/R out of phase
-        //  Weight shift: ~0.05 Hz leg loading alternation
-        //  Grip:      ~0.07 Hz subtle finger tightening/relaxing
+        //  breathing: ~0.25 Hz (15 breaths/min) on spine/chest
+        //  head look: ~0.08-0.15 Hz slow gaze drift
+        //  arm sway: ~0.1 Hz subtle pendulum, L/R out of phase
+        //  weight shift: ~0.05 Hz leg loading alternation
+        //  grip: ~0.07 Hz subtle finger tightening/relaxing
         // ────────────────────────────────────────────────────────────
 
         private static void GetIdleDelta(int slot, double t, float phase, out float dx, out float dy, out float dz, out float dw)
         {
-            // Default: identity (no animation for this bone)
+            // default: identity (この bone には animation なし)
             dx = 0f; dy = 0f; dz = 0f; dw = 1f;
 
             float p = phase;
 
             switch (slot)
             {
-                case 0: // Spine — breathing
+                case 0: // spine - breathing
                     AxisAngleToQuat(1, 0, 0, 1.5f * MathF.Sin((float)(t * 0.25 * TwoPi + p)),
                         out dx, out dy, out dz, out dw);
                     break;
 
-                case 1: // Chest — breathing
+                case 1: // chest - breathing
                     AxisAngleToQuat(1, 0, 0, 1.0f * MathF.Sin((float)(t * 0.25 * TwoPi + p)),
                         out dx, out dy, out dz, out dw);
                     break;
 
-                case 3: // Neck — slow gaze drift (yaw + pitch combined)
+                case 3: // neck - slow gaze drift (yaw + pitch combined)
                 {
                     float yaw = 3f * MathF.Sin((float)(t * 0.08 * TwoPi + p * 1.3));
                     float pitch = 1.5f * MathF.Sin((float)(t * 0.12 * TwoPi + p * 0.7));
@@ -313,33 +313,33 @@ namespace BasisNetworkClientConsole
                     break;
                 }
 
-                case 4: // Head — micro-nod
+                case 4: // head - micro-nod
                     AxisAngleToQuat(1, 0, 0, 1f * MathF.Sin((float)(t * 0.15 * TwoPi + p * 2.1)),
                         out dx, out dy, out dz, out dw);
                     break;
 
-                case 5: // Left upper arm — sway
+                case 5: // left upper arm - sway
                     AxisAngleToQuat(1, 0, 0, 2f * MathF.Sin((float)(t * 0.1 * TwoPi + p)),
                         out dx, out dy, out dz, out dw);
                     break;
 
-                case 6: // Right upper arm — sway (out of phase with left)
+                case 6: // right upper arm - sway (left と逆 phase)
                     AxisAngleToQuat(1, 0, 0, 2f * MathF.Sin((float)(t * 0.1 * TwoPi + p + MathF.PI)),
                         out dx, out dy, out dz, out dw);
                     break;
 
-                case 7: // Left upper leg — weight shift
+                case 7: // left upper leg - weight shift
                     AxisAngleToQuat(0, 0, 1, 1f * MathF.Sin((float)(t * 0.05 * TwoPi + p)),
                         out dx, out dy, out dz, out dw);
                     break;
 
-                case 8: // Right upper leg — weight shift (opposite)
+                case 8: // right upper leg - weight shift (opposite)
                     AxisAngleToQuat(0, 0, 1, -1f * MathF.Sin((float)(t * 0.05 * TwoPi + p)),
                         out dx, out dy, out dz, out dw);
                     break;
 
                 default:
-                    // Finger proximal (slots 21-30): subtle grip change
+                    // finger proximal (slot 21-30): subtle grip change
                     if (slot >= 21 && slot <= 30)
                     {
                         float grip = 5f * MathF.Sin((float)(t * 0.07 * TwoPi + p * 1.1 + slot * 0.3));
@@ -350,7 +350,7 @@ namespace BasisNetworkClientConsole
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Quaternion math helpers (pure float, no Unity dependencies)
+        //  quaternion math helper (pure float、Unity dependency なし)
         // ────────────────────────────────────────────────────────────
 
         private static void SetQuat(int slot, float x, float y, float z, float w)
@@ -385,7 +385,7 @@ namespace BasisNetworkClientConsole
             qw = c;
         }
 
-        /// <summary>Hamilton product: result = a * b</summary>
+        /// <summary>Hamilton product: result = a * b。</summary>
         private static void QuatMul(float ax, float ay, float az, float aw,
                                      float bx, float by, float bz, float bw,
                                      out float rx, out float ry, out float rz, out float rw)

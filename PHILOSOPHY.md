@@ -1,33 +1,35 @@
-# Philosophy of Basis
+# Basis の思想
 
-## What is Basis?
+## Basis とは何か
 
-The simple answer is short. Basis is anything you want it to be, minus the hard foundational work that limits your creativity or agency.
+短く言えば、Basis はあなたが作りたいものの土台です。創造性や主体性を制限しがちな難しい基盤部分を引き受け、その先を自由に作れるようにするためのものです。
 
-Want to make a game? Focus on the art and gameplay.
+ゲームを作りたいなら、アートとゲームプレイに集中できます。
 
-Want to hold an event? Build the venue.
+イベントを開きたいなら、会場づくりに集中できます。
 
-Feel overwhelmed by the technical demands of VR but have an idea you want to make real? Use Basis to help you do that. Use it as a starting point to build what you want.
+VR の技術的な要求に圧倒されているけれど、実現したいアイデアがあるなら、Basis をその出発点として使ってください。作りたいものを形にするための足場になります。
 
-### Technically...?
+### 技術的には
 
-Basis is a **set of libraries** designed to help you bootstrap your VR projects. Basis is also a **demo** demonstrating how these components work together.
+Basis は、VR プロジェクトの立ち上げを助けるために設計された**ライブラリ群**です。同時に、それらのコンポーネントがどのように連携するかを示す**デモ**でもあります。
 
-It is built on top of Unity and C#, and the demo in particular makes use of the Universal Rendering Pipeline (URP) for rendering, and targets IL2CPP.
+Unity と C# の上に構築されており、特にデモではレンダリングに Universal Rendering Pipeline (URP) を使用し、IL2CPP を対象にしています。
 
-## Who is Basis for?
+## Basis は誰のためのものか
 
-The simple answer: creators who want to bypass a lot of the core work needed to bring up a VR game at all.
+短く言えば、VR ゲームを立ち上げるために必要な中核的な作業の多くを省きたいクリエイターのためのものです。
 
-In principle, there are three major building blocks necessary for a good VR experience.
+良い VR 体験には、原則として大きく 3 つの構成要素が必要です。
 
-- **Presence**: The feeling, based on your passive senses, that you exist in a space.  
-- **Spatialization**: The feeling that phenomena (especially your actions) exist in, and have an active effect on, objects in physical space.  
-- **Embodiment**: The association between a representation of a body and the real body itself, created by continuous feedback between action and reaction within a physical body.  
+- **存在感**: 受動的な感覚を通じて、自分がその空間に存在していると感じられること。
+- **空間性**: 現象、特に自分の行動が物理空間内のオブジェクトに存在し、能動的な影響を与えていると感じられること。
+- **身体性**: 身体の表現と実際の身体が、物理的な身体における行動と反応の継続的なフィードバックによって結び付くこと。
 
-Basis aims to offer these building blocks to creators.
+Basis は、これらの構成要素をクリエイターに提供することを目指しています。
 
-## more to come into 2025, doolys busy busy
+## 2025 年に向けてさらに追加予定
+
+Dooly がかなり忙しくしています。
 
 

@@ -15,10 +15,10 @@ using UnityEngine.Rendering;
 namespace Basis.MediaPipe.Homuler
 {
     /// <summary>
-    /// MediaPipe Unity Plugin (homuler) backend. Compiled only when the plugin is present
-    /// (BASIS_MEDIAPIPE). Runs FaceLandmarker + HandLandmarker + PoseLandmarker in VIDEO mode
-    /// on a background worker thread; the main thread only does GetPixels32 (Unity API) and
-    /// signals the worker. A busy flag drops frames instead of racing the shared buffer.
+    /// MediaPipe Unity Plugin (homuler) backend。plugin が存在する場合のみ
+    /// (BASIS_MEDIAPIPE) compile される。FaceLandmarker + HandLandmarker + PoseLandmarker を
+    /// background worker thread 上で VIDEO mode 実行し、main thread は GetPixels32 (Unity API)
+    /// と worker への通知だけを行う。busy flag により shared buffer の競合ではなく frame drop を選ぶ。
     /// </summary>
     public sealed class HomulerMediaPipeBackend : IBasisMediaPipeBackend
     {
@@ -144,7 +144,7 @@ namespace Basis.MediaPipe.Homuler
             return PoseLandmarker.CreateFromOptions(options);
         }
 
-        // Main thread: copy pixels (Unity API) and hand the frame to the worker.
+        // main thread: pixel を copy し (Unity API)、frame を worker へ渡す。
         public void SubmitFrame(WebCamTexture frame, double timestampMs)
         {
             if (!IsAvailable || _busy || _readbackPending || frame == null || frame.width <= 16) return;
@@ -159,8 +159,8 @@ namespace Basis.MediaPipe.Homuler
 
             if (_useAsyncReadback)
             {
-                // WebCamTexture's GPU format usually can't be read back directly, so blit it into a
-                // plain RGBA RenderTexture and async-read that instead (no main-thread GPU stall).
+                // WebCamTexture の GPU format は通常直接 readback できないため、通常の
+                // RGBA RenderTexture へ blit し、それを async read する (main-thread GPU stall を避ける)。
                 Graphics.Blit(frame, _readbackRT);
                 _pendingW = w;
                 _pendingH = h;
@@ -201,7 +201,7 @@ namespace Basis.MediaPipe.Homuler
             if (!_running) return;
             if (req.hasError)
             {
-                // GPU readback not supported for this texture/platform; fall back to the CPU path.
+                // この texture/platform では GPU readback 非対応。CPU path へ fallback する。
                 _useAsyncReadback = false;
                 return;
             }
@@ -244,8 +244,8 @@ namespace Basis.MediaPipe.Homuler
             int w = _w;
             int h = _h;
 
-            // WebCamTexture origin is bottom-left; MediaPipe expects top-left. Flip rows,
-            // and mirror columns for a selfie-style camera.
+            // WebCamTexture の origin は bottom-left、MediaPipe は top-left を期待する。
+            // row を反転し、自撮り camera 風に column を mirror する。
             if (_useAsyncReadback)
             {
                 for (int y = 0; y < h; y++)
@@ -285,7 +285,7 @@ namespace Basis.MediaPipe.Homuler
             _native.CopyFrom(_rgba);
 
             BasisMediaPipeResult result = new BasisMediaPipeResult { TimestampMs = _ts };
-            // DetectForVideo consumes (disposes) the Image it is given, so build a fresh one per call.
+            // DetectForVideo は渡された Image を consume/dispose するため、呼び出しごとに新規作成する。
             if (_face != null)
             {
                 FaceLandmarkerResult faceResult = _face.DetectForVideo(NewImage(w, h), _ts);
@@ -404,8 +404,8 @@ namespace Basis.MediaPipe.Homuler
             }
         }
 
-        // Tongue isn't a landmark; estimate it from pink/red pixels filling the lower mouth
-        // interior (a tongue protruding past the lower lip), gated on the mouth being open.
+        // tongue は landmark ではないため、開いた口の内側下部を埋める pink/red pixel
+        // (下唇より前へ出た舌) から推定する。口が開いている場合だけ有効。
         private float ComputeTongueOut(FaceLandmarkerResult faceResult, int w, int h)
         {
             if (_rgba == null || faceResult.faceLandmarks == null || faceResult.faceLandmarks.Count == 0) return 0f;
@@ -440,7 +440,7 @@ namespace Basis.MediaPipe.Homuler
                     byte g = _rgba[idx + 1];
                     byte b = _rgba[idx + 2];
                     total++;
-                    // pink/red, not too dark, not white (teeth)
+                    // pink/red で、暗すぎず、白すぎない (歯ではない) pixel。
                     if (r > 60 && r > g + 12 && r > b + 12 && r + g + b < 600)
                     {
                         tongue++;
@@ -448,7 +448,7 @@ namespace Basis.MediaPipe.Homuler
                 }
             }
             float fraction = total == 0 ? 0f : (float)tongue / total;
-            // Subtract a baseline so lip/gum edges inside the ROI don't read as tongue.
+            // ROI 内の lip/gum edge が tongue として読まれないよう baseline を差し引く。
             return Mathf.Clamp01((fraction - 0.25f) / 0.75f);
         }
 

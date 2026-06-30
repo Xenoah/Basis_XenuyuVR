@@ -41,7 +41,7 @@ namespace Basis.Network.Core
 
         void LiteNetLib.INetEventListener.OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, LiteNetLib.NetPacketReader reader, LiteNetLib.UnconnectedMessageType messageType)
         {
-            // Broadcast packets aren't part of the server-info contract — only respond to direct probes.
+            // broadcast packet は server-info contract の対象外。direct probe にだけ応答する。
             if (messageType != LiteNetLib.UnconnectedMessageType.BasicMessage) return;
 
             NetPacketReader read = new NetPacketReader(reader);
@@ -54,7 +54,7 @@ namespace Basis.Network.Core
 
         void LiteNetLib.INetEventListener.OnNetworkLatencyUpdate(LiteNetLib.NetPeer peer, int latency)
         {
-            // unused
+            // 未使用
         }
     }
 
@@ -64,7 +64,7 @@ namespace Basis.Network.Core
         {
             NetPacketReader reader = new NetPacketReader(info.AdditionalData);
 
-            // TODO: better enum conversion?
+            // TODO: よりよい enum 変換にする?
             Reason = (DisconnectReason)(int)info.Reason;
             SocketErrorCode = info.SocketErrorCode;
             AdditionalData = reader;

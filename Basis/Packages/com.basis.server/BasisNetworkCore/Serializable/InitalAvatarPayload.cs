@@ -13,7 +13,7 @@ namespace BasisNetworkCore.Serializable
             public ushort WhoSentUsThis;
             public void Deserialize(NetDataReader Writer)
             {
-                // Read the messageIndex safely
+                // messageIndex を安全に読む。
                 if (!Writer.TryGetByte(out messageIndex))
                 {
                     throw new ArgumentException("Failed to read messageIndex.");
@@ -22,10 +22,10 @@ namespace BasisNetworkCore.Serializable
                 {
                     throw new ArgumentException("Failed to read who sent us this!");
                 }
-                // Read the recipientsSize safely
+                // recipientsSize を安全に読む。
                 if (Writer.TryGetUShort(out payloadSize))
                 {
-                    // Guard against negative or absurd sizes
+                    // 負値相当や異常な size を防ぐ。
                     if (payloadSize > Writer.AvailableBytes / sizeof(ushort))
                     {
                         throw new ArgumentException($"Invalid recipientsSize: {payloadSize}");
@@ -47,10 +47,10 @@ namespace BasisNetworkCore.Serializable
 
             public void Serialize(NetDataWriter Writer)
             {
-                // Write the messageIndex
+                // messageIndex を書く。
                 Writer.Put(messageIndex);
                 Writer.Put(WhoSentUsThis);
-                // Determine and write the recipientsSize
+                // recipientsSize を決めて書く。
                 if (payload == null || payload.Length == 0)
                 {
                     payloadSize = 0;
@@ -60,7 +60,7 @@ namespace BasisNetworkCore.Serializable
                     payloadSize = (ushort)payload.Length;
                 }
                 Writer.Put(payloadSize);
-                // Write the recipients array if present
+                // recipients array があれば書く。
                 if (payload != null && payload.Length > 0)
                 {
                     Writer.Put(payload);

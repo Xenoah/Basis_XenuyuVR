@@ -2,8 +2,8 @@ using Basis.Network.Core;
 namespace Basis.Network.Server.Auth
 {
     /// <summary>
-    /// class use to see if we can authenticate.
-    /// (password correct)
+    /// 認証できるかどうかを判定するための interface。
+    /// (password が正しいかどうか)
     /// </summary>
     public interface IAuth
     {
@@ -12,8 +12,9 @@ namespace Basis.Network.Server.Auth
     public interface IAuthIdentity
     {
         /// <summary>
-        /// class we use to get the users identity
-        /// the UUID of a player will become this.
+        /// user の identity を取得するために使う interface。
+        /// player の UUID はここで扱う identity になる。
+        /// </summary>
         public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer NetPeer);
         public void DeInitialize();
         public void RemoveConnection(int NetPeer);

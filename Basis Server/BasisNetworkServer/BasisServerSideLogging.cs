@@ -37,7 +37,7 @@ namespace Basis.Network
 
             if (UseLogging)
             {
-                // Ensure the logs directory exists
+                // logs directory が存在するようにする
                 if (!Directory.Exists(LogDirectory))
                 {
                     Directory.CreateDirectory(LogDirectory);
@@ -69,7 +69,7 @@ namespace Basis.Network
                 }
                 catch (OperationCanceledException)
                 {
-                    // Task canceled, exit gracefully
+                    // task が cancel されたので正常に抜ける
                 }
             }, cancellationToken);
         }
@@ -103,7 +103,7 @@ namespace Basis.Network
             }
             catch (AggregateException)
             {
-                // Suppress exceptions caused by cancellation
+                // cancellation 由来の exception を抑制する
             }
             finally
             {
@@ -143,8 +143,8 @@ namespace Basis.Network
                 {
                     if (!LogQueue.TryAdd(formattedMessage))
                     {
-                        LogQueue.TryTake(out _); // Drop oldest log if the queue is full
-                        LogQueue.TryAdd(formattedMessage); // Retry adding the new message
+                        LogQueue.TryTake(out _); // queue が満杯なら最古の log を捨てる
+                        LogQueue.TryAdd(formattedMessage); // 新しい message の追加を再試行する
                     }
                 }
             }
@@ -155,16 +155,16 @@ namespace Basis.Network
             {
                 message = Sanitize(message);
                 string formattedMessage = FormatMessage("WARNING", message);
-                WriteColoredMessage($"[{DateTime.Now:HH:mm}] ", ConsoleColor.DarkCyan); // Timestamp in white
-                WriteColoredMessage("[WARNING] ", ConsoleColor.DarkYellow); // Level in yellow
-                WriteColoredMessage($"{message}\n", ConsoleColor.Gray); // Message in gray
+                WriteColoredMessage($"[{DateTime.Now:HH:mm}] ", ConsoleColor.DarkCyan); // timestamp は白
+                WriteColoredMessage("[WARNING] ", ConsoleColor.DarkYellow); // level は黄色
+                WriteColoredMessage($"{message}\n", ConsoleColor.Gray); // message は灰色
 
                 if (UseLogging)
                 {
                     if (!LogQueue.TryAdd(formattedMessage))
                     {
-                        LogQueue.TryTake(out _); // Drop oldest log if the queue is full
-                        LogQueue.TryAdd(formattedMessage); // Retry adding the new message
+                        LogQueue.TryTake(out _); // queue が満杯なら最古の log を捨てる
+                        LogQueue.TryAdd(formattedMessage); // 新しい message の追加を再試行する
                     }
                 }
             }
@@ -176,17 +176,17 @@ namespace Basis.Network
             {
                 message = Sanitize(message);
                 string formattedMessage = FormatMessage("ERROR", message);
-                WriteColoredMessage($"[{DateTime.Now:HH:mm}] ", ConsoleColor.DarkCyan); // Timestamp in white
-                WriteColoredMessage("[ERROR] ", ConsoleColor.DarkRed); // Level in red
-                WriteColoredMessage($"{message}\n", ConsoleColor.Gray); // Message in gray
+                WriteColoredMessage($"[{DateTime.Now:HH:mm}] ", ConsoleColor.DarkCyan); // timestamp は白
+                WriteColoredMessage("[ERROR] ", ConsoleColor.DarkRed); // level は赤
+                WriteColoredMessage($"{message}\n", ConsoleColor.Gray); // message は灰色
 
 
                 if (UseLogging)
                 {
                     if (!LogQueue.TryAdd(formattedMessage))
                     {
-                        LogQueue.TryTake(out _); // Drop oldest log if the queue is full
-                        LogQueue.TryAdd(formattedMessage); // Retry adding the new message
+                        LogQueue.TryTake(out _); // queue が満杯なら最古の log を捨てる
+                        LogQueue.TryAdd(formattedMessage); // 新しい message の追加を再試行する
                     }
                 }
             }
@@ -194,10 +194,10 @@ namespace Basis.Network
 
         private static void WriteColoredMessage(string message, ConsoleColor color)
         {
-            var originalColor = Console.ForegroundColor; // Save the original color
-            Console.ForegroundColor = color; // Set the desired color
-            Console.Write(message); // Write the message (without a new line)
-            Console.ForegroundColor = originalColor; // Restore the original color
+            var originalColor = Console.ForegroundColor; // 元の色を保存する
+            Console.ForegroundColor = color; // 目的の色を設定する
+            Console.Write(message); // message を書き込む (改行なし)
+            Console.ForegroundColor = originalColor; // 元の色へ戻す
         }
     }
 }

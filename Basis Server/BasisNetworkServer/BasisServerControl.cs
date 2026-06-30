@@ -104,8 +104,8 @@ namespace Basis.Network.Server
             }
             finally { NetworkServer.ReturnWriter(writer); }
 
-            // Reset after removal so any synchronized load that slipped in during the loop
-            // has its session cleared rather than left pending.
+            // removal 後に reset し、loop 中に入り込んだ synchronized load の session が
+            // pending のまま残らず clear されるようにする。
             BasisNetworkPreloadResourceManagement.Reset();
 
             var clearWriter = NetworkServer.RentWriter();

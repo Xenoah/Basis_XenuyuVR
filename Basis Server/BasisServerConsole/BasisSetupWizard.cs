@@ -4,20 +4,20 @@ using static BasisPermissions.PermissionManager;
 namespace BasisNetworkConsole
 {
     /// <summary>
-    /// First-boot setup wizard. Runs once, before the network server starts, when no
-    /// config.xml existed at launch (a brand-new server). It walks the operator through
-    /// the core server settings and forces them to designate at least one admin, so a
-    /// fresh server is never left misconfigured or with nobody able to moderate it.
-    /// Admins are stored in permissions.xml as members of the "admin" group (full access),
-    /// exactly like the runtime "/perm user group add &lt;uuid&gt; admin" command; the other
-    /// settings are written straight back to config.xml.
+    /// 初回起動セットアップ wizard。起動時に config.xml が存在しない新規サーバーで、
+    /// network server の開始前に一度だけ実行される。主要な server settings を operator に確認させ、
+    /// 少なくとも 1 人の admin を指定させることで、新規サーバーが誤設定のまま、または
+    /// moderating できる人がいない状態で残ることを防ぐ。
+    /// admin は permissions.xml の "admin" group (full access) の member として保存される。
+    /// これは runtime の "/perm user group add &lt;uuid&gt; admin" command と同じで、
+    /// その他の settings は config.xml へ直接書き戻される。
     /// </summary>
     public static class BasisSetupWizard
     {
         /// <summary>
-        /// Environment variable used to seed admins on headless/automated first boots
-        /// (Docker, CI) where no interactive console is attached. Accepts one UUID or a
-        /// comma/space separated list.
+        /// interactive console が接続されていない headless / automated first boot
+        /// (Docker、CI) で admin を seed するための environment variable。
+        /// 1 つの UUID、または comma / space 区切りの list を受け付ける。
         /// </summary>
         public const string AdminEnvVar = "BasisFirstAdmin";
         private const string AdminGroup = "admin";
@@ -28,17 +28,17 @@ namespace BasisNetworkConsole
             string configDir = Path.GetDirectoryName(configFilePath) ?? string.Empty;
             string permissionsPath = Path.Combine(configDir, "permissions.xml");
 
-            // Bring the shared permission store up far enough that the "admin" group exists,
-            // then write straight to permissions.xml. When the server boots a moment later,
-            // PermissionIntegration.Init reloads this same file, so the admin we add sticks.
+            // shared permission store を "admin" group が存在する状態まで初期化し、
+            // そのまま permissions.xml へ書き込む。直後に server が boot すると、
+            // PermissionIntegration.Init が同じ file を再読み込みするため、追加した admin が保持される。
             PermissionManager pm = PermissionIntegration.Manager;
             pm.SetXmlPath(permissionsPath);
             pm.LoadFromXml();
             pm.EnsureDefaults();
 
-            // Headless / automated deploys: seed admins from the env var instead of prompting.
-            // Server settings on these deployments come from env vars / a mounted config.xml,
-            // so we don't run the interactive settings walkthrough here.
+            // Headless / automated deploy では、prompt ではなく env var から admin を seed する。
+            // これらの deployment では server settings は env var / mounted config.xml から来るため、
+            // interactive settings walkthrough はここでは実行しない。
             string? fromEnv = Environment.GetEnvironmentVariable(AdminEnvVar);
             if (!string.IsNullOrWhiteSpace(fromEnv))
             {
@@ -70,7 +70,7 @@ namespace BasisNetworkConsole
         }
 
         // ----------------------------------------------------------------------------
-        // Core server settings
+        // core server settings
         // ----------------------------------------------------------------------------
 
         private static void RunSettingsWalkthrough(Configuration config, string configFilePath)
@@ -111,7 +111,7 @@ namespace BasisNetworkConsole
         }
 
         // ----------------------------------------------------------------------------
-        // Admin (required)
+        // admin (必須)
         // ----------------------------------------------------------------------------
 
         private static int PromptAdmins(PermissionManager pm)
@@ -158,7 +158,7 @@ namespace BasisNetworkConsole
             return adminCount;
         }
 
-        /// <summary>Add every UUID in a delimited list to the admin group. Returns how many were added.</summary>
+        /// <summary>区切り付き list 内の全 UUID を admin group に追加し、追加数を返す。</summary>
         private static int SeedFromList(PermissionManager pm, string raw)
         {
             int added = 0;
@@ -174,7 +174,7 @@ namespace BasisNetworkConsole
         }
 
         // ----------------------------------------------------------------------------
-        // Prompt helpers
+        // prompt helper
         // ----------------------------------------------------------------------------
 
         private static string PromptString(string label, string current)
@@ -217,7 +217,7 @@ namespace BasisNetworkConsole
         }
 
         // ----------------------------------------------------------------------------
-        // Text / confirmation
+        // text / confirmation
         // ----------------------------------------------------------------------------
 
         private static void PrintIntro()
@@ -267,7 +267,7 @@ namespace BasisNetworkConsole
                 && !value.Contains(' ');
         }
 
-        /// <summary>Yes/no prompt that defaults to NO on a blank line.</summary>
+        /// <summary>空行では NO を default とする yes/no prompt。</summary>
         private static bool Confirm(string question)
         {
             Console.Write($"{question} (y/N): ");
@@ -276,7 +276,7 @@ namespace BasisNetworkConsole
                 || answer.Equals("yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Yes/no prompt that defaults to YES on a blank line.</summary>
+        /// <summary>空行では YES を default とする yes/no prompt。</summary>
         private static bool ConfirmDefaultYes(string question)
         {
             Console.Write($"{question} (Y/n): ");
@@ -286,7 +286,7 @@ namespace BasisNetworkConsole
                 || answer.Equals("yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>True only when a real interactive terminal is attached (so a prompt won't hang a daemon).</summary>
+        /// <summary>実際の interactive terminal が接続されている場合のみ true。prompt で daemon を hang させないため。</summary>
         private static bool CanPrompt()
         {
             try

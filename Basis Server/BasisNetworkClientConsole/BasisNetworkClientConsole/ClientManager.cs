@@ -22,7 +22,7 @@ namespace Basis.Network
         public NetworkClient[] FinalClients;
         public static int Size;
 
-        // Cached once — config doesn't change at runtime
+        // runtime 中に config は変わらないため、一度だけ cache する。
         private byte[] _cachedPasswordBytes;
         private byte[] _cachedAvatarBytes;
 
@@ -105,7 +105,7 @@ namespace Basis.Network
             oldClient?.Disconnect();
             BNL.Log($"Disconnected client at index {index}");
 
-            await Task.Delay(3000); // wait before reconnecting
+            await Task.Delay(3000); // reconnect 前に待機する。
 
             var name = NameGenerator.GenerateRandomPlayerName();
             var identity = new ConsoleClientIdentity();

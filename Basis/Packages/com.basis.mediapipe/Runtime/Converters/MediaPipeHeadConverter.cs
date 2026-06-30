@@ -3,9 +3,9 @@ using UnityEngine;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// Head rotation from the FaceLandmarker head transform, relative to a calibrated neutral,
-    /// produced as a player-local rotation for a Head IK tracker. The camera stays mouse-driven;
-    /// only the avatar's head bone follows the webcam.
+    /// FaceLandmarker の頭 transform から、calibration 済み neutral に対する頭 rotation を取り出し、
+    /// Head IK tracker 用の player-local rotation として生成する。camera は mouse 駆動のままにし、
+    /// avatar の head bone だけが Web カメラに追従する。
     /// </summary>
     public sealed class MediaPipeHeadConverter
     {
@@ -60,9 +60,9 @@ namespace Basis.MediaPipe
 
             Vector3 translation = result.FaceTransform.GetColumn(3);
             Vector3 delta = _calibrated ? translation - _neutralPosition : Vector3.zero;
-            // MediaPipe head transform translation is camera-space (cm); map to player-local
-            // (mirror x, z forward) and scale cm->m. Vertical bob is excluded (it fights eye
-            // height); HeightOffset is a static trim instead.
+            // MediaPipe head transform の translation は camera-space (cm)。
+            // player-local へ写像し (x を mirror、z を forward)、cm から m へ scale する。
+            // vertical bob (eye height) は除外し、代わりに HeightOffset を静的な trim として使う。
             Vector3 targetPos = new Vector3(-delta.x * PositionGain * 0.01f, HeightOffset, -delta.z * PositionGain * 0.01f);
             _smoothedPosition = Vector3.Lerp(_smoothedPosition, targetPos, t);
             positionOffset = _smoothedPosition;

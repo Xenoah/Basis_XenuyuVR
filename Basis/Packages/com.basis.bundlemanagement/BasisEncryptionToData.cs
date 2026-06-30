@@ -6,13 +6,13 @@ public static class BasisEncryptionToData
 {
     public static async Task<AssetBundleCreateRequest> GenerateBundleFromFile(string Password, byte[] Bytes, uint CRC, BasisProgressReport progressCallback)
     {
-        // Define the password object for decryption
+        // decryption 用の password object を定義する
         var BasisPassword = new BasisEncryptionWrapper.BasisPassword
         {
             VP = Password
         };
         string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
-        // Decrypt the file asynchronously
+        // file を非同期に decrypt する
         var decrypted = await BasisEncryptionWrapper.DecryptFromBytesAsync(UniqueID, BasisPassword, Bytes, progressCallback);
 
         if (!decrypted.Success || decrypted.Data == null || decrypted.Data.Length == 0)
@@ -33,32 +33,32 @@ public static class BasisEncryptionToData
             BasisDebug.LogError($"LoadFromMemoryAsync threw: {ex}");
             return null;
         }
-        // Track the last reported progress
+        // 最後に report した progress を追跡する
         int lastReportedProgress = -1;
 
-        // Periodically check the progress of AssetBundleCreateRequest and report progress
+        // AssetBundleCreateRequest の progress を定期的に確認し、progress を report する
         while (!assetBundleCreateRequest.isDone)
         {
-            // Convert the progress to a percentage (0-100)
+            // progress を percentage (0-100) に変換する
             int progress = Mathf.RoundToInt(assetBundleCreateRequest.progress * 100);
 
-            // Report progress only if it has changed
+            // progress が変化した場合だけ report する
             if (progress > lastReportedProgress)
             {
                 lastReportedProgress = progress;
 
-                // Call the progress callback with the current progress
+                // 現在の progress で progress callback を呼ぶ
                 progressCallback.ReportProgress(UniqueID.ToString(), progress, "loading bundle");
             }
 
-            // Wait a short period before checking again to avoid busy waiting
+            // busy waiting を避けるため、次の確認前に短く待つ
             await Task.Delay(50); // Adjust delay as needed (e.g., 50ms)
         }
 
         progressCallback?.ReportProgress(UniqueID, 100, "loading bundle");
         await assetBundleCreateRequest;
 
-        // req.assetBundle can still be null if CRC fails or bytes aren’t a bundle.
+        // CRC が失敗した場合や bytes が bundle ではない場合、req.assetBundle は null のままになり得る。
         if (assetBundleCreateRequest.assetBundle == null)
         {
             BasisDebug.LogError("AssetBundle load finished but assetBundle is null (CRC mismatch or invalid bundle bytes).");

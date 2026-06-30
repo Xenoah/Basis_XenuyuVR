@@ -8,20 +8,20 @@ using System.Threading.Tasks;
 using static SerializableBasis;
 
 /// <summary>
-/// Server-side tracking for synchronized resource loads.
-/// Tracks which clients have reported readiness and triggers the spawn
-/// signal when all are ready or the timeout expires.
+/// synchronized resource load 用の server-side tracking。
+/// どの client が readiness を報告したかを追跡し、全員が ready になるか
+/// timeout が切れたときに spawn signal を trigger する。
 /// </summary>
 public static class BasisNetworkPreloadResourceManagement
 {
     /// <summary>
-    /// Timeout for synchronized loads. After this duration the server sends
-    /// the spawn signal regardless of how many clients have reported.
+    /// synchronized load の timeout。この duration 後は、報告済み client 数に関係なく
+    /// server が spawn signal を送る。
     /// </summary>
     public static readonly TimeSpan SynchronizedTimeout = TimeSpan.FromMinutes(5);
 
     /// <summary>
-    /// Active synchronized load sessions, keyed by LoadedNetID.
+    /// active synchronized load session。LoadedNetID を key にする。
     /// </summary>
     public static readonly ConcurrentDictionary<string, SyncLoadSession> ActiveSessions = new();
 
@@ -34,15 +34,15 @@ public static class BasisNetworkPreloadResourceManagement
         public CancellationTokenSource TimeoutCts;
 
         /// <summary>
-        /// Total number of connected peers when this session started.
+        /// この session 開始時点の connected peer 総数。
         /// </summary>
         public int TotalPeerCount;
         public bool IsComplete => ReadyPeers.Count + FailedPeers.Count >= TotalPeerCount;
     }
 
     /// <summary>
-    /// Called when the server receives a LoadResource with LoadStrategy = 2 (Synchronized).
-    /// Broadcasts the preload request to all clients and starts tracking readiness.
+    /// server が LoadStrategy = 2 (Synchronized) の LoadResource を受け取ったときに呼ぶ。
+    /// preload request を全 client に broadcast し、readiness tracking を開始する。
     /// </summary>
     public static void StartSynchronizedLoad(LocalLoadResource resource)
     {
@@ -73,17 +73,17 @@ public static class BasisNetworkPreloadResourceManagement
 
         BNL.Log($"PreloadResourceManagement: Starting synchronized load for {netId}, {peerCount} peers");
 
-        // Broadcast the load resource to all clients (they will see LoadStrategy = 2
-        // and handle it as a synchronized preload)
+        // load resource を全 client へ broadcast する。
+        // client は LoadStrategy = 2 を見て synchronized preload として扱う。
         NetDataWriter writer = NetworkServer.RentWriter();
         resource.Serialize(writer);
         NetworkServer.BroadcastMessageToClients(writer, BasisNetworkCommons.LoadResourceChannel, peerSnapshot, DeliveryMethod.ReliableOrdered);
         NetworkServer.ReturnWriter(writer);
 
-        // Store in the main resource database too
+        // main resource database にも保存する。
         BasisNetworkResourceManagement.UshortNetworkDatabase.TryAdd(netId, resource);
 
-        // No peers: complete immediately rather than waiting for the 5-minute timeout
+        // peer がいない場合、5 分 timeout を待たず即完了する。
         if (peerCount == 0)
         {
             BNL.Log($"PreloadResourceManagement: No peers connected, completing {netId} immediately");
@@ -92,12 +92,12 @@ public static class BasisNetworkPreloadResourceManagement
             return;
         }
 
-        // Start timeout task
+        // timeout task を開始する。
         _ = RunTimeoutAsync(netId, session);
     }
 
     /// <summary>
-    /// Called when the server receives a PreloadReady message from a client.
+    /// server が client から PreloadReady message を受け取ったときに呼ぶ。
     /// </summary>
     public static void HandleClientReady(string loadedNetId, int peerId, bool isReady)
     {
@@ -127,8 +127,8 @@ public static class BasisNetworkPreloadResourceManagement
     }
 
     /// <summary>
-    /// Runs the timeout for a synchronized load session.
-    /// If not all clients have reported by the timeout, sends the spawn signal anyway.
+    /// synchronized load session の timeout を実行する。
+    /// timeout までに全 client が報告していない場合も、spawn signal を送る。
     /// </summary>
     private static async Task RunTimeoutAsync(string netId, SyncLoadSession session)
     {
@@ -136,21 +136,20 @@ public static class BasisNetworkPreloadResourceManagement
         {
             await Task.Delay(SynchronizedTimeout, session.TimeoutCts.Token);
 
-            // Timeout reached - send spawn signal regardless
+            // timeout 到達。状況に関係なく spawn signal を送る。
             BNL.Log($"PreloadResourceManagement: Timeout reached for {netId}. Ready: {session.ReadyPeers.Count}, Failed: {session.FailedPeers.Count}, Total: {session.TotalPeerCount}");
             BroadcastSpawnSignal(netId);
         }
         catch (TaskCanceledException)
         {
-            // Session completed before timeout - normal
+            // session は timeout 前に正常完了済み。
         }
     }
 
     /// <summary>
-    /// Broadcasts the spawn signal to all connected clients for a synchronized load.
-    /// Also broadcasts unload messages for existing scenes through the normal unload path
-    /// so the server tracking stays consistent. The client-side HandleSpawnPreloaded
-    /// also unloads scenes locally as a safety net against message ordering races.
+    /// synchronized load 用の spawn signal を connected client 全員へ broadcast する。
+    /// server tracking の整合性を保つため、既存 scene の unload message も通常の unload path 経由で broadcast する。
+    /// client-side の HandleSpawnPreloaded も、message ordering race への safety net として local scene unload を行う。
     /// </summary>
     private static void BroadcastSpawnSignal(string loadedNetId)
     {
@@ -163,10 +162,10 @@ public static class BasisNetworkPreloadResourceManagement
 
         var peerSnapshot = NetworkServer.PeerSnapshot;
 
-        // Only unload existing scenes when the synchronized resource is itself a scene.
-        // Props (Mode == 0) should never cause scene unloads.
-        // Exclude loadedNetId — that is the scene being switched TO; removing it would
-        // race against the SpawnPreloaded signal on the client.
+        // synchronized resource 自体が scene の場合だけ、既存 scene を unload する。
+        // prop (Mode == 0) が scene unload を引き起こしてはいけない。
+        // loadedNetId は除外する。それは切り替え先 scene であり、削除すると
+        // client 側の SpawnPreloaded signal と race する。
         if (session.Resource.Mode == 1)
         {
             UnloadAllSceneResources(peerSnapshot, loadedNetId);
@@ -186,8 +185,8 @@ public static class BasisNetworkPreloadResourceManagement
     }
 
     /// <summary>
-    /// Unloads all scene-type resources (Mode == 1) from the server database
-    /// and broadcasts unload messages to all clients through the normal unload channel.
+    /// server database からすべての scene-type resource (Mode == 1) を unload し、
+    /// 通常の unload channel 経由で全 client へ unload message を broadcast する。
     /// </summary>
     private static void UnloadAllSceneResources(NetPeer[] peerSnapshot, string excludeNetId = null)
     {
@@ -219,9 +218,8 @@ public static class BasisNetworkPreloadResourceManagement
     }
 
     /// <summary>
-    /// Removes a disconnected peer from all active synchronized load sessions.
-    /// Decrements the expected peer count and triggers the spawn signal if
-    /// all remaining peers have already reported.
+    /// disconnected peer をすべての active synchronized load session から削除する。
+    /// expected peer count を decrement し、残りの peer がすでに全員報告済みなら spawn signal を trigger する。
     /// </summary>
     public static void RemovePeer(int peerId)
     {
@@ -240,7 +238,7 @@ public static class BasisNetworkPreloadResourceManagement
 
             if (session.TotalPeerCount <= 0)
             {
-                // No peers left, just clean up
+                // peer が残っていないため cleanup だけ行う。
                 session.TimeoutCts?.Cancel();
                 session.TimeoutCts?.Dispose();
                 ActiveSessions.TryRemove(kvp.Key, out _);
@@ -267,7 +265,7 @@ public static class BasisNetworkPreloadResourceManagement
     }
 
     /// <summary>
-    /// Cleans up all active sessions. Called on server reset.
+    /// active session をすべて cleanup する。server reset 時に呼ぶ。
     /// </summary>
     public static void Reset()
     {

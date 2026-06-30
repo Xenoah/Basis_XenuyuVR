@@ -4,10 +4,9 @@ using System.Text;
 namespace Basis.Network.Core
 {
     /// <summary>
-    /// Normalizes player display names so a name that renders blank cannot slip
-    /// through. Strips control, format and known invisible glyphs, folds Unicode
-    /// whitespace to spaces and trims. Returns <see cref="string.Empty"/> when
-    /// nothing renderable remains.
+    /// blank に描画される name が通らないよう、player display name を normalize する。
+    /// control / format / 既知の invisible glyph を取り除き、Unicode whitespace を space に畳んで trim する。
+    /// 描画可能なものが何も残らない場合は <see cref="string.Empty"/> を返す。
     /// </summary>
     public static class BasisDisplayNameSanitizer
     {

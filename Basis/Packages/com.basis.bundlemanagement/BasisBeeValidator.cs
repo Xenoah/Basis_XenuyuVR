@@ -75,7 +75,7 @@ public static class BasisBeeValidator
         return true;
     }
     /// <summary>
-    /// Validates wrapper, password, and URL in one pass (used by download flows).
+    /// wrapper、password、URL を 1 pass で validate する (download flow で使用)。
     /// </summary>
     public static bool ValidateWrapperPasswordAndUrl(BasisTrackedBundleWrapper wrapper, out string url, out string error)
     {

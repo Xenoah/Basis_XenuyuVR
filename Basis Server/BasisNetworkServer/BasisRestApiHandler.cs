@@ -121,7 +121,7 @@ namespace Basis.Network.Server
             return sha.ComputeHash(data);
         }
 
-        // HttpListener URL prefixes require bracket notation for IPv6 address literals.
+        // HttpListener URL prefix では、IPv6 address literal に bracket notation が必要。
         private static string FormatHost(string host) =>
             IPAddress.TryParse(host, out IPAddress addr) && addr.AddressFamily == AddressFamily.InterNetworkV6
                 ? $"[{host}]"

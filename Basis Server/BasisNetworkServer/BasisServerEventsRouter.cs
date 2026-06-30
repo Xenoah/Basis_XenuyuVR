@@ -68,8 +68,8 @@ namespace BasisNetworkServer
             NetworkServer.ReturnWriter(writer);
         }
 
-        // Wire (in):  [eventType:1][intervalMs:2]
-        // Wire (out): [eventType:1][senderId:2][intervalMs:2]
+        // wire (in):  [eventType:1][intervalMs:2]
+        // wire (out): [eventType:1][senderId:2][intervalMs:2]
         private static void HandleAvatarRateChange(NetPacketReader reader, NetPeer peer, byte eventType)
         {
             ushort intervalMs = reader.GetUShort();
@@ -86,8 +86,8 @@ namespace BasisNetworkServer
             NetworkServer.ReturnWriter(writer);
         }
 
-        // Wire (in):  [eventType:1][modeByte:1]
-        // Wire (out): [eventType:1][senderId:2][modeByte:1]
+        // wire (in):  [eventType:1][modeByte:1]
+        // wire (out): [eventType:1][senderId:2][modeByte:1]
         private static void HandleTalkModeChanged(NetPacketReader reader, NetPeer peer, byte eventType)
         {
             byte mode = reader.GetByte();
@@ -104,8 +104,8 @@ namespace BasisNetworkServer
             NetworkServer.ReturnWriter(writer);
         }
 
-        // Wire (in):  [eventType:1][muted:1]
-        // Wire (out): [eventType:1][senderId:2][muted:1]
+        // wire (in):  [eventType:1][muted:1]
+        // wire (out): [eventType:1][senderId:2][muted:1]
         private static void HandleMuteStateChanged(NetPacketReader reader, NetPeer peer, byte eventType)
         {
             byte muted = reader.GetByte();

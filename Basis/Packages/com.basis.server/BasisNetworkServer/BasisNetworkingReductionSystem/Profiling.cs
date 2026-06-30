@@ -4,10 +4,10 @@ using System.Threading;
 namespace BasisNetworkServer.BasisNetworkingReductionSystem
 {
     /// <summary>
-    /// Lock-free, low-overhead profiler for the BSR tick loop.
-    /// Disabled by default — enable via EnableBSRProfiling in config.xml or env var.
-    /// When disabled, all methods are no-ops (volatile bool check, no branches taken).
-    /// Prints a summary every 5 seconds and resets counters.
+    /// BSR tick loop 用の lock-free / low-overhead profiler。
+    /// default では無効。config.xml または env var の EnableBSRProfiling で有効化する。
+    /// 無効時はすべての method が no-op になる (volatile bool check のみで branch は通らない)。
+    /// 5 秒ごとに summary を出力し、counter を reset する。
     /// </summary>
     public static class BSRProfiler
     {
@@ -17,23 +17,23 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         private static readonly long PrintIntervalTicks = (long)(5000 * MsToTick);
         private static long _lastPrintTick = Stopwatch.GetTimestamp();
 
-        // Phase timings (accumulated ticks, reset each print interval)
+        // phase timing (accumulated ticks、print interval ごとに reset)。
         public static long drainTicks;
         public static long processTicks;
         public static long distanceTicks;
         public static long updateTicks;
         public static long triggerTicks;
 
-        // Counters (reset each print interval)
+        // counter (print interval ごとに reset)。
         public static long tickCount;
         public static long messagesProcessed;
-        // Public so thread-local counters can aggregate via Interlocked.Add after Parallel.For
+        // thread-local counter が Parallel.For 後に Interlocked.Add で aggregate できるよう public。
         public static long SendCount;
         private static long _preSerializations;
         private static long _preSerializationsSkipped;
 
-        // Compressed-avatar-bundle metrics. Public so the reduction system can Interlocked.Add
-        // from the parallel send loop. All only touched when Enabled is true.
+        // compressed-avatar-bundle metrics。reduction system が parallel send loop から
+        // Interlocked.Add できるよう public。すべて Enabled が true のときだけ触る。
         public static long bundlesEmitted;
         public static long bundleMessages;
         public static long bundleRawBytes;
@@ -79,7 +79,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
             double total = drain + process + distance + update + trigger;
 
-            // Bundle metrics — exchange even if zero so a flag flip is reflected immediately
+            // bundle metrics。flag flip が即時反映されるよう、zero でも exchange する。
             long bEmit = Interlocked.Exchange(ref bundlesEmitted, 0);
             long bMsg = Interlocked.Exchange(ref bundleMessages, 0);
             long bRaw = Interlocked.Exchange(ref bundleRawBytes, 0);
@@ -107,7 +107,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 double avgDeflateUs = bEmit > 0 ? (deflateMs * 1000.0) / bEmit : 0;
                 double bundlesPerTick = (double)bEmit / ticks;
                 double retryRate = bEmit > 0 ? (double)bRetry / bEmit * 100.0 : 0;
-                long savedBytes = bRaw - bComp; // raw input vs compressed output
+                long savedBytes = bRaw - bComp; // raw input と compressed output の差。
                 BNL.Log($"  bundles:  {bEmit} emitted ({bundlesPerTick:F2}/tick), {bMsg} msgs in bundles, {bTail} msgs tail-uncompressed, {bFallback} fallbacks");
                 BNL.Log($"            ratio {ratio:F3} ({(1 - ratio) * 100:F1}% saved on bundled bytes), avg {avgMsgsPerBundle:F1} msgs/bundle ({avgRawPerBundle:F0} B raw → {avgCompPerBundle:F0} B compressed)");
                 BNL.Log($"            deflate {deflateMs / ticks:F3} ms/tick ({deflateMs / total * 100:F1}% of tick), {avgDeflateUs:F1} µs/bundle, retries {bRetry} ({retryRate:F1}%)");

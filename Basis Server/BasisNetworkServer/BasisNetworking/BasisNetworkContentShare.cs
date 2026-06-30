@@ -7,21 +7,21 @@ using static BasisPermissions.PermissionManager;
 using static SerializableBasis;
 
 /// <summary>
-/// Server-side management of content share spheres.
-/// Tracks all active spheres and handles broadcasting to clients.
+/// content share sphere の server-side management。
+/// active sphere をすべて追跡し、client への broadcasting を処理する。
 /// </summary>
 public static class BasisNetworkContentShare
 {
     /// <summary>
-    /// All active content share spheres keyed by SphereNetID.
-    /// Value is the full message including creator player ID.
+    /// SphereNetID を key にした active content share sphere すべて。
+    /// value は creator player ID を含む full message。
     /// </summary>
     public static ConcurrentDictionary<string, ServerContentShareMessage> ActiveSpheres =
         new ConcurrentDictionary<string, ServerContentShareMessage>();
 
     /// <summary>
-    /// Handles a content share drop from a client.
-    /// Stores the sphere and broadcasts to all clients.
+    /// client からの content share drop を処理する。
+    /// sphere を保存し、全 client へ broadcast する。
     /// </summary>
     public static void HandleContentShareDrop(NetPacketReader reader, NetPeer peer)
     {
@@ -34,8 +34,8 @@ public static class BasisNetworkContentShare
             return;
         }
 
-        // Global lock check based on content type: blocked when the content's
-        // lock is on AND the peer lacks the matching lockbypass permission.
+        // content type に基づく global lock check。
+        // content の lock が on で、かつ peer が matching lockbypass permission を持たない場合 block する。
         bool blocked = false;
         string contentName = "";
         switch (msg.ContentType)
@@ -56,8 +56,8 @@ public static class BasisNetworkContentShare
                 contentName = "World";
                 break;
             case ContentShareType.Server:
-                // ContentURL carries the connection string (address[:port][#password]).
-                // UnlockPassword is intentionally unused — receivers parse the URL directly.
+                // ContentURL は connection string (address[:port][#password]) を運ぶ。
+                // receiver は URL を直接 parse するため、UnlockPassword は意図的に未使用。
                 blocked = BasisNetworkServer.Security.BasisGlobalLockManager.ServersLocked &&
                     !PermissionIntegration.HasValidRequirement(peer, PermNodes.ResourceLockBypassServer);
                 contentName = "Server share";
@@ -105,7 +105,7 @@ public static class BasisNetworkContentShare
             NetDataWriter writer = NetworkServer.RentWriter();
             serverMsg.Serialize(writer);
 
-            // Broadcast to all clients including sender
+            // sender を含む全 client へ broadcast する。
             NetworkServer.BroadcastMessageToClients(
                 writer,
                 BasisNetworkCommons.ContentShareChannel,
@@ -121,8 +121,8 @@ public static class BasisNetworkContentShare
     }
 
     /// <summary>
-    /// Handles a content share cleanup from a client.
-    /// Removes the sphere and broadcasts removal to all clients.
+    /// client からの content share cleanup を処理する。
+    /// sphere を削除し、削除を全 client へ broadcast する。
     /// </summary>
     public static void HandleContentShareCleanup(NetPacketReader reader, NetPeer peer)
     {
@@ -166,7 +166,7 @@ public static class BasisNetworkContentShare
     }
 
     /// <summary>
-    /// Sends all active content share spheres to a newly connected peer.
+    /// newly connected peer へ active content share sphere をすべて送る。
     /// </summary>
     public static void SendAllSpheresToPeer(NetPeer newConnection)
     {
@@ -189,7 +189,7 @@ public static class BasisNetworkContentShare
     }
 
     /// <summary>
-    /// Removes all spheres created by a disconnecting player.
+    /// disconnecting player が作成した sphere をすべて削除する。
     /// </summary>
     public static void RemovePlayerSpheres(int peerId)
     {
@@ -228,7 +228,7 @@ public static class BasisNetworkContentShare
     }
 
     /// <summary>
-    /// Clears all non-persistent spheres (called when server empties).
+    /// non-persistent sphere をすべて clear する (server が空になったときに呼ぶ)。
     /// </summary>
     public static void Reset()
     {

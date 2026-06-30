@@ -7,42 +7,40 @@ using System.Net;
 namespace BasisServerHandle
 {
     /// <summary>
-    /// Handles unconnected "server info" probes — the LiteNetLib UDP equivalent of a
-    /// Minecraft server-list-ping. A client sends a tiny query packet to the server's
-    /// listening port and gets back the public server name, current/max player count,
-    /// MOTD, and the original nonce so the client can measure RTT.
+    /// 未接続の "server info" probe を扱う。LiteNetLib UDP 版の
+    /// Minecraft server-list-ping に相当する。client は小さな query packet を
+    /// server の listen port に送り、公開 server name、現在/最大 player 数、MOTD、
+    /// RTT 計測用の元 nonce を受け取る。
     ///
-    /// Wire format (little-endian):
-    ///   Query:    [u32 ServerInfoQueryMagic][u16 protoVersion][u16 nonce][padding ≥ ServerInfoMinRequestBytes total]
+    /// wire format (little-endian):
+    ///   Query:    [u32 ServerInfoQueryMagic][u16 protoVersion][u16 nonce][padding: 合計 ServerInfoMinRequestBytes 以上]
     ///   Response: [u32 ServerInfoResponseMagic][u16 protoVersion][u16 nonce]
     ///             [u16 online][u16 max][string name][string motd]
     ///
-    /// DDoS protections:
-    ///   1. <b>Minimum request size</b> — undersized packets (which is what a reflection
-    ///      attacker would spoof to maximize amplification) are dropped before any work.
-    ///      Clients pad their query so the response is never larger than the request,
-    ///      so the amplification factor is &lt; 1.
-    ///   2. <b>Global token bucket</b> — caps the total responses-per-second the server
-    ///      will emit, regardless of source. Bounds the worst-case outbound bandwidth
-    ///      even if every protection above is bypassed.
-    ///   3. <b>Bounded per-IP throttle</b> — one response per IP per <see cref="MinIntervalMs"/>;
-    ///      the tracking map is capped so spoofed-IP floods can't exhaust memory.
+    /// DDoS 保護:
+    ///   1. <b>minimum request size</b>: 増幅率を最大化したい reflection attacker が
+    ///      spoof しがちな小さすぎる packet は、処理前に破棄する。
+    ///      client は query を padding し、response が request より大きくならないようにするため、
+    ///      amplification factor は &lt; 1 になる。
+    ///   2. <b>global token bucket</b>: source に関係なく、server が返す response-per-second の
+    ///      合計に上限をかける。上の保護をすべて迂回されても worst-case outbound bandwidth を抑える。
+    ///   3. <b>bounded per-IP throttle</b>: IP ごとに <see cref="MinIntervalMs"/> あたり 1 response。
+    ///      tracking map に上限を設け、spoofed-IP flood で memory を使い尽くされないようにする。
     /// </summary>
     public static class BasisServerInfoQuery
     {
-        // --- Per-IP throttle ---
-        // One response per IP per window. Doesn't help against spoofed source IPs
-        // (the global bucket below handles those), but it stops a single client from
-        // monopolizing the response budget.
+        // --- IP ごとの throttle ---
+        // window ごとに IP あたり 1 response。spoofed source IP には効かない
+        // (下の global bucket が担当) が、単一 client に response budget を独占されないようにする。
         private const int MinIntervalMs = 500;
-        // Cap memory under spoofed-IP floods. When the dict crosses this size we wipe
-        // it — a one-shot reset is rough but bounded and lock-free.
+        // spoofed-IP flood 時の memory を抑える。dict がこのサイズを超えたら消去する。
+        // 一括 reset は荒いが、上限付きで lock-free。
         private const int MaxTrackedIps = 4096;
         private static readonly ConcurrentDictionary<IPAddress, long> _lastSeen = new();
 
-        // --- Global token bucket ---
-        // Caps responses/sec across every source. With 384-byte responses at 100 rps
-        // the worst-case outbound is ~38 KB/s — small enough to ignore.
+        // --- global token bucket ---
+        // 全 source 合計の responses/sec に上限をかける。384-byte response で 100 rps なら
+        // worst-case outbound は約 38 KB/s で、無視できる程度に小さい。
         private const double GlobalRefillTokensPerSecond = 100.0;
         private const double GlobalBucketCapacity = 200.0; // burst budget
         private static readonly object _bucketLock = new();
@@ -65,9 +63,9 @@ namespace BasisServerHandle
         {
             try
             {
-                // Layer 1 — minimum request size. Drop tiny packets before anything else;
-                // they're the cheapest amplification ammo and there's no legitimate reason
-                // to send one smaller than ServerInfoMinRequestBytes.
+                // Layer 1: minimum request size。最初に小さすぎる packet を破棄する。
+                // これは最も安い amplification 材料であり、ServerInfoMinRequestBytes より
+                // 小さいものを送る正当な理由はない。
                 int totalBytes = reader.AvailableBytes;
                 if (totalBytes < BasisNetworkCommons.ServerInfoMinRequestBytes)
                 {
@@ -92,11 +90,11 @@ namespace BasisServerHandle
                 ushort nonce = reader.GetUShort();
                 reader.Recycle(true);
 
-                // Layer 2 — per-IP cooldown.
+                // Layer 2: IP ごとの cooldown。
                 if (!ShouldRespondPerIp(remoteEndPoint.Address))
                     return;
 
-                // Layer 3 — global response-rate cap.
+                // Layer 3: global response-rate cap。
                 if (!TryConsumeGlobalToken())
                     return;
 
@@ -131,10 +129,9 @@ namespace BasisServerHandle
 
         private static bool ShouldRespondPerIp(IPAddress address)
         {
-            // If a flood of unique source IPs is filling the dict, wipe it. Crude but
-            // bounded and avoids the per-eviction allocation cost of an LRU. Worst case
-            // a flushed entry forfeits its cooldown — acceptable since the global bucket
-            // is still in place.
+            // 固有 source IP の flood で dict が埋まっているなら消去する。荒いが上限付きで、
+            // LRU の eviction ごとの allocation cost を避けられる。最悪でも消された entry が
+            // cooldown を失うだけで、global bucket は引き続き効いているので許容できる。
             if (_lastSeen.Count > MaxTrackedIps)
             {
                 _lastSeen.Clear();

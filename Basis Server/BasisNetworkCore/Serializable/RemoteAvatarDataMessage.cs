@@ -11,7 +11,7 @@ public static partial class SerializableBasis
         public void Deserialize(NetDataReader Writer)
         {
             PlayerIdMessage.Deserialize(Writer);
-            // Read the messageIndex safely
+            // AvatarLinkIndex を安全に読む。
             if (!Writer.TryGetByte(out AvatarLinkIndex))
             {
                 throw new ArgumentException("Failed to read AvatarLinkIndex.");
@@ -39,11 +39,11 @@ public static partial class SerializableBasis
         public void Serialize(NetDataWriter Writer)
         {
             PlayerIdMessage.Serialize(Writer);
-            // Write the messageIndex
+            // AvatarLinkIndex を書く。
             Writer.Put(AvatarLinkIndex);
-            // Write the messageIndex
+            // messageIndex を書く。
             Writer.Put(messageIndex);
-            // Write the payload if present
+            // payload があれば書く。
             if (payload != null && payload.Length != 0)
             {
                 Writer.Put(payload);

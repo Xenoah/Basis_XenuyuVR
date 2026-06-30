@@ -27,8 +27,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         {
             msg.FromPeer = null;
             msg.Sequence = 0;
-            // Preserve msg.AvatarMessage.array so it can be reused on next Rent
-            // instead of allocating a new byte[] every deserialization.
+            // msg.AvatarMessage.array を保持し、次回 Rent 時に再利用できるようにする。
+            // deserialize ごとに新しい byte[] を allocate しないため。
             var saved = msg.AvatarMessage;
             msg.AvatarMessage = new LocalAvatarSyncMessage { array = saved.array };
 
@@ -42,7 +42,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             {
                 local.Add(msg);
             }
-            // else: drop it — GC reclaims, keeps pool bounded
+            // それ以外は drop する。GC に回収させ、pool を bounded に保つ。
         }
     }
 }

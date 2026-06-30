@@ -19,14 +19,14 @@ public class BasisTrackedBundleWrapper
     public Task BundleLoadTask;
     public static TimeSpan TimeSpan = TimeSpan.FromSeconds(BasisBeeConstants.TimeUntilMemoryRemoval);
     /// <summary>
-    /// for example this is the scene path. we can use this to see 
-    /// if this scene is unloaded so we can remove the memory.
+    /// 例として scene path を保持する。scene が unload されたかを判定し、
+    /// memory を解放するために使える。
     /// </summary>
     public string MetaLink;
-    // Method to await the completion of the bundle loading
+    // bundle loading の完了を await する method
     public async Task WaitForBundleLoadAsync()
     {
-        // Simulating the bundle loading process - this can be replaced by your actual loading logic
+        // bundle loading process の simulation。実際の loading logic に置き換えられる
         while (!IsBundleCompleteAndLoaded())
         {
             if (DidErrorOccur)
@@ -36,17 +36,17 @@ public class BasisTrackedBundleWrapper
             await Task.Yield(); // Yield to avoid blocking the main thread
         }
     }
-    // Method to check if the bundle is fully loaded
+    // bundle が完全に loaded か確認する method
     private bool IsBundleCompleteAndLoaded()
     {
-        // You can implement your actual logic to check if the bundle is loaded here
+        // bundle が loaded か確認する実際の logic はここに実装できる
         return AssetBundle != null; // Assuming AssetBundle being non-null means it's loaded
     }
 
 
-    // TODO: Bug in here
-    // when loading in multiple same scenes and unloading one of them
-    // it will remove other duplicate scenes?
+    // TODO: ここに bug がある
+    // 同じ scene を複数 load して、そのうち 1 つを unload したとき
+    // 他の duplicate scene も削除してしまう可能性がある?
     public async Task<bool> UnloadIfReady()
     {
         #if !UNITY_SERVER

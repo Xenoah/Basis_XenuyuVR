@@ -5,15 +5,15 @@ using UnityEngine;
 namespace Basis.Network.Vehicles
 {
     /// <summary>
-    /// Adds ABSOLUTE wheel angles after the base 22 bytes, plus:
-    /// - tick (ushort) : monotonically increasing sender tick
+    /// base 22 bytes の後ろに ABSOLUTE wheel angle を追加し、さらに以下を載せる:
+    /// - tick (ushort) : 単調増加する sender tick
     /// - engineRevs01 (0..1)
-    /// - steerRatio (-1..1) for steering wheel visuals
-    /// Wheels are bitpacked, minimal size, no deltas.
+    /// - steerRatio (-1..1): steering wheel visual 用
+    /// wheel は bitpack され、minimal size で delta は持たない。
     /// </summary>
     public static class BasisVehicleWheelNetCodec
     {
-        // ---------------- Bit packers ----------------
+        // ---------------- bit packer ----------------
         private struct BitWriter
         {
             public byte[] Buffer;
@@ -73,7 +73,7 @@ namespace Basis.Network.Vehicles
             }
         }
 
-        // ---------------- Size math ----------------
+        // ---------------- size 計算 ----------------
         public static int ExtraBytes(int wheelCount, int steerCount, int spinBits, int steerBits, int engineBits, int steerRatioBits)
         {
             int spinTotalBits = Mathf.Max(0, wheelCount) * Mathf.Clamp(spinBits, 1, 16);
@@ -87,7 +87,7 @@ namespace Basis.Network.Vehicles
             return bitBytes;
         }
 
-        // ---------------- Quantization ----------------
+        // ---------------- 量子化 ----------------
         private static uint QuantizeAngle360(float deg, int bits)
         {
             deg %= 360f;
@@ -146,7 +146,7 @@ namespace Basis.Network.Vehicles
             return t * 2f - 1f;
         }
 
-        // ---------------- Public API ----------------
+        // ---------------- public API ----------------
         public static byte[] WritePacketWithWheels(
             Vector3 pos, Quaternion rot, Vector3 scale,
             float[] wheelSpinDeg, float[] steerDeg,
@@ -255,7 +255,7 @@ namespace Basis.Network.Vehicles
             steerRatio = DequantizeSigned01(br.ReadBits(steerRatioBits), steerRatioBits);
         }
 
-        // ---------------- Local endian float helpers ----------------
+        // ---------------- local endian float helper ----------------
         private static uint FloatToU32(float v)
         {
             var b = BitConverter.GetBytes(v);

@@ -9,18 +9,18 @@ namespace BasisNetworkConsole
     public static class BasisConsoleCommands
     {
         public static Dictionary<string, Command> commands = new Dictionary<string, Command>();
-        // Registering commands
+        // command を登録する。
         public static void RegisterCommand(string commandName, string Description, Action<string[]> handler)
         {
             commands[commandName.ToLower()] = new Command { Name = commandName, Description = Description, Handler = handler };
         }
-        // Register commands for each configuration field
+        // configuration field ごとの command を登録する。
         public static void RegisterConfigurationCommands(Configuration config)
         {
             var fields = typeof(Configuration).GetFields(BindingFlags.Public | BindingFlags.Instance);
             foreach (var field in fields)
             {
-                // Register the command for each field
+                // 各 field 用の command を登録する。
                 string commandName = $"/config {field.Name.ToLower()}";
                 RegisterCommand(commandName, string.Empty, (args) => HandleConfigField(args, field, config));
             }
@@ -29,16 +29,16 @@ namespace BasisNetworkConsole
         {
             if (args.Length == 0)
             {
-                // Display the current value
+                // 現在値を表示する。
                 BNL.Log($"{field.Name}: {field.GetValue(config)}");
             }
             else if (args.Length == 1)
             {
-                // Try to set the value
+                // 値の設定を試みる。
                 string newValue = args[0];
                 bool success = false;
 
-                // Handle different types of fields
+                // field type ごとに処理する。
                 if (field.FieldType == typeof(int))
                 {
                     if (int.TryParse(newValue, out int intValue))
@@ -94,7 +94,7 @@ namespace BasisNetworkConsole
         private static Thread? consoleThread;
         public static void RegisterPermissionCommands()
         {
-            // Root help
+            // root help
             RegisterCommand("/perm", "Permission system commands. Type /perm help", HandlePermRoot);
             RegisterCommand("/perm help", "Shows permission command help", HandlePermHelp);
 
@@ -108,7 +108,7 @@ namespace BasisNetworkConsole
             RegisterCommand("/perm reload", "Save then load (current path)", HandlePermReload);
             RegisterCommand("/perm defaults", "Ensures default groups exist", HandlePermDefaults);
 
-            // Users
+            // users
             RegisterCommand("/perm user list", "Lists all users", HandlePermUserList);
             RegisterCommand("/perm user create", "Creates user. Usage: /perm user create <uuid>", HandlePermUserCreate);
             RegisterCommand("/perm user info", "Shows user raw nodes/groups. Usage: /perm user info <uuid>", HandlePermUserInfo);
@@ -118,7 +118,7 @@ namespace BasisNetworkConsole
             RegisterCommand("/perm user group remove", "Removes user from group. Usage: /perm user group remove <uuid> <group>", HandlePermUserGroupRemove);
             RegisterCommand("/perm user effective", "Shows effective allow/deny rules. Usage: /perm user effective <uuid>", HandlePermUserEffective);
 
-            // Groups
+            // groups
             RegisterCommand("/perm group list", "Lists all groups", HandlePermGroupList);
             RegisterCommand("/perm group create", "Creates group. Usage: /perm group create <name>", HandlePermGroupCreate);
             RegisterCommand("/perm group info", "Shows group nodes/parents. Usage: /perm group info <name>", HandlePermGroupInfo);
@@ -127,10 +127,10 @@ namespace BasisNetworkConsole
             RegisterCommand("/perm group parent add", "Adds parent. Usage: /perm group parent add <group> <parent>", HandlePermGroupParentAdd);
             RegisterCommand("/perm group parent remove", "Removes parent. Usage: /perm group parent remove <group> <parent>", HandlePermGroupParentRemove);
 
-            // Checks
+            // checks
             RegisterCommand("/perm check", "Checks a node. Usage: /perm check <uuid> <node>", HandlePermCheck);
 
-            // Quality-of-life aliases
+            // 使いやすさのための alias
             RegisterCommand("/perm u", "Alias: /perm user ...", HandlePermHelp);
             RegisterCommand("/perm g", "Alias: /perm group ...", HandlePermHelp);
         }
@@ -189,7 +189,7 @@ namespace BasisNetworkConsole
                 return;
             }
 
-            string path = string.Join(' ', args).Trim(); // allow spaces
+            string path = string.Join(' ', args).Trim(); // space を含む path を許可する。
             PM.SetXmlPath(path);
             BNL.Log($"Set permissions.xml path to: {PM.GetXmlPath()}");
         }
@@ -246,7 +246,7 @@ namespace BasisNetworkConsole
             BNL.Log("Ensured default permission groups.");
         }
 
-        // -------- Users --------
+        // -------- users --------
 
         private static void HandlePermUserList(string[] args)
         {
@@ -305,7 +305,7 @@ namespace BasisNetworkConsole
             }
 
             string uuid = args[0].Trim();
-            string node = string.Join(' ', args.Skip(1)).Trim(); // allow weird node strings
+            string node = string.Join(' ', args.Skip(1)).Trim(); // 変則的な node string も許可する。
             PM.AddUserNode(uuid, node);
             BNL.Log($"Added user node: {uuid} -> {node}");
         }
@@ -370,7 +370,7 @@ namespace BasisNetworkConsole
             BNL.Log($"Denied ({denied.Length}): {(denied.Length == 0 ? "(none)" : string.Join(", ", denied))}");
         }
 
-        // -------- Groups --------
+        // -------- groups --------
 
         private static void HandlePermGroupList(string[] args)
         {
@@ -476,7 +476,7 @@ namespace BasisNetworkConsole
             BNL.Log($"Removed parent: {group} -> {parent}");
         }
 
-        // -------- Checks --------
+        // -------- checks --------
 
         private static void HandlePermCheck(string[] args)
         {
@@ -504,7 +504,7 @@ namespace BasisNetworkConsole
                     string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     bool matched = false;
 
-                    // Try to match the longest possible command
+                    // 可能な限り長い command との一致を試みる。
                     for (int i = parts.Length; i > 0; i--)
                     {
                         string potentialCommand = string.Join(' ', parts.Take(i)).ToLower();
@@ -549,16 +549,16 @@ namespace BasisNetworkConsole
         }
         public static void HandleStatus(string[] args)
         {
-            // Example of showing server status
+            // server status 表示の例。
             BNL.Log("Server is running and healthy.");
-            // You can add more status details here as needed
+            // 必要に応じて、ここに status detail を追加できる。
         }
 
         public static void HandleShutdown(string[] args)
         {
             BNL.Log("Shutting down the server...");
-            Program.isRunning = false;  // Gracefully stop the server
-            Environment.Exit(0); // Exit the application
+            Program.isRunning = false;  // server を graceful に停止する。
+            Environment.Exit(0); // application を終了する。
         }
 
         public static void HandleHelp(string[] args)
@@ -581,7 +581,7 @@ namespace BasisNetworkConsole
         {
             BNL.ClearConsole();
         }
-        // Command class to store command info
+        // command 情報を保持する class。
         public class Command
         {
             public required string Name { get; set; }

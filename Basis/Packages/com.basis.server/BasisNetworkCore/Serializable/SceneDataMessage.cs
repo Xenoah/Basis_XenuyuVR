@@ -8,22 +8,22 @@ public static partial class SerializableBasis
         public ushort messageIndex;
         public ushort recipientsSize;
         /// <summary>
-        /// If null, it's for everyone. Otherwise, send only to the listed entries.
+        /// null の場合は全員宛て。そうでなければ listed entry のみに送る。
         /// </summary>
         public ushort[] recipients;
         public byte[] payload;
 
         public void Deserialize(NetDataReader Writer)
         {
-            // Read the messageIndex safely
+            // messageIndex を安全に読む。
             if (!Writer.TryGetUShort(out messageIndex))
             {
                 throw new ArgumentException("Failed to read messageIndex.");
             }
-            // Read the recipientsSize safely
+            // recipientsSize を安全に読む。
             if (Writer.TryGetUShort(out recipientsSize))
             {
-                // Guard against negative or absurd sizes
+                // 負値相当や異常な size を防ぐ。
                 if (recipientsSize > Writer.AvailableBytes / sizeof(ushort))
                 {
                     throw new ArgumentException($"Invalid recipientsSize: {recipientsSize}");
@@ -40,7 +40,7 @@ public static partial class SerializableBasis
                     }
                 }
 
-                // Read remaining bytes as payload
+                // 残り byte を payload として読む。
                 if (Writer.AvailableBytes > 0)
                 {
                     if (payload != null && payload.Length == Writer.AvailableBytes)
@@ -62,10 +62,10 @@ public static partial class SerializableBasis
 
         public void Serialize(NetDataWriter Writer)
         {
-            // Write the messageIndex
+            // messageIndex を書く。
             Writer.Put(messageIndex);
 
-            // Determine and write the recipientsSize
+            // recipientsSize を決めて書く。
             if (recipients == null || recipients.Length == 0)
             {
                 recipientsSize = 0;
@@ -76,7 +76,7 @@ public static partial class SerializableBasis
             }
             Writer.Put(recipientsSize);
 
-            // Write the recipients array if present
+            // recipients array があれば書く。
             if (recipients != null && recipients.Length > 0)
             {
                 for (int index = 0; index < recipientsSize; index++)
@@ -85,7 +85,7 @@ public static partial class SerializableBasis
                 }
             }
 
-            // Write the payload if present
+            // payload があれば書く。
             if (payload != null && payload.Length > 0)
             {
                 Writer.Put(payload);

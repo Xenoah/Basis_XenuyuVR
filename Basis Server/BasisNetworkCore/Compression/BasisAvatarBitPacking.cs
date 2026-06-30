@@ -9,22 +9,21 @@ namespace Basis.Network.Core.Compression
         public const int WritePosition = 12;
         public const int WriteScale = 2;
         public const int WriteRotation = 7;
-        // Hips local-position delta vs TPose, sent so seated/IK-driven hips poses
-        // reach remotes (3 ushorts at fixed range, see HipsDeltaRange below).
+        // TPose からの Hips ローカル位置差分。座り姿勢や IK 駆動の Hips 姿勢を
+        // リモートへ届けるために送る (固定範囲の ushort x3。下の HipsDeltaRange を参照)。
         public const int WriteHipsDelta = 6;
-        // Hips local-rotation delta vs TPose. Hips is excluded from the bone
-        // packet (BONE_WRITE_ORDER), so without this slot the remote hips would
-        // sit at calibration rotation forever. 7 bytes = same smallest-three
-        // encoding used for the root rotation.
+        // TPose からの Hips ローカル回転差分。Hips はボーンパケット
+        // (BONE_WRITE_ORDER) から除外されるため、このスロットがないと
+        // リモート側の Hips がキャリブレーション回転のままになる。
+        // 7 bytes = ルート回転と同じ smallest-three エンコード。
         public const int WriteHipsRotation = 7;
-        // Per-axis ±1m envelope. With ushort precision this is ≈30 µm/axis,
-        // far below visual jitter and large enough to cover squat/seated
-        // overrides without clipping.
+        // 軸ごとに +/-1m の範囲。ushort 精度では約 30 um/axis で、
+        // 視覚的な揺れより十分細かく、しゃがみ/着席の上書きもクリップせず収まる。
         public const float HipsDeltaRange = 1f;
 
         public const int TailBytes = WriteScale + WriteRotation + WriteHipsDelta + WriteHipsRotation; // 22
 
-        // Expanded ladder (anchors preserved: Low/Medium/High)
+        // 品質段階を拡張 (Low/Medium/High の基準は維持)
         public enum BitQuality : byte
         {
             VeryLow = 0,
@@ -43,18 +42,18 @@ namespace Basis.Network.Core.Compression
             _ => BITS_PER_SLOT_MEDIUM
         };
         /// <summary>
-        /// Returns the byte count for the bone rotation bitstream at the given quality.
-        /// Named MuscleBytes for backward compatibility with server code.
+        /// 指定品質におけるボーン回転ビットストリームのバイト数を返す。
+        /// サーバーコードとの後方互換のため MuscleBytes という名前を維持する。
         /// </summary>
         public static int MuscleBytes(BitQuality q) => BasisBoneRotationCompression.RotationBytes(q);
 
         public static int ConvertToSize(BitQuality q)
         {
-            // Position (12) + BoneRotations (variable) + Posit16 Scale (2) + Rotation (7) + hips tail.
+            // Position (12) + BoneRotations (可変) + Posit16 Scale (2) + Rotation (7) + Hips 末尾部。
             return BasisBoneRotationCompression.ConvertToSize(q);
         }
         // --------------------------
-        // Internal helpers
+        // 内部ヘルパー
         // --------------------------
         private static int SumBitsPerSlotBytes(byte[] bitsPerSlot)
         {
@@ -65,7 +64,7 @@ namespace Basis.Network.Core.Compression
             return (totalBits + 7) >> 3;
         }
         // --------------------------
-        // slot -> muscle index (unchanged)
+        // slot から muscle index への対応 (未変更)
         // --------------------------
         public static readonly int[] WRITE_ORDER = new int[]
         {
@@ -79,43 +78,43 @@ namespace Basis.Network.Core.Compression
         };
         public static readonly byte[] BITS_PER_SLOT_HIGH = new byte[]
 {
-            // Spine/Chest/Head
+            // 脊柱/胸/頭
             17,17,17,
             17,17,17,
             16,16,16,
             17,17,17,
             17,17,17,
 
-            // Left Leg
+            // 左脚
             17,17,17,
             17,18,17,
             15,15,
 
-            // Right Leg
+            // 右脚
             17,17,17,
             17,18,17,
             15,15,
 
-            // Left Arm
+            // 左腕
             14,14,
             18,18,18,
             17,18,
             17,16,
 
-            // Right Arm
+            // 右腕
             14,14,
             18,18,18,
             17,18,
             17,16,
 
-            // Left Hand Fingers (49..68 -> muscles 55..74)
+            // 左手の指 (49..68 -> muscles 55..74)
             8,13,8,8,
             8,13,8,8,
             8,13,8,8,
             8,13,8,8,
             8,13,8,8,
 
-            // Right Hand Fingers (69..88 -> muscles 75..94)
+            // 右手の指 (69..88 -> muscles 75..94)
             8,13,8,8,
             8,13,8,8,
             8,13,8,8,
@@ -123,47 +122,47 @@ namespace Basis.Network.Core.Compression
             8,13,8,8,
 };
         // ---------------------------------------------------------------------
-        // Anchors (YOUR EXISTING TABLES): keep exactly as authored.
+        // 基準値 (既存テーブル): 元の値を正確に維持する。
         // ---------------------------------------------------------------------
         public static readonly byte[] BITS_PER_SLOT_MEDIUM = new byte[]
         {
-            // Spine/Chest/Head (0..14)
+            // 脊柱/胸/頭 (0..14)
             15,15,15,
             15,15,15,
             14,14,14,
             15,15,15,
             15,15,15,
 
-            // Left Leg (15..22 -> muscles 21..28)
+            // 左脚 (15..22 -> muscles 21..28)
             15,15,15,
             15,16,15,
             13,8,
 
-            // Right Leg (23..30 -> muscles 29..36)
+            // 右脚 (23..30 -> muscles 29..36)
             15,15,15,
             15,16,15,
             13,8,
 
-            // Left Arm (31..39 -> muscles 37..45)
+            // 左腕 (31..39 -> muscles 37..45)
             12,12,
             16,16,16,
             15,16,
             15,14,
 
-            // Right Arm (40..48 -> muscles 46..54)
+            // 右腕 (40..48 -> muscles 46..54)
             12,12,
             16,16,16,
             15,16,
             15,14,
 
-            // Left Hand Fingers (49..68 -> muscles 55..74)
+            // 左手の指 (49..68 -> muscles 55..74)
             8,12,8,8,
             8,11,8,8,
             8,10,8,8,
             8,10,8,8,
             8,11,8,8,
 
-            // Right Hand Fingers (69..88 -> muscles 75..94)
+            // 右手の指 (69..88 -> muscles 75..94)
             8,12,8,8,
             8,11,8,8,
             8,10,8,8,
@@ -173,43 +172,43 @@ namespace Basis.Network.Core.Compression
 
         public static readonly byte[] BITS_PER_SLOT_LOW = new byte[]
         {
-            // Spine/Chest/Head
+            // 脊柱/胸/頭
             12,12,12,
             12,12,12,
             11,11,11,
             12,12,12,
             12,12,12,
 
-            // Left Leg
+            // 左脚
             12,12,12,
             12,12,11,
             10,11,
 
-            // Right Leg
+            // 右脚
             12,12,12,
             12,12,11,
             10,11,
 
-            // Left Arm
+            // 左腕
             9,9,
             12,12,12,
             11,12,
             11,10,
 
-            // Right Arm
+            // 右腕
             9,9,
             12,12,12,
             11,12,
             11,10,
 
-            // Left Hand Fingers (49..68 -> muscles 55..74)
+            // 左手の指 (49..68 -> muscles 55..74)
             8,9,8,8,
             8,9,8,8,
             8,9,8,8,
             8,9,8,8,
             8,9,8,8,
 
-            // Right Hand Fingers (69..88 -> muscles 75..94)
+            // 右手の指 (69..88 -> muscles 75..94)
             8,9,8,8,
             8,9,8,8,
             8,9,8,8,
@@ -218,43 +217,43 @@ namespace Basis.Network.Core.Compression
         };
         public static readonly byte[] BITS_PER_SLOT_VERY_LOW = new byte[]
         {
-    // Spine / Chest / Head (0..14)
+    // 脊柱 / 胸 / 頭 (0..14)
     9,10,9,
     9,10,9,
     9,10,9,
     9,10,9,
     9,10,9,
 
-    // Left Leg (15..22)
+    // 左脚 (15..22)
     9,9,9,
     9,10,9,
     9,10,
 
-    // Right Leg (23..30)
+    // 右脚 (23..30)
     9,9,9,
     9,10,9,
     9,10,
 
-    // Left Arm (31..39)
+    // 左腕 (31..39)
     9,9,
     9,9,9,
     9,9,
     9,9,
 
-    // Right Arm (40..48)
+    // 右腕 (40..48)
     9,9,
     9,9,9,
     9,9,
     9,9,
 
-// Left Hand Fingers (49..68)
+// 左手の指 (49..68)
 8,8,8,8,
 8,8,8,8,
 8,8,8,8,
 8,8,8,8,
 8,8,8,8,
 
-// Right Hand Fingers (69..88)
+// 右手の指 (69..88)
 8,8,8,8,
 8,8,8,8,
 8,8,8,8,

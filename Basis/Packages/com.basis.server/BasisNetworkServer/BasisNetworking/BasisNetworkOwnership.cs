@@ -8,7 +8,7 @@ namespace Basis.Network.Server.Ownership
 {
     public static class BasisNetworkOwnership
     {
-        // A dictionary for easy lookup by object ID (Object unique string ID -> Ownership ID)
+        // object ID で簡単に lookup するための dictionary (Object unique string ID -> Ownership ID)。
         public static ConcurrentDictionary<string, ushort> ownershipByObjectId = new ConcurrentDictionary<string, ushort>();
 
         public static readonly object LockObject = new object();  // For synchronized multi-step operations
@@ -31,9 +31,9 @@ namespace Basis.Network.Server.Ownership
             OwnershipTransferMessage ownershipTransferMessage = new OwnershipTransferMessage();
             ownershipTransferMessage.Deserialize(Reader);
             Reader.Recycle();
-            //if we are not aware of this ownershipID lets only give back to that client that its been assigned to them
-            //the goal here is to make it so ownership understanding has to be requested.
-            //once a ownership has been requested there good for life or when a ownership switch happens.
+            // この ownershipID をまだ把握していない場合は、割り当てられた client にだけ返す。
+            // ownership の理解は request されたときだけ成立するようにするのが目的。
+            // ownership が一度 request されれば、ownership switch が起きるまでは有効。
             NetworkRequestNewOrExisting(ownershipTransferMessage, (ushort)Peer.Id, out ushort currentOwner);
             NetDataWriter Writer = NetworkServer.RentWriter();
             ownershipTransferMessage.playerIdMessage.playerID = currentOwner;
@@ -43,8 +43,8 @@ namespace Basis.Network.Server.Ownership
             NetworkServer.ReturnWriter(Writer);
         }
         /// <summary>
-        /// this api removes a owner from the object,
-        /// example dropping a pickup tells the server that no one owns it anymore.
+        /// この API は object から owner を remove する。
+        /// 例: pickup を drop すると、もう誰も owner ではないことを server に伝える。
         /// </summary>
         /// <param name="Reader"></param>
         /// <param name="Peer"></param>
@@ -83,7 +83,7 @@ namespace Basis.Network.Server.Ownership
             }
         }
         /// <summary>
-        /// Handles the ownership transfer for all clients with proper error handling.
+        /// proper error handling 付きで、全 client 向けの ownership transfer を処理する。
         /// </summary>
         public static void OwnershipTransfer(NetPacketReader Reader, NetPeer Peer)
         {
@@ -93,7 +93,7 @@ namespace Basis.Network.Server.Ownership
 
             ushort ClientId = (ushort)Peer.Id;
             NetDataWriter Writer = NetworkServer.RentWriter();
-            //all clients need to know about a ownership switch
+            // 全 client が ownership switch を知る必要がある。
             if (SwitchOwnership(ownershipTransferMessage.ownershipID, ClientId))
             {
                 ownershipTransferMessage.playerIdMessage.playerID = ClientId;
@@ -104,9 +104,9 @@ namespace Basis.Network.Server.Ownership
             }
             else
             {
-                //if we are not aware of this ownershipID lets only give back to that client that its been assigned to them
-                //the goal here is to make it so ownership understanding has to be requested.
-                //once a ownership has been requested there good for life or when a ownership switch happens.
+                // この ownershipID をまだ把握していない場合は、割り当てられた client にだけ返す。
+                // ownership の理解は request されたときだけ成立するようにするのが目的。
+                // ownership が一度 request されれば、ownership switch が起きるまでは有効。
                 NetworkRequestNewOrExisting(ownershipTransferMessage, ClientId, out ushort currentOwner);
                 ownershipTransferMessage.playerIdMessage.playerID = currentOwner;
                 ownershipTransferMessage.Serialize(Writer);
@@ -115,13 +115,13 @@ namespace Basis.Network.Server.Ownership
             NetworkServer.ReturnWriter(Writer);
         }
         /// <summary>
-        /// Requests either new or existing ownership with thread safety and rollback.
+        /// new または existing ownership を、thread safety と rollback 付きで request する。
         /// </summary>
         public static bool NetworkRequestNewOrExisting(OwnershipTransferMessage ownershipInitializeMessage, ushort requesterId, out ushort ownershipInfo)
         {
             if (GetOwnershipInformation(ownershipInitializeMessage.ownershipID, out ownershipInfo))
             {
-                // Ownership already exists, no need to add
+                // ownership はすでに存在するため、追加不要。
                 return false;
             }
             else
@@ -139,7 +139,7 @@ namespace Basis.Network.Server.Ownership
             return true;
         }
         /// <summary>
-        /// Adds an object with ownership information to the database in a thread-safe manner.
+        /// ownership information 付き object を thread-safe に database へ追加する。
         /// </summary>
         public static bool AddOwnership(string objectId, ushort ownerId)
         {
@@ -155,7 +155,7 @@ namespace Basis.Network.Server.Ownership
             }
         }
         /// <summary>
-        /// Removes an object and its ownership information from the database in a thread-safe and consistent manner.
+        /// object とその ownership information を thread-safe かつ consistent に database から削除する。
         /// </summary>
         public static bool RemoveObject(string objectId)
         {
@@ -174,7 +174,7 @@ namespace Basis.Network.Server.Ownership
             }
         }
         /// <summary>
-        /// Switches the ownership of an object in a thread-safe manner.
+        /// object の ownership を thread-safe に切り替える。
         /// </summary>
         public static bool SwitchOwnership(string objectId, ushort newOwnerId)
         {
@@ -182,7 +182,7 @@ namespace Basis.Network.Server.Ownership
             {
                 if (ownershipByObjectId.TryGetValue(objectId, out ushort currentOwnerId))
                 {
-                    // Update ownership only if the current owner matches
+                    // current owner が一致する場合だけ ownership を update する。
                     if (ownershipByObjectId.TryUpdate(objectId, newOwnerId, currentOwnerId))
                     {
                         BNL.Log($"Ownership of object {objectId} switched from {currentOwnerId} to {newOwnerId}.");
@@ -201,14 +201,14 @@ namespace Basis.Network.Server.Ownership
             }
         }
         /// <summary>
-        /// Checks if an object exists in the database.
+        /// object が database に存在するか確認する。
         /// </summary>
         public static bool DoesObjectExistInDatabase(string objectId)
         {
             return ownershipByObjectId.ContainsKey(objectId); // Thread-safe lookup without extra locking
         }
         /// <summary>
-        /// Retrieves ownership information for a specific object ID in a thread-safe manner.
+        /// specific object ID の ownership information を thread-safe に取得する。
         /// </summary>
         public static bool GetOwnershipInformation(string objectId, out ushort ownershipInfo)
         {
@@ -221,7 +221,7 @@ namespace Basis.Network.Server.Ownership
             return false;
         }
         /// <summary>
-        /// Prints current ownership database for debugging purposes with thread safety.
+        /// debugging 用に current ownership database を thread-safe に出力する。
         /// </summary>
         public static void PrintOwnershipDatabase()
         {
@@ -236,7 +236,7 @@ namespace Basis.Network.Server.Ownership
             }
         }
         /// <summary>
-        /// Removes all ownership of a specific player and notifies all clients.
+        /// specific player の ownership をすべて削除し、全 client へ通知する。
         /// </summary>
         public static void RemovePlayerOwnership(int playerId)
         {
@@ -244,7 +244,7 @@ namespace Basis.Network.Server.Ownership
             {
                 List<string> objectsToRemove = new List<string>();
 
-                // Collect all object IDs owned by the player
+                // player が owner の object ID をすべて集める。
                 foreach (KeyValuePair<string, ushort> entry in ownershipByObjectId)
                 {
                     if (entry.Value == playerId)

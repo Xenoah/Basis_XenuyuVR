@@ -20,7 +20,7 @@ public static class BasisNetworkResourceManagement
 
             if (!llr.Persist)
             {
-                // Prepare and send the unload resource message
+                // unload resource message を準備して送る。
                 UnLoadResource unloadResource = new UnLoadResource
                 {
                     Mode = llr.Mode,
@@ -37,7 +37,7 @@ public static class BasisNetworkResourceManagement
                 );
                 NetworkServer.ReturnWriter(writer);
 
-                // Remove the non-persistent resource from the database
+                // non-persistent resource を database から削除する。
                 UshortNetworkDatabase.Remove(llr.LoadedNetID,out LocalLoadResource Resource);
             }
         }
@@ -83,21 +83,20 @@ public static class BasisNetworkResourceManagement
                 Writer.Reset();
                 LocalLoadResource LLR = Resource[Index];
 
-                // For synchronized resources (LoadStrategy == 2), check if the session
-                // is still active. If it already completed, send as immediate (0) so
-                // the late joiner spawns right away instead of waiting for a spawn
-                // signal that will never come. If still active, add the late joiner
-                // to the session so they participate in the synchronized load.
+                // synchronized resource (LoadStrategy == 2) では、session がまだ active か確認する。
+                // すでに完了済みなら immediate (0) として送信し、late joiner が存在しない spawn signal を
+                // 待たずにすぐ spawn できるようにする。まだ active なら late joiner を session に追加し、
+                // synchronized load に参加させる。
                 if (LLR.LoadStrategy == 2)
                 {
                     if (BasisNetworkPreloadResourceManagement.ActiveSessions.TryGetValue(LLR.LoadedNetID, out var session))
                     {
-                        // Session still in progress - add late joiner to peer count
+                        // session は進行中。late joiner を peer count に追加する。
                         session.TotalPeerCount++;
                     }
                     else
                     {
-                        // Session already completed - send as immediate load
+                        // session は完了済み。immediate load として送る。
                         LLR.LoadStrategy = 0;
                     }
                 }
@@ -108,9 +107,9 @@ public static class BasisNetworkResourceManagement
             NetworkServer.ReturnWriter(Writer);
         }
     }
-    // Predownload broadcast: tell every connected client to cache the bundle to disc now.
-    // Deliberately NOT added to UshortNetworkDatabase - it is not a loaded resource, so it is
-    // never replayed to late joiners by SendOutAllResources and never spawns anything.
+    // predownload broadcast: connected client 全員に、今 bundle を disc cache するよう伝える。
+    // UshortNetworkDatabase には意図的に追加しない。loaded resource ではないため、
+    // SendOutAllResources によって late joiner へ replay されず、何も spawn しない。
     public static void PredownloadResource(LocalLoadResource LocalLoadResource)
     {
         NetDataWriter Writer = NetworkServer.RentWriter();
@@ -141,9 +140,9 @@ public static class BasisNetworkResourceManagement
             BNL.LogError("Already have Object Loaded With " + LocalLoadResource.LoadedNetID);
         }
     }
-    // Server-authoritative path — skips IsAdminLocked peer check because the caller
-    // (REST API, etc.) is already authenticated at a higher level than any game peer.
-    // Returns false if the resource was not found (TryRemove failed atomically).
+    // server-authoritative path。caller (REST API など) は game peer より高い level で
+    // すでに authenticated なので、IsAdminLocked peer check を skip する。
+    // resource が見つからない場合 (TryRemove が atomic に fail) は false を返す。
     public static bool UnloadResource(UnLoadResource unLoadResource)
     {
         if (!UshortNetworkDatabase.TryRemove(unLoadResource.LoadedNetID, out _))
@@ -168,13 +167,13 @@ public static class BasisNetworkResourceManagement
             return;
         }
 
-        // Admin lock validation
+        // admin lock validation。
         if (resource.IsAdminLocked && !PermissionIntegration.HasValidRequirement(peer, PermNodes.protection))
         {
             return;
         }
 
-        // Only remove AFTER validation
+        // validation 後にだけ remove する。
         if (!UshortNetworkDatabase.TryRemove(unLoadResource.LoadedNetID, out _))
         {
             BNL.LogError($"Failed to remove object [{unLoadResource.LoadedNetID}] after validation.");
@@ -196,10 +195,10 @@ public static class BasisNetworkResourceManagement
     }
 
     /// <summary>
-    /// Toggle the server-authoritative "Static" flag on an already-spawned resource.
-    /// Only the item's creator or a moderator (protection permission) may change it.
-    /// On success the new state is stored and rebroadcast to every client (and replayed
-    /// to late joiners via <see cref="SendOutAllResources"/>, which serializes the whole record).
+    /// already-spawned resource の server-authoritative な "Static" flag を toggle する。
+    /// item creator または moderator (protection permission) だけが変更できる。
+    /// 成功時は新しい state を保存し、すべての client へ rebroadcast する
+    /// (record 全体を serialize する <see cref="SendOutAllResources"/> 経由で late joiner にも replay される)。
     /// </summary>
     public static void SetStatic(ModifyResource modifyResource, NetPeer peer)
     {
@@ -209,13 +208,13 @@ public static class BasisNetworkResourceManagement
             return;
         }
 
-        // Admin-lock implies frozen — a request can't ask for "admin-locked but movable".
+        // admin-lock は frozen を含意する。"admin-locked but movable" は request できない。
         bool targetAdminLocked = modifyResource.StaticAdminLocked;
         bool targetStatic = modifyResource.Static || targetAdminLocked;
 
-        // Authorize. Any transition that touches the admin tier (entering OR leaving it) requires a
-        // moderator — the item's creator can't set or clear an admin lock. Plain static toggles
-        // (the non-admin tier) also allow the creator.
+        // authorize。admin tier に触れる transition (入る/出る) には moderator が必要。
+        // item creator は admin lock を set/clear できない。plain static toggle
+        // (non-admin tier) では creator も許可する。
         bool involvesAdminTier = resource.StaticAdminLocked || targetAdminLocked;
         bool isModerator = PermissionIntegration.HasValidRequirement(peer, PermNodes.protection);
         bool isCreator = NetworkServer.AuthIdentity.NetIDToUUID(peer, out string requesterUuid)
@@ -227,18 +226,18 @@ public static class BasisNetworkResourceManagement
             return;
         }
 
-        // No-op if nothing changes, to avoid spamming the network.
+        // 何も変わらない場合は no-op にし、network spam を避ける。
         if (resource.Static == targetStatic && resource.StaticAdminLocked == targetAdminLocked)
         {
             return;
         }
 
-        // LocalLoadResource is a value type, so mutate a copy and write it back.
+        // LocalLoadResource は value type なので、copy を mutate して書き戻す。
         resource.Static = targetStatic;
         resource.StaticAdminLocked = targetAdminLocked;
         UshortNetworkDatabase[modifyResource.LoadedNetID] = resource;
 
-        // Normalize the broadcast so every client agrees on the resolved state + routing.
+        // 全 client が resolved state + routing で一致するよう、broadcast を normalize する。
         modifyResource.Static = targetStatic;
         modifyResource.StaticAdminLocked = targetAdminLocked;
         modifyResource.Mode = resource.Mode;

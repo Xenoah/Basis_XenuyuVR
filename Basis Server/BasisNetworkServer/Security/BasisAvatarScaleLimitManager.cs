@@ -5,10 +5,10 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Server-defined minimum/maximum avatar eye height (in metres) a non-admin player may scale to.
-    /// Seeded from Configuration at boot and pushed to clients via GlobalGetAvatarScaleLimits so they
-    /// clamp their avatar scale to it. Admins (basis.moderation.globallock) bypass the clamp client-side.
-    /// Admins can change the range live; the new values are persisted to config.xml and broadcast.
+    /// non-admin player が scale できる avatar eye height の server-defined minimum/maximum (metres)。
+    /// boot 時に Configuration から seed され、GlobalGetAvatarScaleLimits 経由で client へ push されるため、
+    /// client は avatar scale をこの範囲へ clamp する。admin (basis.moderation.globallock) は client-side clamp を bypass する。
+    /// admin は range を live 変更でき、新しい値は config.xml へ persist されて broadcast される。
     /// </summary>
     public static class BasisAvatarScaleLimitManager
     {
@@ -28,7 +28,7 @@ namespace BasisNetworkServer.Security
             SetLimits(config.MinAvatarEyeHeightMeters, config.MaxAvatarEyeHeightMeters);
         }
 
-        /// <summary>Sanitize, order (min &lt;= max), set, and report whether either bound actually changed.</summary>
+        /// <summary>sanitize し、min &lt;= max になるよう order して set し、どちらかの bound が実際に変わったかを返す。</summary>
         public static bool SetLimits(float minMeters, float maxMeters)
         {
             Sanitize(ref minMeters, ref maxMeters);

@@ -18,7 +18,7 @@ namespace BasisNetworkCore.Pooling
                     return queue.Dequeue();
                 }
 
-                // If not available, create a new array
+                // 利用できなければ新しい配列を作成する
                 return new byte[size];
             }
         }
@@ -39,7 +39,7 @@ namespace BasisNetworkCore.Pooling
             }
         }
 
-        // Optional: Clear all pooled arrays
+        // 任意: pool 済み配列をすべて clear する
         public static void Clear()
         {
             lock (_lock)

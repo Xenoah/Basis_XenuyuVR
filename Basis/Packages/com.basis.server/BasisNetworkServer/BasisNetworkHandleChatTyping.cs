@@ -3,13 +3,13 @@ using Basis.Network.Core;
 namespace BasisNetworkServer
 {
     /// <summary>
-    /// Server-side router for transient player chat typing state.
+    /// 一時的な player chat typing state 用の server-side router。
     /// </summary>
     public static class BasisNetworkHandleChatTyping
     {
         /// <summary>
-        /// Wire format (in): [byte eventType][bool isTyping]
-        /// Wire format (out): [byte eventType][ushort senderId][bool isTyping]
+        /// wire format (in): [byte eventType][bool isTyping]
+        /// wire format (out): [byte eventType][ushort senderId][bool isTyping]
         /// </summary>
         public static void HandleEvent(NetPacketReader reader, NetPeer peer, byte eventType)
         {

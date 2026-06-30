@@ -50,7 +50,7 @@ namespace Basis.Config
             return value;
         }
 
-        // ---------------- MAIN ENTRY ----------------
+        // ---------------- main entry ----------------
 
         public static void LoadOrCreateConfigXml(string filePath)
         {
@@ -68,26 +68,26 @@ namespace Basis.Config
                         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
                         var doc = new XDocument(
-                            new XComment(" BasisNetworkClientConsole load-tester configuration. Spawns ClientCount fake clients that connect to a server for stress testing. "),
+                            new XComment(" BasisNetworkClientConsole load-tester configuration。stress testing のため、server に接続する fake client を ClientCount 件 spawn する。 "),
                             new XElement("Configuration",
-                                new XComment(" Server connection password; must match the server's <Password>. string. "),
+                                new XComment(" server connection password。server 側の <Password> と一致している必要がある。string。 "),
                                 new XElement("Password", Password),
-                                new XComment(" Server host to connect to: hostname or IP (e.g. localhost / 127.0.0.1). string. "),
+                                new XComment(" 接続先 server host。hostname または IP (例: localhost / 127.0.0.1)。string。 "),
                                 new XElement("Ip", Ip),
-                                new XComment(" Server UDP port; must match the server's <SetPort>. int, range 1-65535. "),
+                                new XComment(" server UDP port。server 側の <SetPort> と一致している必要がある。int、範囲は 1-65535。 "),
                                 new XElement("Port", Port),
-                                new XComment(" Number of simulated clients to spawn for load testing. int (>= 1); higher counts need more CPU, memory and sockets. "),
+                                new XComment(" load testing 用に spawn する simulated client 数。int (>= 1)。大きい値ほど CPU、memory、socket を多く使う。 "),
                                 new XElement("ClientCount", ClientCount),
-                                new XComment(" Avatar unlock password/key sent with the avatar; used to decrypt the (encrypted .BEE) bundle at <AvatarUrl>. string. "),
+                                new XComment(" avatar と一緒に送る unlock password/key。<AvatarUrl> の (encrypted .BEE) bundle を decrypt するために使う。string。 "),
                                 new XElement("AvatarPassword", AvatarPassword),
-                                new XComment(" Avatar source each fake client advertises. For AvatarLoadMode 0 this is the (encrypted .BEE) bundle download URL. string. "),
+                                new XComment(" 各 fake client が advertise する avatar source。AvatarLoadMode 0 では (encrypted .BEE) bundle の download URL。string。 "),
                                 new XElement("AvatarUrl", AvatarUrl),
-                                new XComment(" How receiving clients load the avatar: 0 = AssetBundle (download from AvatarUrl), 1 = Addressables, 2 = In-scene. Allowed: 0, 1 or 2. "),
+                                new XComment(" 受信側 client が avatar を load する方法。0 = AssetBundle (AvatarUrl から download)、1 = Addressables、2 = In-scene。許可値は 0、1、2。 "),
                                 new XElement("AvatarLoadMode", AvatarLoadMode)
                             )
                         );
 
-                        // atomic write
+                        // atomic write。
                         var temp = filePath + ".tmp";
                         doc.Save(temp);
                         File.Move(temp, filePath);

@@ -3,11 +3,11 @@ using UnityEngine;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// Retargets PoseLandmarker landmarks (shoulder/elbow/wrist) onto the avatar's arms: directions
-    /// come from the reliable 2D image positions (with damped depth), lengths from the avatar,
-    /// anchored at the avatar's shoulder and mapped onto its frontal basis. When no body pose is
-    /// available it falls back to the hand landmarker's wrist, mapped across the avatar's full reach.
-    /// SwapArms/InvertForward cover the monocular mirror ambiguity.
+    /// PoseLandmarker のランドマーク (肩/肘/手首) を avatar の腕へ retarget する。
+    /// 方向は信頼しやすい 2D 画像位置 (奥行きは減衰) から取り、長さは avatar から取り、
+    /// avatar の肩を基準に正面 basis へ写像する。body pose が無い場合は
+    /// hand landmarker の手首へ fallback し、avatar の腕が届く範囲へ広げて写像する。
+    /// SwapArms/InvertForward は単眼カメラの鏡像曖昧性を吸収する。
     /// </summary>
     public sealed class MediaPipeArmConverter
     {
@@ -25,7 +25,7 @@ namespace Basis.MediaPipe
         private Vector3 _leftElbow, _leftWrist, _rightElbow, _rightWrist;
         private bool _leftWristInit, _leftElbowInit, _rightWristInit, _rightElbowInit;
 
-        /// <summary>Avatar arm geometry in player-root-local space, rebuilt per frame by the manager.</summary>
+        /// <summary>player root local 空間の avatar 腕 geometry。manager が毎フレーム再構築する。</summary>
         public struct AvatarArmRig
         {
             public Vector3 LeftAnchor;
@@ -38,7 +38,7 @@ namespace Basis.MediaPipe
             public bool Valid;
         }
 
-        /// <summary>Full arm reconstruction from the body pose (shoulder/elbow/wrist), with elbow pole.</summary>
+        /// <summary>body pose (肩/肘/手首) から elbow pole 付きで腕全体を再構築する。</summary>
         public bool TryGetArm(Vector3[] image, float aspect, in AvatarArmRig rig, bool avatarLeft,
             out Vector3 wristLocal, out Vector3 elbowLocal, out Quaternion wristRotation)
         {
@@ -70,9 +70,9 @@ namespace Basis.MediaPipe
         }
 
         /// <summary>
-        /// Wrist-only fallback from the hand landmarker. When a face is present the wrist is placed
-        /// relative to the avatar's head and scaled by apparent face size, so it is invariant to
-        /// camera distance and framing; otherwise it spreads across the avatar's reach from the shoulder.
+        /// hand landmarker だけを使う手首 fallback。顔がある場合、手首は avatar の頭を基準に置き、
+        /// 見かけの顔サイズで scale するため、カメラ距離や framing の影響を受けにくい。
+        /// それ以外の場合は肩から avatar の腕が届く範囲へ広げる。
         /// </summary>
         public bool TryGetArmFromHand(Vector3 handWrist, Vector2 headImage, float faceSize, float aspect,
             in AvatarArmRig rig, bool avatarLeft, out Vector3 wristLocal, out Quaternion wristRotation)
@@ -110,8 +110,8 @@ namespace Basis.MediaPipe
             _leftWristInit = _leftElbowInit = _rightWristInit = _rightElbowInit = false;
         }
 
-        // Image landmarks are normalised, y-down. x is scaled by aspect so angles aren't squashed,
-        // and z (monocular depth) is damped to forward. Maps onto the avatar's frontal basis.
+        // 画像 landmark は正規化済みで y-down。角度が潰れないよう x は aspect で scale し、
+        // z (単眼 depth) は forward 方向へ減衰する。avatar の正面 basis へ写像する。
         private Vector3 MapImageDir(Vector3 d, in AvatarArmRig rig, float aspect)
         {
             float right = d.x * aspect * (SwapArms ? -1f : 1f);

@@ -9,7 +9,7 @@ public class NetworkClient
     private NetPeer peer;
     private bool IsInUse;
     /// <summary>
-    /// initial data is typically the 
+    /// 初期 data は通常、接続時に server へ渡す ready payload。
     /// </summary> 
     /// <param name="IP"></param>
     /// <param name="port"></param>
@@ -25,7 +25,7 @@ public class NetworkClient
             else
                 client.Start();
             NetDataWriter Writer = new NetDataWriter(true,12);
-            //this is the only time we dont put key!
+            // key を入れないのはこの時だけ。
             Writer.Put(BasisNetworkVersion.ServerVersion);
             BytesMessage AuthBytes = new BytesMessage();
             AuthBytes.Serialize(Writer, AuthenticationMessage);

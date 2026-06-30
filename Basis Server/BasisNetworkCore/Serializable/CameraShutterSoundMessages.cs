@@ -3,8 +3,8 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Server -> clients: a player took a photo. No position needed —
-    /// receivers look up the PIP camera transform they already track.
+    /// server -> clients: player が photo を撮った。position は不要。
+    /// receiver はすでに tracking している PIP camera transform を lookup する。
     /// </summary>
     public struct CameraShutterSoundMessage
     {
@@ -22,8 +22,8 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Server -> clients: a player started a countdown timer.
-    /// Receivers replay the same tick/shutter timing locally.
+    /// server -> clients: player が countdown timer を開始した。
+    /// receiver は同じ tick/shutter timing を local で replay する。
     /// </summary>
     public struct CameraCountdownMessage
     {
@@ -44,7 +44,7 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Client -> server: local player started a countdown timer.
+    /// client -> server: local player が countdown timer を開始した。
     /// </summary>
     public struct ClientCameraCountdownMessage
     {

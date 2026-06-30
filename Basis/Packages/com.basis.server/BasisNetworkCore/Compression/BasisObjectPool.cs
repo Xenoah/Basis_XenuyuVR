@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 namespace Basis.Network.Core.Compression
 {
-    // Object pool for byte arrays to avoid allocation during runtime
+    // 実行中の割り当てを避けるための byte 配列プール
     public class BasisObjectPool<T>
     {
         private readonly Func<T> createFunc;

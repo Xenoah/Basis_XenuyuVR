@@ -8,15 +8,15 @@ namespace Basis.Network.Server
     {
         public static NetManager Manager;
         private static Thread workerThread;
-        private static volatile bool keepPolling = true; // Used to control the thread lifecycle
+        private static volatile bool keepPolling = true; // thread lifecycle の制御に使う
 
         public static void StartWorkerThread(NetManager manager)
         {
           //  Manager = manager;
 
-            // Start the worker thread
+            // worker thread を開始する
            // workerThread = new Thread(PollStatistics);
-          //  workerThread.IsBackground = true; // Background thread will be killed automatically when the main application ends
+          //  workerThread.IsBackground = true; // background thread は main application 終了時に自動終了する
           //  workerThread.Start();
         }
 
@@ -24,7 +24,7 @@ namespace Basis.Network.Server
         {
           //  keepPolling = false;
 
-          // Wait for the worker thread to finish gracefully
+          // worker thread が正常に終了するのを待つ
            // if (workerThread != null && workerThread.IsAlive)
           //  {
             //    workerThread.Join();
@@ -35,11 +35,11 @@ namespace Basis.Network.Server
         {
            /// while (keepPolling)
            // {
-           //     // Poll the statistics from the manager
+           //     // manager から statistics を poll する
              //   PollLatestStatistics();
 
-            //    // Wait for some time before polling again (e.g., every second)
-             //   Thread.Sleep(15000); // You can adjust the delay as needed
+            //    // 次の poll 前に少し待つ (例: 毎秒)
+             //   Thread.Sleep(15000); // 必要に応じて delay を調整できる
         //    }
         }
 

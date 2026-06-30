@@ -14,7 +14,7 @@ namespace BasisNetworkCore
             }
             return false;
         }
-        // Returns true if seq1 is newer than seq2
+        // seq1 が seq2 より新しい場合 true を返す。
         public static bool IsNewer(byte seq1, byte seq2)
         {
             return (byte)(seq1 - seq2) < 128;

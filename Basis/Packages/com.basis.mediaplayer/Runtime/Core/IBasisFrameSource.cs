@@ -1,28 +1,27 @@
 using System;
 
-// Producer of decoded video/audio frames. Push-based: implementations fire events
-// from whichever thread they read/decode on. Consumers (BasisMediaPlayer) marshal
-// to the main thread for Unity API calls.
+// decode 済み video/audio frame の producer。push-based で、implementation は
+// read/decode を行う thread から event を発火する。consumer (BasisMediaPlayer) は
+// Unity API 呼び出しのため main thread へ marshal する。
 //
-// Implementations: BasisSyntheticTestSource (CPU test pattern). Live OS-codec
-// playback uses BasisNativeVideoSource (zero-copy GPU), which BasisMediaPlayer
-// drives directly rather than through this interface.
+// implementation: BasisSyntheticTestSource (CPU test pattern)。
+// live OS-codec playback は BasisNativeVideoSource (zero-copy GPU) を使い、
+// BasisMediaPlayer がこの interface 経由ではなく直接駆動する。
 public interface IBasisFrameSource : IDisposable
 {
     event Action<BasisVideoFrame> OnVideoFrame;
     event Action<Exception> OnError;
     event Action OnEndOfStream;
 
-    // Fired once per Start() cycle, after the source has established that it
-    // can deliver frames. For live sources this is "transport connected and
-    // first packet observed"; for seekable sources this is the same signal as
-    // IBasisSeekableFrameSource.OnPrepared (implementations may forward).
+    // Start() cycle ごとに一度、source が frame を供給できると確認した後に発火する。
+    // live source では「transport 接続済み、かつ最初の packet を観測済み」。
+    // seekable source では IBasisSeekableFrameSource.OnPrepared と同じ信号
+    // (implementation が転送してよい)。
     event Action OnReady;
 
-    // Fired whenever the source's reported video dimensions change (initial
-    // resolution, mid-stream resize, adaptive variant switch). Argument order
-    // is (width, height). Players cache the latest value and expose it as
-    // BasisMediaPlayer.VideoSize.
+    // source が報告する video dimension が変わったときに発火する
+    // (初期 resolution、stream 中 resize、adaptive variant switch)。
+    // 引数順は (width, height)。player は最新値を cache し、BasisMediaPlayer.VideoSize として公開する。
     event Action<int, int> OnVideoSizeChanged;
 
     bool IsRunning { get; }

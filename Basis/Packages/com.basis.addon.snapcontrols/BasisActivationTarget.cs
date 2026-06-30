@@ -5,15 +5,15 @@ using UnityEngine.Events;
 namespace Basis.Scripts.BasisSdk.Interactions
 {
     /// <summary>
-    /// Generic on/off attach point for any interactable that has discrete states.
-    /// Holds an optional list of GameObjects to toggle and a pair of UnityEvents
-    /// fired on activation/deactivation. Call <see cref="Activate"/> / <see cref="Deactivate"/>
-    /// to drive transitions; use <see cref="ApplyActiveState"/> with <c>fireEvents = false</c>
-    /// for silent initial setup.
+    /// 離散状態を持つ任意の interactable 向けの汎用 on/off 接続点。
+    /// toggle 対象の GameObject list と、activate/deactivate 時に発火する
+    /// UnityEvent pair を任意で保持する。遷移は <see cref="Activate"/> /
+    /// <see cref="Deactivate"/> で駆動し、無音の初期 setup には
+    /// <see cref="ApplyActiveState"/> を <c>fireEvents = false</c> で使う。
     ///
-    /// Example callers: a snap-path interactable activating the current snap point,
-    /// a multi-position lever activating the current detent, a radial-menu selector
-    /// activating the focused item.
+    /// 呼び出し例: 現在の snap point を activate する snap-path interactable、
+    /// 現在の detent を activate する multi-position lever、focus 中の item を
+    /// activate する radial-menu selector。
     /// </summary>
     public class BasisActivationTarget : MonoBehaviour
     {

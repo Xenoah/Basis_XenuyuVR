@@ -6,23 +6,23 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
     public partial class BasisServerReductionSystemEvents
     {
         /// <summary>
-        /// Lock-free (for normal ops) bitset backed by 32-bit words.
-        /// - Per-bit Set/Clear uses CAS on int words.
-        /// - Reads use Volatile.Read.
-        /// - Resizes are protected by a lock (rare).
-        /// Length is the number of addressable bits (>= highest set index + 1 after EnsureCapacity).
+        /// 32-bit word を backing store にする bitset。通常 operation は lock-free。
+        /// - bit ごとの Set/Clear は int word に対する CAS を使う。
+        /// - read は Volatile.Read を使う。
+        /// - resize は lock で保護する (稀な path)。
+        /// Length は addressable bit 数 (EnsureCapacity 後は highest set index + 1 以上)。
         /// </summary>
         public sealed class FastBitSet
         {
             private const int BitsPerElement = 32;
 
-            // Backing storage (each int is 32 bits).
+            // backing storage (各 int は 32 bits)。
             private int[] _words;
 
-            // Protects only array resizing (rare path).
+            // array resize だけを保護する (稀な path)。
             private readonly object _resizeLock = new();
 
-            /// <summary>Number of bits that can be addressed without resize.</summary>
+            /// <summary>resize なしで address できる bit 数。</summary>
             public int Length { get; private set; }
 
             public FastBitSet(int initialBitCount)
@@ -34,8 +34,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
 
             /// <summary>
-            /// Ensures the bit at <paramref name="index"/> can be addressed.
-            /// Resizes the underlying array if needed (synchronized).
+            /// <paramref name="index"/> の bit を address できるようにする。
+            /// 必要なら underlying array を resize する (synchronized)。
             /// </summary>
             private void EnsureCapacity(int index)
             {
@@ -51,7 +51,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
                     if (requiredWords > _words.Length)
                     {
-                        // Grow by 1.5x to reduce future resizes.
+                        // 将来の resize を減らすため、1.5 倍に grow する。
                         int newWords = Math.Max(requiredWords, _words.Length + (_words.Length >> 1) + 1);
                         var newArr = new int[newWords];
                         Array.Copy(_words, newArr, _words.Length);
@@ -63,7 +63,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
 
             /// <summary>
-            /// Atomically sets or clears the bit at <paramref name="index"/>.
+            /// <paramref name="index"/> の bit を atomic に set / clear する。
             /// </summary>
             public void Set(int index, bool value)
             {
@@ -81,19 +81,19 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     uint uOld = unchecked((uint)oldVal);
                     uint uNew = value ? (uOld | mask) : (uOld & ~mask);
 
-                    // If nothing changes, we’re done (avoids unnecessary CAS).
+                    // 変化がない場合は完了。不要な CAS を避ける。
                     if (uNew == uOld) return;
 
                     int newVal = unchecked((int)uNew);
                     if (Interlocked.CompareExchange(ref wordRef, newVal, oldVal) == oldVal)
                         return; // success
-                    // else: lost the race, retry
+                    // それ以外は race に負けたので retry する。
                 }
             }
 
             /// <summary>
-            /// Atomically tests the bit and clears it if it was set.
-            /// Returns true iff the bit was previously set.
+            /// bit を atomic に test し、set されていれば clear する。
+            /// 以前に bit が set されていた場合だけ true を返す。
             /// </summary>
             public bool TestAndClear(int index)
             {
@@ -118,12 +118,12 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
                     if (Interlocked.CompareExchange(ref wordRef, newVal, oldVal) == oldVal)
                         return true; // we cleared it
-                    // else: retry
+                    // それ以外は retry する。
                 }
             }
 
             /// <summary>
-            /// Returns true if the bit at <paramref name="index"/> is set.
+            /// <paramref name="index"/> の bit が set されている場合 true を返す。
             /// </summary>
             public bool Get(int index)
             {
@@ -139,8 +139,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
 
             /// <summary>
-            /// Sets all addressable bits to the given value.
-            /// Bulk write under resize lock (simple and safe).
+            /// addressable bit すべてを指定値に設定する。
+            /// resize lock 下で bulk write する (単純で安全)。
             /// </summary>
             public void SetAll(bool value)
             {
@@ -152,7 +152,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 }
             }
 
-            /// <summary>Clears all bits.</summary>
+            /// <summary>すべての bit を clear する。</summary>
             public void Clear()
             {
                 lock (_resizeLock)
@@ -161,11 +161,11 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 }
             }
 
-            /// <summary>Returns true if any bit is set.</summary>
+            /// <summary>いずれかの bit が set されている場合 true を返す。</summary>
             public bool AnyTrue()
             {
-                // Safe without the resize lock: worst case we miss a concurrent grow,
-                // but then the new words are zero-initialized anyway.
+                // resize lock なしでも安全。最悪の場合は concurrent grow を見逃すが、
+                // その場合でも new word は zero-initialized されている。
                 for (int i = 0; i < _words.Length; i++)
                 {
                     if (Volatile.Read(ref _words[i]) != 0)

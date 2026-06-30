@@ -9,7 +9,7 @@ namespace Basis.Scripts.Vehicles.Main
         public static BasisVehiclePilotSeatInputActions Instance { get; } = new BasisVehiclePilotSeatInputActions();
         private readonly BasisLocks.LockContext LookRotationLock = BasisLocks.GetContext(BasisLocks.LookRotation);
 
-        // Actions (public so other systems can subscribe: action.performed += ...)
+        // Actions (他 system が action.performed += ... で subscribe できるよう public)
         public readonly InputAction RotateRoll;
         public readonly InputAction ThrottleZero;
         public readonly InputAction ToggleAngularDampeners;
@@ -19,7 +19,7 @@ namespace Basis.Scripts.Vehicles.Main
 
         public BasisVehiclePilotSeatInputActions()
         {
-            // Actions (names match the config)
+            // Actions (名前は config と一致させる)
             RotateRoll = new InputAction(
                 name: "RotateRoll",
                 type: InputActionType.Value,
@@ -43,8 +43,8 @@ namespace Basis.Scripts.Vehicles.Main
         }
 
         /// <summary>
-        /// Adds bindings and composites exactly as described by the config snippet.
-        /// Safe to call multiple times; subsequent calls do nothing.
+        /// config snippet の記述どおりに bindings と composites を追加する。
+        /// 複数回呼んでも安全で、2 回目以降は何もしない。
         /// </summary>
         public void Connect()
         {

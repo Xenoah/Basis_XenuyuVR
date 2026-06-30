@@ -28,10 +28,10 @@ namespace Basis.Network.Server
             host = config.HealthCheckHost;
             port = config.HealthCheckPort;
 
-            // Normalize path: ensure leading slash, remove trailing slash (except root)
+            // path を正規化する。先頭 slash を保証し、root 以外の末尾 slash を除去する。
             pathNormalized = NormalizePath(config.HealthPath);
 
-            // Prefix must end with slash. IPv6 address literals need bracket notation.
+            // prefix は slash で終わる必要がある。IPv6 address literal には bracket 表記が必要。
             httpListener.Prefixes.Add($"http://{FormatHost(host)}:{port}/");
             httpListener.Start();
 
@@ -49,7 +49,7 @@ namespace Basis.Network.Server
             p = p.Trim();
             if (!p.StartsWith("/")) p = "/" + p;
 
-            // Remove trailing slash unless it's "/"
+            // "/" でない場合は末尾 slash を取り除く。
             if (p.Length > 1 && p.EndsWith("/")) p = p.Substring(0, p.Length - 1);
 
             return p;
@@ -67,11 +67,11 @@ namespace Basis.Network.Server
                 }
                 catch (ObjectDisposedException)
                 {
-                    return; // listener closed
+                    return; // listener が閉じられた。
                 }
                 catch (HttpListenerException)
                 {
-                    return; // listener stopped or error
+                    return; // listener が停止した、または error。
                 }
                 catch (Exception e)
                 {
@@ -90,7 +90,7 @@ namespace Basis.Network.Server
                 var req = context.Request;
                 var res = context.Response;
 
-                // Basic hardening / semantics
+                // 基本的な hardening / semantics。
                 res.Headers["Cache-Control"] = "no-store, max-age=0";
                 res.Headers["X-Content-Type-Options"] = "nosniff";
 
@@ -109,14 +109,14 @@ namespace Basis.Network.Server
                     return;
                 }
 
-                // Decide readiness (example: "listening" means process alive; "ready" means server exists)
-                bool ready = NetworkServer.Server != null; // replace with your real readiness check
+                // readiness を決める。例: "listening" は process 生存、"ready" は server 存在を意味する。
+                bool ready = NetworkServer.Server != null; // 実際の readiness check に置き換え可能。
                 res.StatusCode = ready ? 200 : 503;
 
                 var nowUtc = DateTimeOffset.UtcNow;
 
-                // Build JSON with numeric fields as numbers (no quotes)
-                // If you want *zero* JSON escaping worries, keep version as a simple value you control.
+                // numeric field は quote せず number として JSON を組み立てる。
+                // JSON escaping の心配を完全になくしたい場合は、version を制御済みの単純値に保つ。
                 string json;
 
                 if (NetworkServer.Configuration.EnableStatistics && NetworkServer.Server != null)
@@ -162,11 +162,11 @@ namespace Basis.Network.Server
             }
             catch
             {
-                try { context?.Response?.Abort(); } catch { /* ignore */ }
+                try { context?.Response?.Abort(); } catch { /* 無視 */ }
             }
         }
 
-        // HttpListener URL prefixes require bracket notation for IPv6 address literals.
+        // HttpListener URL prefix では、IPv6 address literal に bracket 表記が必要。
         private static string FormatHost(string host) =>
             IPAddress.TryParse(host, out IPAddress addr) && addr.AddressFamily == AddressFamily.InterNetworkV6
                 ? $"[{host}]"

@@ -8,11 +8,12 @@ using System.Xml.Serialization;
 namespace Basis.Network.Core
 {
     /// <summary>
-    /// Serializes a config object with <see cref="XmlSerializer"/> and then injects
-    /// human-readable XML comments before each element, so the generated/saved config
-    /// files document themselves. Comments are written on every save (default-create and
-    /// admin-panel save), so they persist across restarts and saves. Reads ignore comments.
-    /// A config type with no registered docs is written exactly as XmlSerializer would.
+    /// config object を <see cref="XmlSerializer"/> で serialize した後、
+    /// 各 element の前に人間が読める XML comment を差し込む。
+    /// これにより、生成/保存された config file が自分自身を説明できる。
+    /// comment は毎回の save、default-create と admin-panel save で書かれるため、
+    /// restart や save をまたいで保持される。読み込み時は comment を無視する。
+    /// 登録済み doc がない config type は、XmlSerializer と同じ形で書かれる。
     /// </summary>
     public static class BasisConfigXmlDocs
     {
@@ -43,7 +44,7 @@ namespace Basis.Network.Core
             RegisterLnlConfig();
         }
 
-        /// <summary>Serialize <paramref name="value"/> to <paramref name="writer"/> with doc comments injected for <paramref name="type"/>.</summary>
+        /// <summary><paramref name="type"/> 用の doc comment を注入しながら、<paramref name="value"/> を <paramref name="writer"/> へ serialize する。</summary>
         public static void Serialize(XmlSerializer serializer, Type type, object value, TextWriter writer)
         {
             var doc = new XDocument();
@@ -77,9 +78,9 @@ namespace Basis.Network.Core
         private const string CurrentVersionFieldName = "CurrentConfigVersion";
 
         /// <summary>
-        /// True when the config on disk predates the current schema and should be re-saved:
-        /// either its stamped <c>ConfigVersion</c> is below the type's <c>CurrentConfigVersion</c>,
-        /// or the file is missing any element the current type would write.
+        /// disk 上の config が現在の schema より古く、再保存すべき場合に true。
+        /// stamped <c>ConfigVersion</c> が type の <c>CurrentConfigVersion</c> より小さい場合、
+        /// または現在の type が書くはずの element が file に欠けている場合が該当する。
         /// </summary>
         public static bool NeedsUpgrade(string filePath, Type type, object loaded)
         {
@@ -87,7 +88,7 @@ namespace Basis.Network.Core
             return IsMissingAnyField(filePath, type);
         }
 
-        /// <summary>True if the XML at <paramref name="filePath"/> lacks any element the current shape of <paramref name="type"/> would serialize.</summary>
+        /// <summary><paramref name="filePath"/> の XML に、現在の <paramref name="type"/> が serialize する element が欠けている場合 true。</summary>
         public static bool IsMissingAnyField(string filePath, Type type)
         {
             try
@@ -113,7 +114,7 @@ namespace Basis.Network.Core
             }
         }
 
-        /// <summary>Stamp the instance <c>ConfigVersion</c> field (if present) up to the type's <c>CurrentConfigVersion</c>.</summary>
+        /// <summary>instance の <c>ConfigVersion</c> field があれば、type の <c>CurrentConfigVersion</c> まで stamp する。</summary>
         public static void StampVersion(object config)
         {
             if (config == null) return;
@@ -141,57 +142,57 @@ namespace Basis.Network.Core
         {
             var t = new TypeDoc
             {
-                Header = " Basis dedicated-server configuration. Any environment variable whose name matches a field below overrides it at launch (e.g. PeerLimit=256). These comments are emitted from code, so they survive restarts AND in-game admin-panel saves. ",
+                Header = " Basis dedicated-server configuration。下記 field 名と一致する environment variable は、launch 時に値を override します (例: PeerLimit=256)。これらの comment は code から出力されるため、restart や in-game admin-panel save 後も維持されます。 ",
             };
-            t.Fields.Add(new FieldDoc("ConfigVersion", " Config schema version, managed automatically. When the server gains new settings this file is rewritten to add them (with their defaults) and this number is bumped — don't edit by hand. "));
-            t.Fields.Add(new FieldDoc("PeerLimit", " Maximum number of simultaneously connected peers (players). int. Default 65535. ", " ===== Networking / listener ===== "));
-            t.Fields.Add(new FieldDoc("SetPort", " UDP port the server binds and listens on; clients connect to this. ushort, range 1-65535. "));
-            t.Fields.Add(new FieldDoc("ServerName", " Display name shown as the row title in client server-list UIs (server-info query). string. "));
-            t.Fields.Add(new FieldDoc("ServerMotd", " Short message-of-the-day returned alongside the server name. string; empty = none. "));
-            t.Fields.Add(new FieldDoc("EnableStatistics", " Collect transport statistics (per-peer/packet counters) and run the stats worker; surfaced via the health endpoint. true|false. "));
-            t.Fields.Add(new FieldDoc("HasFileSupport", " Master switch for writing data to disk: server logs, on-disc moderation lists, auth-identity persistence, chat file support. Set false for an in-memory/ephemeral server. true|false. "));
-            t.Fields.Add(new FieldDoc("HealthCheckHost", " Host/interface the HTTP health endpoint binds. string (hostname or IP). ", " ===== Health-check HTTP endpoint ===== "));
-            t.Fields.Add(new FieldDoc("HealthCheckPort", " Port for the HTTP health endpoint. ushort, range 1-65535. "));
-            t.Fields.Add(new FieldDoc("HealthPath", " URL path served by the health endpoint, e.g. /health. string. "));
-            t.Fields.Add(new FieldDoc("BSRSMillisecondDefaultInterval", " Base send interval in milliseconds at zero distance. 50 ms ~= 20 Hz. Lower = more frequent updates and more bandwidth. int (ms). ", " ===== Server Reduction System (avatar sync rate) =====  intervalMs = BSRSMillisecondDefaultInterval * (BSRBaseMultiplier + distance^2 * BSRSIncreaseRate). Nearby players update fast, distant players progressively slower. "));
-            t.Fields.Add(new FieldDoc("BSRBaseMultiplier", " Flat multiplier applied to the base interval before distance scaling. number. Default 1. "));
-            t.Fields.Add(new FieldDoc("BSRSIncreaseRate", " How quickly the interval grows with squared distance; higher = distant players update much less often. float. Default 0.005. "));
-            t.Fields.Add(new FieldDoc("BSRSlowestSendRate", " Slowest send-rate floor handed to clients for very distant peers. float; a value of 0 is treated as unset and replaced with 2.55. "));
-            t.Fields.Add(new FieldDoc("HighQualityDistance", " Distance thresholds (world units/metres) bucketing peers into sync-quality tiers; squared internally. Keep High < Medium < Low. float. "));
-            t.Fields.Add(new FieldDoc("MediumQualityDistance", " Medium-quality distance threshold (see HighQualityDistance). float. "));
-            t.Fields.Add(new FieldDoc("LowQualityDistance", " Low-quality distance threshold (see HighQualityDistance). float. "));
-            t.Fields.Add(new FieldDoc("OverrideAutoDiscoveryOfIpv", " When true, bind exactly the addresses below instead of auto-discovering the IP version. true|false. ", " ===== Address binding ===== "));
-            t.Fields.Add(new FieldDoc("IPv4Address", " IPv4 address to bind. 0.0.0.0 = all IPv4 interfaces. string. "));
-            t.Fields.Add(new FieldDoc("IPv6Address", " IPv6 address to bind. ::1 = loopback, :: = all IPv6 interfaces. string. "));
-            t.Fields.Add(new FieldDoc("Password", " Password clients must present to join. Change this for any non-local server! string. ", " ===== Authentication ===== "));
-            t.Fields.Add(new FieldDoc("UseAuth", " Require the join password (above) to be correct. true|false. "));
-            t.Fields.Add(new FieldDoc("UseAuthIdentity", " Require cryptographic player-identity (DID) verification in addition to the password. true|false. The headless load-test client console supports this, so it can stay enabled. "));
-            t.Fields.Add(new FieldDoc("NetworkStackId", " Transport stack id. Empty = the default ('litenetlib'); only 'litenetlib' is registered and unknown ids fall back to it. Per-stack tuning lives in config/transports/<id>.xml. string. "));
-            t.Fields.Add(new FieldDoc("BasisUserRestrictionMode", " Player join restriction mode. Allowed values: Normal | BanList | AllowList | RejoinOnly. RejoinOnly locks the server to the players connected when it was enabled (admins may still join) and resets to Normal on restart. "));
-            t.Fields.Add(new FieldDoc("HowManyDuplicateAuthCanExist", " How many connections sharing the same auth identity may exist at once. int. "));
-            t.Fields.Add(new FieldDoc("AuthValidationTimeOutMiliseconds", " Time a client has to complete auth validation before being dropped. int (ms). "));
-            t.Fields.Add(new FieldDoc("EnableConsole", " Enable the interactive server console (CLI input). Set false for headless/daemon deployments. true|false. ", " ===== Console / persistence ===== "));
-            t.Fields.Add(new FieldDoc("DisableWriteUnlessAdminPersistentFlag", " Reject writes to the persistent key/value store unless the caller is an admin. true|false. "));
-            t.Fields.Add(new FieldDoc("DisableReadUnlessAdminPersistentFlag", " Reject reads from the persistent key/value store unless the caller is an admin. true|false. "));
-            t.Fields.Add(new FieldDoc("EnableAvatarBundleCompression", " Bundle per-receiver avatar messages and send them compressed (falls back to uncompressed per-message when not worthwhile); clients must support the matching decoder. true|false. ", " ===== Avatar bundle compression ===== "));
-            t.Fields.Add(new FieldDoc("AvatarBundleMinMessages", " Minimum queued avatar messages to one receiver before a bundle is attempted. int. "));
-            t.Fields.Add(new FieldDoc("AvatarBundleMinBytes", " Minimum uncompressed bundle size (bytes) before compression is attempted. int. "));
-            t.Fields.Add(new FieldDoc("EnableBSRProfiling", " Emit Server Reduction System profiling output. true|false. "));
-            t.Fields.Add(new FieldDoc("DisallowHeadless", " Reject headless clients from connecting. true|false. "));
-            t.Fields.Add(new FieldDoc("AvatarsLocked", " Block avatar loading for non-bypass users. true|false. ", " ===== Content lockouts (seed BasisGlobalLockManager at boot; each can also be toggled live from the admin panel). Users need the matching basis.resource.lockbypass.{avatar,prop,world} permission to load while locked. ===== "));
-            t.Fields.Add(new FieldDoc("PropsLocked", " Block prop loading for non-bypass users. true|false. "));
-            t.Fields.Add(new FieldDoc("WorldsLocked", " Block world loading for non-bypass users. true|false. "));
-            t.Fields.Add(new FieldDoc("ServersLocked", " Block sharing of saved-server entries through the content-share system. true|false. "));
-            t.Fields.Add(new FieldDoc("ThirdPersonDisabled", " Tell every client to hard-disable the desktop third-person camera. true|false. "));
-            t.Fields.Add(new FieldDoc("AdditionalAvatarDataLock", " Strip AdditionalAvatarDatas (blendshapes, custom-behaviour params) from inbound avatar sync before relaying; muscle/position/rotation still sync. true|false. "));
-            t.Fields.Add(new FieldDoc("CameraMetadataDisallowMask", " Bitmask of camera photo-metadata categories disallowed for all clients (set bit = disallowed). 0 = everything allowed. byte, range 0-255; the category-to-bit mapping is defined client-side. "));
-            t.Fields.Add(new FieldDoc("CrashReportingEnabled", " Allow clients to send a one-shot report of each error/exception they hit to the server, stored under CrashReports/<uuid>.jsonl with their UUID and display name. true|false; default true. Set false to globally disable reporting (clients are told to stop sending). ", " ===== Diagnostics ===== "));
-            t.Fields.Add(new FieldDoc("MaxMicrophoneRangeMeters", " Maximum microphone (voice transmit) range, in metres, a client may set. Clients clamp their Microphone Range slider and effective range to this ceiling; can also be changed live from the admin panel. float; default 25. ", " ===== Audio / voice range ===== "));
-            t.Fields.Add(new FieldDoc("MaxHearingRangeMeters", " Maximum hearing (audio receive) range, in metres, a client may set. Clients clamp their Hearing Range slider and effective range to this ceiling. float; default 25. "));
-            t.Fields.Add(new FieldDoc("MinAvatarEyeHeightMeters", " Minimum avatar eye height, in metres, a non-admin player may scale to. Clients clamp their avatar scale to this floor. float; default 0.1 (effectively no minimum). Admins (basis.moderation.globallock) bypass it. ", " ===== Avatar scale + movement restrictions (seed at boot; toggle live from the admin panel). Admins with basis.moderation.globallock bypass these. ===== "));
-            t.Fields.Add(new FieldDoc("MaxAvatarEyeHeightMeters", " Maximum avatar eye height, in metres, a non-admin player may scale to. Clients clamp their avatar scale to this ceiling. float; default 100 (effectively no maximum). "));
-            t.Fields.Add(new FieldDoc("PlayspaceMoverLocked", " Stop non-admin players from using the playspace mover (grabbing/dragging/rotating/scaling their play space). true|false; default false. "));
-            t.Fields.Add(new FieldDoc("DirectConnectLocked", " Refuse to broker direct (peer-to-peer) connections for non-admin players; clients also hide the direct-connect control. true|false; default false. "));
+            t.Fields.Add(new FieldDoc("ConfigVersion", " config schema version。自動管理されます。server に新しい setting が追加されると、この file は default 値付きで書き直され、この番号が上がります。手で編集しないでください。 "));
+            t.Fields.Add(new FieldDoc("PeerLimit", " 同時接続 peer (player) 数の最大値。int。default 65535。 ", " ===== Networking / listener ===== "));
+            t.Fields.Add(new FieldDoc("SetPort", " server が bind して listen する UDP port。client はここへ接続します。ushort、範囲は 1-65535。 "));
+            t.Fields.Add(new FieldDoc("ServerName", " client の server-list UI (server-info query) で row title として表示される display name。string。 "));
+            t.Fields.Add(new FieldDoc("ServerMotd", " server name と一緒に返す短い message-of-the-day。string。空なら none。 "));
+            t.Fields.Add(new FieldDoc("EnableStatistics", " transport statistics (peer/packet counter) を収集し、stats worker を実行します。health endpoint から確認できます。true|false。 "));
+            t.Fields.Add(new FieldDoc("HasFileSupport", " disk への data 書き込みの master switch。server log、disk 上の moderation list、auth-identity persistence、chat file support に影響します。in-memory/ephemeral server にする場合は false。true|false。 "));
+            t.Fields.Add(new FieldDoc("HealthCheckHost", " HTTP health endpoint が bind する host/interface。string (hostname または IP)。 ", " ===== Health-check HTTP endpoint ===== "));
+            t.Fields.Add(new FieldDoc("HealthCheckPort", " HTTP health endpoint 用 port。ushort、範囲は 1-65535。 "));
+            t.Fields.Add(new FieldDoc("HealthPath", " health endpoint が serve する URL path。例: /health。string。 "));
+            t.Fields.Add(new FieldDoc("BSRSMillisecondDefaultInterval", " distance 0 での base send interval (milliseconds)。50 ms はおよそ 20 Hz。小さいほど update は頻繁になり bandwidth を多く使います。int (ms)。 ", " ===== Server Reduction System (avatar sync rate) ===== intervalMs = BSRSMillisecondDefaultInterval * (BSRBaseMultiplier + distance^2 * BSRSIncreaseRate)。近い player は高速に、遠い player は段階的に低速に update されます。 "));
+            t.Fields.Add(new FieldDoc("BSRBaseMultiplier", " distance scaling 前に base interval へ適用する flat multiplier。number。default 1。 "));
+            t.Fields.Add(new FieldDoc("BSRSIncreaseRate", " squared distance によって interval がどれだけ速く増えるか。高いほど遠い player の update 頻度が大きく下がります。float。default 0.005。 "));
+            t.Fields.Add(new FieldDoc("BSRSlowestSendRate", " 非常に遠い peer に対して client へ渡す最も遅い send-rate floor。float。0 は未設定として扱われ、2.55 に置き換わります。 "));
+            t.Fields.Add(new FieldDoc("HighQualityDistance", " peer を sync-quality tier に振り分ける distance threshold (world unit/metre)。内部では squared distance として扱います。High < Medium < Low を保ってください。float。 "));
+            t.Fields.Add(new FieldDoc("MediumQualityDistance", " medium-quality の distance threshold (HighQualityDistance 参照)。float。 "));
+            t.Fields.Add(new FieldDoc("LowQualityDistance", " low-quality の distance threshold (HighQualityDistance 参照)。float。 "));
+            t.Fields.Add(new FieldDoc("OverrideAutoDiscoveryOfIpv", " true の場合、IP version を auto-discover せず、下記 address に正確に bind します。true|false。 ", " ===== Address binding ===== "));
+            t.Fields.Add(new FieldDoc("IPv4Address", " bind する IPv4 address。0.0.0.0 = すべての IPv4 interface。string。 "));
+            t.Fields.Add(new FieldDoc("IPv6Address", " bind する IPv6 address。::1 = loopback、:: = すべての IPv6 interface。string。 "));
+            t.Fields.Add(new FieldDoc("Password", " client が join 時に提示する必要がある password。local 以外の server では必ず変更してください。string。 ", " ===== Authentication ===== "));
+            t.Fields.Add(new FieldDoc("UseAuth", " 上記 join password が正しいことを要求します。true|false。 "));
+            t.Fields.Add(new FieldDoc("UseAuthIdentity", " password に加えて cryptographic player-identity (DID) verification を要求します。true|false。headless load-test client console はこれに対応しているため、有効のままにできます。 "));
+            t.Fields.Add(new FieldDoc("NetworkStackId", " transport stack id。空なら default ('litenetlib')。登録済みは 'litenetlib' のみで、unknown id はそこへ fallback します。stack ごとの tuning は config/transports/<id>.xml にあります。string。 "));
+            t.Fields.Add(new FieldDoc("BasisUserRestrictionMode", " player join restriction mode。許可値: Normal | BanList | AllowList | RejoinOnly。RejoinOnly は有効化時点で接続済みの player に server を lock し (admin は join 可能)、restart で Normal に戻ります。 "));
+            t.Fields.Add(new FieldDoc("HowManyDuplicateAuthCanExist", " 同じ auth identity を共有する connection が同時にいくつ存在できるか。int。 "));
+            t.Fields.Add(new FieldDoc("AuthValidationTimeOutMiliseconds", " client が auth validation を完了するまでの猶予時間。超過すると drop されます。int (ms)。 "));
+            t.Fields.Add(new FieldDoc("EnableConsole", " interactive server console (CLI input) を有効にします。headless/daemon deployment では false にしてください。true|false。 ", " ===== Console / persistence ===== "));
+            t.Fields.Add(new FieldDoc("DisableWriteUnlessAdminPersistentFlag", " caller が admin でない場合、persistent key/value store への write を拒否します。true|false。 "));
+            t.Fields.Add(new FieldDoc("DisableReadUnlessAdminPersistentFlag", " caller が admin でない場合、persistent key/value store からの read を拒否します。true|false。 "));
+            t.Fields.Add(new FieldDoc("EnableAvatarBundleCompression", " receiver ごとの avatar message を bundle し、compressed で送信します (有利でない場合は uncompressed per-message に fallback)。client は対応する decoder を support している必要があります。true|false。 ", " ===== Avatar bundle compression ===== "));
+            t.Fields.Add(new FieldDoc("AvatarBundleMinMessages", " bundle を試みる前に、1 receiver 向けに queue されている必要がある avatar message の最小数。int。 "));
+            t.Fields.Add(new FieldDoc("AvatarBundleMinBytes", " compression を試みる前に必要な uncompressed bundle size の最小値 (bytes)。int。 "));
+            t.Fields.Add(new FieldDoc("EnableBSRProfiling", " Server Reduction System の profiling output を出力します。true|false。 "));
+            t.Fields.Add(new FieldDoc("DisallowHeadless", " headless client の接続を拒否します。true|false。 "));
+            t.Fields.Add(new FieldDoc("AvatarsLocked", " bypass 権限のない user による avatar loading を block します。true|false。 ", " ===== Content lockouts (boot 時に BasisGlobalLockManager へ seed。各 lock は admin panel から live toggle も可能)。lock 中に load するには、対応する basis.resource.lockbypass.{avatar,prop,world} permission が必要です。 ===== "));
+            t.Fields.Add(new FieldDoc("PropsLocked", " bypass 権限のない user による prop loading を block します。true|false。 "));
+            t.Fields.Add(new FieldDoc("WorldsLocked", " bypass 権限のない user による world loading を block します。true|false。 "));
+            t.Fields.Add(new FieldDoc("ServersLocked", " content-share system 経由の saved-server entry sharing を block します。true|false。 "));
+            t.Fields.Add(new FieldDoc("ThirdPersonDisabled", " desktop third-person camera を hard-disable するよう全 client に伝えます。true|false。 "));
+            t.Fields.Add(new FieldDoc("AdditionalAvatarDataLock", " inbound avatar sync を relay する前に AdditionalAvatarDatas (blendshape、custom-behaviour param) を strip します。muscle/position/rotation は sync されます。true|false。 "));
+            t.Fields.Add(new FieldDoc("CameraMetadataDisallowMask", " 全 client に対して disallow する camera photo-metadata category の bitmask (set bit = disallowed)。0 = すべて許可。byte、範囲は 0-255。category-to-bit mapping は client-side で定義されます。 "));
+            t.Fields.Add(new FieldDoc("CrashReportingEnabled", " client が遭遇した各 error/exception について one-shot report を server へ送れるようにします。report は UUID と display name 付きで CrashReports/<uuid>.jsonl に保存されます。true|false、default true。false にすると全体で reporting を無効化し、client には送信停止を通知します。 ", " ===== Diagnostics ===== "));
+            t.Fields.Add(new FieldDoc("MaxMicrophoneRangeMeters", " client が設定できる microphone (voice transmit) range の最大値 (metre)。client は Microphone Range slider と effective range をこの上限に clamp します。admin panel から live 変更も可能です。float、default 25。 ", " ===== Audio / voice range ===== "));
+            t.Fields.Add(new FieldDoc("MaxHearingRangeMeters", " client が設定できる hearing (audio receive) range の最大値 (metre)。client は Hearing Range slider と effective range をこの上限に clamp します。float、default 25。 "));
+            t.Fields.Add(new FieldDoc("MinAvatarEyeHeightMeters", " non-admin player が scale できる avatar eye height の最小値 (metre)。client は avatar scale をこの下限に clamp します。float、default 0.1 (実質的に最小なし)。admin (basis.moderation.globallock) は bypass します。 ", " ===== Avatar scale + movement restrictions (boot 時に seed。admin panel から live toggle 可能)。basis.moderation.globallock を持つ admin は bypass します。 ===== "));
+            t.Fields.Add(new FieldDoc("MaxAvatarEyeHeightMeters", " non-admin player が scale できる avatar eye height の最大値 (metre)。client は avatar scale をこの上限に clamp します。float、default 100 (実質的に最大なし)。 "));
+            t.Fields.Add(new FieldDoc("PlayspaceMoverLocked", " non-admin player が playspace mover (play space の grabbing/dragging/rotating/scaling) を使うことを停止します。true|false、default false。 "));
+            t.Fields.Add(new FieldDoc("DirectConnectLocked", " non-admin player 向けの direct (peer-to-peer) connection broker を拒否します。client 側でも direct-connect control を隠します。true|false、default false。 "));
             _docs[typeof(global::Configuration)] = t;
         }
 
@@ -199,29 +200,29 @@ namespace Basis.Network.Core
         {
             var t = new TypeDoc
             {
-                Header = " LiteNetLib transport tuning (sidecar for the 'litenetlib' network stack). Maps onto LiteNetLib's NetManager. Fields marked [NOT APPLIED] are serialized but not currently wired into the server's NetManager. Comments are emitted from code, so they survive restarts and saves. ",
+                Header = " LiteNetLib transport tuning ('litenetlib' network stack 用 sidecar)。LiteNetLib の NetManager に対応します。[NOT APPLIED] と書かれた field は serialize されますが、現時点では server の NetManager に接続されていません。comment は code から出力されるため、restart や save 後も維持されます。 ",
             };
-            t.Fields.Add(new FieldDoc("ConfigVersion", " Config schema version, managed automatically; new settings are added to this file on load — don't edit by hand. "));
-            t.Fields.Add(new FieldDoc("UseNativeSockets", " Use OS-native socket calls instead of the managed path (lower overhead). true|false. "));
-            t.Fields.Add(new FieldDoc("NatPunchEnabled", " Enable the NAT punch-through module for peer introduction. true|false. "));
-            t.Fields.Add(new FieldDoc("NatPortPredictionRange", " Hard-NAT traversal: how many sequential ports above a peer's server-observed external port the OTHER peer also punches (port-prediction spray). Helps sequential symmetric/CGNAT mappings where the peer-to-peer port differs from the one the server sees. 0 disables the spray; sane range 0-128. int. "));
-            t.Fields.Add(new FieldDoc("PingInterval", " Interval between keep-alive pings to each peer. int (ms). "));
-            t.Fields.Add(new FieldDoc("DisconnectTimeout", " Time with no response from a peer before it is disconnected. int (ms). "));
-            t.Fields.Add(new FieldDoc("SimulatePacketLoss", " Artificially drop outgoing packets. true|false. ", " ===== Debug network simulation (testing only) ===== "));
-            t.Fields.Add(new FieldDoc("SimulateLatency", " Artificially delay packets. true|false. "));
-            t.Fields.Add(new FieldDoc("SimulationPacketLossChance", " Packet-loss percentage when SimulatePacketLoss is true. int, range 0-100. "));
-            t.Fields.Add(new FieldDoc("SimulationMinLatency", " Minimum added latency when SimulateLatency is true. int (ms). Keep Min <= Max. "));
-            t.Fields.Add(new FieldDoc("SimulationMaxLatency", " Maximum added latency when SimulateLatency is true. int (ms). "));
-            t.Fields.Add(new FieldDoc("ReconnectDelay", " [NOT APPLIED] Delay between reconnect attempts (client-side connect option). int (ms). "));
-            t.Fields.Add(new FieldDoc("MaxConnectAttempts", " [NOT APPLIED] Connection attempts before giving up (client-side connect option). int. "));
-            t.Fields.Add(new FieldDoc("ReuseAddresss", " [NOT APPLIED] Set the SO_REUSEADDR socket option (note the field name spelling). true|false. "));
-            t.Fields.Add(new FieldDoc("DontRoute", " [NOT APPLIED] Set the SO_DONTROUTE socket option (bypass routing tables). true|false. "));
-            t.Fields.Add(new FieldDoc("IPv6Enabled", " Enable IPv6 (dual-stack) socket support. true|false. "));
-            t.Fields.Add(new FieldDoc("MtuOverride", " Force a fixed MTU instead of negotiating. int (bytes); 0 = auto/disabled. "));
-            t.Fields.Add(new FieldDoc("MtuDiscovery", " Enable path-MTU discovery. true|false. "));
-            t.Fields.Add(new FieldDoc("DisconnectOnUnreachable", " [NOT APPLIED] Disconnect a peer when an ICMP 'unreachable' is received. true|false. "));
-            t.Fields.Add(new FieldDoc("AllowPeerAddressChange", " Allow a peer's remote endpoint (IP/port) to change mid-session, e.g. mobile network roaming. true|false. "));
-            t.Fields.Add(new FieldDoc("MultiSocketCount", " Number of UDP sockets to bind on the listen port using SO_REUSEPORT (Linux only). 1 = single socket / single receive thread (default). N>1 spawns N-1 extra sockets + receive threads so the Linux kernel RSS-hashes inbound 4-tuples across them; per-peer packet order is preserved because each peer's 4-tuple is stable. On Windows/macOS this falls back to 1 with a warning at Start(). Sensible range: 2-4 around 1k players, 4-8 around 2k. int. "));
+            t.Fields.Add(new FieldDoc("ConfigVersion", " config schema version。自動管理されます。load 時に新しい setting がこの file へ追加されます。手で編集しないでください。 "));
+            t.Fields.Add(new FieldDoc("UseNativeSockets", " managed path ではなく OS-native socket call を使います (overhead が低い)。true|false。 "));
+            t.Fields.Add(new FieldDoc("NatPunchEnabled", " peer introduction 用の NAT punch-through module を有効にします。true|false。 "));
+            t.Fields.Add(new FieldDoc("NatPortPredictionRange", " Hard-NAT traversal: peer の server-observed external port より上の連続 port を、OTHER peer 側でもいくつ punch するか (port-prediction spray)。peer-to-peer port が server から見える port と異なる sequential symmetric/CGNAT mapping を助けます。0 で spray 無効。妥当な範囲は 0-128。int。 "));
+            t.Fields.Add(new FieldDoc("PingInterval", " 各 peer への keep-alive ping 間隔。int (ms)。 "));
+            t.Fields.Add(new FieldDoc("DisconnectTimeout", " peer から response がなくなってから disconnect するまでの時間。int (ms)。 "));
+            t.Fields.Add(new FieldDoc("SimulatePacketLoss", " outgoing packet を人工的に drop します。true|false。 ", " ===== Debug network simulation (testing only) ===== "));
+            t.Fields.Add(new FieldDoc("SimulateLatency", " packet に人工的な delay を加えます。true|false。 "));
+            t.Fields.Add(new FieldDoc("SimulationPacketLossChance", " SimulatePacketLoss が true の場合の packet-loss percentage。int、範囲は 0-100。 "));
+            t.Fields.Add(new FieldDoc("SimulationMinLatency", " SimulateLatency が true の場合に追加する latency の最小値。int (ms)。Min <= Max を保ってください。 "));
+            t.Fields.Add(new FieldDoc("SimulationMaxLatency", " SimulateLatency が true の場合に追加する latency の最大値。int (ms)。 "));
+            t.Fields.Add(new FieldDoc("ReconnectDelay", " [NOT APPLIED] reconnect attempt 間の delay (client-side connect option)。int (ms)。 "));
+            t.Fields.Add(new FieldDoc("MaxConnectAttempts", " [NOT APPLIED] 諦めるまでの connection attempt 数 (client-side connect option)。int。 "));
+            t.Fields.Add(new FieldDoc("ReuseAddresss", " [NOT APPLIED] SO_REUSEADDR socket option を設定します (field name の spelling に注意)。true|false。 "));
+            t.Fields.Add(new FieldDoc("DontRoute", " [NOT APPLIED] SO_DONTROUTE socket option を設定します (routing table を bypass)。true|false。 "));
+            t.Fields.Add(new FieldDoc("IPv6Enabled", " IPv6 (dual-stack) socket support を有効にします。true|false。 "));
+            t.Fields.Add(new FieldDoc("MtuOverride", " negotiate せず fixed MTU を強制します。int (bytes)。0 = auto/disabled。 "));
+            t.Fields.Add(new FieldDoc("MtuDiscovery", " path-MTU discovery を有効にします。true|false。 "));
+            t.Fields.Add(new FieldDoc("DisconnectOnUnreachable", " [NOT APPLIED] ICMP 'unreachable' を受信したとき peer を disconnect します。true|false。 "));
+            t.Fields.Add(new FieldDoc("AllowPeerAddressChange", " session 中に peer の remote endpoint (IP/port) が変わることを許可します。例: mobile network roaming。true|false。 "));
+            t.Fields.Add(new FieldDoc("MultiSocketCount", " SO_REUSEPORT を使って listen port に bind する UDP socket 数 (Linux only)。1 = single socket / single receive thread (default)。N>1 では N-1 個の extra socket + receive thread を spawn し、Linux kernel が inbound 4-tuple を RSS hash して分散します。peer ごとの 4-tuple は stable なので packet order は維持されます。Windows/macOS では Start() 時に warning を出して 1 に fallback します。目安: 1k players 付近で 2-4、2k 付近で 4-8。int。 "));
             _docs[typeof(LNLTransportConfig)] = t;
         }
     }

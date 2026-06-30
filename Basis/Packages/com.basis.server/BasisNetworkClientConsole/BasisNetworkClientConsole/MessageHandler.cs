@@ -18,7 +18,7 @@ namespace Basis.Network
             {
                 case BasisNetworkCommons.AuthIdentityChannel:
                     AuthIdentityMessage(identity, peer, reader);
-                    return; // already recycled inside
+                    return; // 内部ですでに recycled 済み。
                 case BasisNetworkCommons.metaDataChannel:
                     if (identity != null)
                     {
@@ -33,13 +33,13 @@ namespace Basis.Network
                 case BasisNetworkCommons.PlayerAvatarMediumAdditionalChannel:
                 case BasisNetworkCommons.PlayerAvatarHighChannel:
                 case BasisNetworkCommons.PlayerAvatarHighAdditionalChannel:
-                    // Full avatar update — just consume it
+                    // full avatar update は読み捨てる。
                     break;
                 case BasisNetworkCommons.DisconnectionChannel:
-                    // Just consume disconnection messages
+                    // disconnection message は読み捨てる。
                     break;
                 default:
-                    // Silently consume other channels
+                    // その他の channel は静かに読み捨てる。
                     break;
             }
 

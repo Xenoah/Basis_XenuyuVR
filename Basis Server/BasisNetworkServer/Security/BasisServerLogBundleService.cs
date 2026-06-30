@@ -8,33 +8,32 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Builds a single compressed bundle of the server's logs/ and CrashReports/ folders on
-    /// demand and streams it back to the requesting admin over
-    /// <see cref="BasisNetworkCommons.AdminChannel"/>.
+    /// server の logs/ と CrashReports/ folder から demand に応じて single compressed bundle を作り、
+    /// request した admin へ <see cref="BasisNetworkCommons.AdminChannel"/> 経由で stream して返す。
     ///
-    /// The files are packed into one length-prefixed container, LZ4-compressed (the same
-    /// codec already used for avatar bundles, so no new dependency), and split into ordered
-    /// chunks (<see cref="ChunkSize"/>) so a large transfer never depends on one oversized
-    /// datagram. The admin channel is ReliableOrdered, so the client reassembles them in
-    /// send order. The whole build + send runs off the network thread, and each chunk uses a
-    /// fresh <see cref="NetDataWriter"/> (no shared pool) to stay thread-safe.
+    /// file は 1 つの length-prefixed container に pack され、LZ4-compressed される
+    /// (avatar bundle で既に使っている codec なので新規 dependency はない)。
+    /// 大きな転送が oversized datagram 1 個に依存しないよう、ordered chunk (<see cref="ChunkSize"/>) に分割する。
+    /// admin channel は ReliableOrdered なので、client は send order で reassemble できる。
+    /// build + send 全体は network thread の外で走り、thread-safe にするため
+    /// 各 chunk は fresh <see cref="NetDataWriter"/> (shared pool なし) を使う。
     ///
-    /// Container (before compression):
+    /// container (compression 前):
     ///   [int fileCount] then per file: [string relativePath][int byteLength][bytes]
     ///
-    /// Wire (server→client), all on AdminChannel, ReliableOrdered:
+    /// wire (server->client)。すべて AdminChannel / ReliableOrdered:
     ///   LogBundleBegin : [string serverNameSafe][string fileName][bool isCompressed][int payloadBytes][int rawBytes][int totalChunks]
     ///   LogBundleChunk : [int chunkIndex][lenPrefixed bytes]   (repeated totalChunks times, payload stream)
     ///   LogBundleEnd   : [bool ok][string message]
     ///
-    /// Gated upstream by PermNodes.AdminLogs in BasisPlayerModeration.
+    /// upstream では BasisPlayerModeration 内の PermNodes.AdminLogs で gate される。
     /// </summary>
     public static class BasisServerLogBundleService
     {
-        /// <summary>Bytes per streamed chunk. Comfortably below any single-message limit while keeping the chunk count low.</summary>
+        /// <summary>streamed chunk ごとの byte 数。chunk count を低く保ちつつ、single-message limit を十分下回る。</summary>
         private const int ChunkSize = 32 * 1024;
 
-        /// <summary>Hard ceiling on the assembled (raw) container. Logs that big almost certainly mean something is wrong; refuse rather than flood the link.</summary>
+        /// <summary>assembled (raw) container の hard ceiling。ここまで大きい log はほぼ確実に異常なので、link を flood せず拒否する。</summary>
         private const long MaxRawBytes = 256L * 1024 * 1024;
 
         public static void SendAllLogsToPeer(NetPeer peer)
@@ -47,7 +46,7 @@ namespace BasisNetworkServer.Security
                 return;
             }
 
-            // Build and stream off the network thread — packing can touch many files.
+            // packing は多くの file に触れる可能性があるため、network thread の外で build / stream する。
             _ = Task.Run(() => BuildAndSend(peer));
         }
 
@@ -61,7 +60,7 @@ namespace BasisNetworkServer.Security
                 return;
             }
 
-            // Deletion touches many files; keep it off the network thread.
+            // deletion は多くの file に触れるため、network thread の外に出す。
             _ = Task.Run(() => DeleteAll(peer));
         }
 
@@ -75,8 +74,8 @@ namespace BasisNetworkServer.Security
 
                 int deleted = DeleteDirectoryFiles(logsDir) + DeleteDirectoryFiles(crashDir);
 
-                // The error-report writer dedupes identical reports per user for this server
-                // session; forget that history so fresh occurrences are recorded again.
+                // error-report writer は、この server session 内で user ごとの identical report を dedupe する。
+                // 新しい発生を再び記録できるよう、その履歴を忘れる。
                 BasisNetworkHandleErrorReport.ClearAllSeen();
 
                 BasisPlayerModeration.SendBackMessage(peer, $"Deleted {deleted} log/crash file(s) from logs/ and CrashReports/.");
@@ -104,7 +103,7 @@ namespace BasisNetworkServer.Security
                 }
                 catch (Exception e)
                 {
-                    // The current day's log file is still open for append and can't be removed while running.
+                    // 当日の log file は append 用にまだ open されており、実行中は削除できない。
                     BNL.LogWarning($"Could not delete log file '{file}' (in use?): {e.Message}");
                 }
             }
@@ -165,7 +164,7 @@ namespace BasisNetworkServer.Security
             using MemoryStream memory = new MemoryStream();
             using (BinaryWriter writer = new BinaryWriter(memory, System.Text.Encoding.UTF8, leaveOpen: true))
             {
-                // Reserve the count slot; backfill once we know how many files were readable.
+                // count slot を reserve し、readable file 数が判明してから backfill する。
                 long countPos = memory.Position;
                 writer.Write(0);
 
@@ -211,7 +210,7 @@ namespace BasisNetworkServer.Security
             return added;
         }
 
-        // FileShare.ReadWrite so the current day's log file (still open for append) can be read.
+        // 当日の log file (append 用にまだ open 中) を読めるよう FileShare.ReadWrite を使う。
         private static byte[] ReadAllBytesShared(string path)
         {
             using FileStream input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -243,7 +242,7 @@ namespace BasisNetworkServer.Security
             return raw;
         }
 
-        // Compute the path relative to baseDir without relying on Path.GetRelativePath (older TFMs).
+        // Path.GetRelativePath に依存せず (older TFM 対応)、baseDir からの relative path を計算する。
         private static string GetRelativePath(string baseDir, string fullPath)
         {
             string normalizedBase = Path.GetFullPath(baseDir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;

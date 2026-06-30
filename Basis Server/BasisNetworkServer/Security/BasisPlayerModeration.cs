@@ -35,7 +35,7 @@ namespace BasisNetworkServer.Security
         }
 
         // =========================
-        // Core Ban Logic
+        // core ban logic
         // =========================
 
         public static string Ban(string UUID, string reason)
@@ -136,7 +136,7 @@ namespace BasisNetworkServer.Security
         }
 
         // =========================
-        // Ban Storage
+        // ban storage
         // =========================
 
         public static void SaveBannedPlayers()
@@ -211,7 +211,7 @@ namespace BasisNetworkServer.Security
         }
 
         // =========================
-        // Admin Entry Point
+        // admin entry point
         // =========================
 
         public static void OnAdminMessage(NetPeer peer, NetPacketReader reader)
@@ -226,7 +226,7 @@ namespace BasisNetworkServer.Security
             req.Deserialize(reader);
             var mode = req.GetAdminRequestMode();
 
-            // ===== VIEW PERMISSIONS =====
+                // ===== 権限表示 =====
             if (mode == AdminRequestMode.GetPermissions)
             {
                 if (!PermissionIntegration.HasValidRequirement(peer, PermNodes.PermissionsView))
@@ -318,7 +318,7 @@ namespace BasisNetworkServer.Security
                         HandleShoutMode(peer, reader, mode == AdminRequestMode.EnableShoutMode));
                     break;
 
-                // ===== GLOBAL LOCK =====
+                // ===== global lock =====
                 case AdminRequestMode.GlobalToggleAvatars:
                     Require(peer, PermNodes.ModerationGlobalLock, () =>
                         HandleGlobalToggle(peer, "Avatar", BasisGlobalLockManager.ToggleAvatars()));
@@ -419,7 +419,7 @@ namespace BasisNetworkServer.Security
                         HandleOpusFrameDurationSet(peer, reader));
                     break;
 
-                // ===== PERMISSION EDIT =====
+                // ===== 権限編集 =====
                 case AdminRequestMode.SetUserGroup:
                 case AdminRequestMode.SetUserNode:
                 case AdminRequestMode.SetGroupNode:
@@ -430,7 +430,7 @@ namespace BasisNetworkServer.Security
                         HandlePermissionEdit(mode, peer, reader));
                     break;
 
-                // ===== SERVER CONFIG =====
+                // ===== server config =====
                 case AdminRequestMode.SetServerName:
                     Require(peer, PermNodes.ConfigurationEditor, () =>
                         SendBackMessage(peer, ApplyServerName(reader.GetString())));
@@ -479,13 +479,12 @@ namespace BasisNetworkServer.Security
         }
 
         // =========================
-        // Server-config admin operations
+        // server-config admin operations
         // =========================
-        // Each mutation updates the live Configuration field (read on the next info-query
-        // response, ServerMetaDataMessage, or connection check) and then persists the
-        // current state of Configuration to config/config.xml so the change survives a
-        // restart. SaveConfig is intentionally fire-and-forget on the calling thread —
-        // the XML is small and admin operations are rare.
+        // 各 mutation は live Configuration field を更新する
+        // (次回 info-query response、ServerMetaDataMessage、connection check で読まれる)。
+        // その後、Configuration の現在 state を config/config.xml へ persist し、restart 後も change を維持する。
+        // XML は小さく admin operation も稀なため、SaveConfig は意図的に calling thread 上で fire-and-forget にしている。
 
         private static string ApplyServerName(string newName)
         {
@@ -520,7 +519,7 @@ namespace BasisNetworkServer.Security
                 BasisRejoinLockManager.Clear();
 
             SaveConfig();
-            // Restriction mode rides on the lock-state payload; push it so connected clients refresh.
+            // restriction mode は lock-state payload に乗る。connected client が refresh するよう push する。
             BasisGlobalLockManager.BroadcastLockState();
             return $"Restriction mode set to {parsed}.";
         }
@@ -529,8 +528,8 @@ namespace BasisNetworkServer.Security
         {
             if (string.IsNullOrWhiteSpace(uuid)) return "UUID was empty.";
             if (NetworkServer.AllowList == null) return "AllowList not initialized.";
-            // Fire-and-forget: BasisAllowList.AddToAllowlistAsync appends one line and
-            // is safe to leave running while we report the operation back to the admin.
+            // fire-and-forget: BasisAllowList.AddToAllowlistAsync は 1 行 append するだけなので、
+            // admin へ operation result を返しながら走らせておいて安全。
             _ = NetworkServer.AllowList.AddToAllowlistAsync(uuid);
             return $"Added {uuid} to allowlist.";
         }
@@ -546,14 +545,13 @@ namespace BasisNetworkServer.Security
         private static string ApplyAddDefaultLibraryItem(byte mode, string url, string password)
         {
             if (string.IsNullOrWhiteSpace(url)) return "URL was empty.";
-            // Mode is the client's BundledContentHolder.Mode: 0=Avatar, 1=World, 2=Prop.
+            // Mode は client の BundledContentHolder.Mode: 0=Avatar、1=World、2=Prop。
             if (mode > 2) return $"Unknown library mode {mode} (expected 0=Avatar, 1=World, 2=Prop).";
 
-            // Defensive split of `url#fragment` — if the admin pasted a copy-able share
-            // string with the password baked into the URL fragment, peel it off here so
-            // the password lands in the Password field instead of the URL field. The
-            // client UI normally splits this before sending, but this catches admins
-            // who skipped that path or used an older client.
+            // `url#fragment` を defensive に split する。
+            // admin が password を URL fragment に baked-in した copy-able share string を paste した場合、
+            // password が URL field ではなく Password field に入るよう、ここで剥がす。
+            // client UI は通常送信前にこれを split するが、この処理はその path を skip した admin や older client を拾う。
             int hashIndex = url.IndexOf('#');
             if (hashIndex >= 0)
             {
@@ -567,8 +565,7 @@ namespace BasisNetworkServer.Security
                     }
                     catch
                     {
-                        // Fragment wasn't valid base64; leave password empty rather than
-                        // storing the raw fragment bytes.
+                        // fragment が valid base64 ではなかった。raw fragment bytes を保存せず、password は空にしておく。
                     }
                 }
             }
@@ -586,8 +583,8 @@ namespace BasisNetworkServer.Security
                 return "Failed to persist default library entry — see server log.";
             }
 
-            // Push the updated list to every connected client so the new entry shows
-            // up in their library immediately, not just on next connect.
+            // updated list を connected client 全員へ push し、新しい entry が次回 connect 時だけでなく
+            // library にすぐ表示されるようにする。
             BasisNetworkServerLibrary.BroadcastLibraryToAll();
             return $"Default library entry added ({Path.GetFileName(written)}).";
         }
@@ -619,7 +616,7 @@ namespace BasisNetworkServer.Security
         }
 
         // =========================
-        // Helpers
+        // helper
         // =========================
 
         private static void Require(NetPeer peer, string perm, Action action)
@@ -786,9 +783,8 @@ namespace BasisNetworkServer.Security
         }
 
         /// <summary>
-        /// Reply to the toggling admin, broadcast a one-line notice to everyone, then push the
-        /// refreshed lock-state payload. Used by the restriction toggles whose state rides on
-        /// GlobalGetLockState (playspace mover, direct connect).
+        /// toggle した admin へ reply し、全員へ 1 行 notice を broadcast してから refreshed lock-state payload を push する。
+        /// state が GlobalGetLockState に乗る restriction toggle (playspace mover、direct connect) で使う。
         /// </summary>
         private static void BroadcastGlobalLockNotice(NetPeer peer, string adminReply, string broadcastNotice)
         {
@@ -810,17 +806,17 @@ namespace BasisNetworkServer.Security
             string notification = $"{contentType} loading has been globally {state} by an admin.";
             BNL.Log(notification);
 
-            // Notify the admin who toggled it
+            // toggle した admin に通知する。
             SendBackMessage(peer, $"{contentType} loading is now {state}.");
 
-            // Notify all clients about the change
+            // change を全 client へ通知する。
             var writer = NetworkServer.RentWriter();
             new AdminRequest().Serialize(writer, AdminRequestMode.MessageAll);
             writer.Put(notification);
             NetworkServer.BroadcastMessageToClients(writer, BasisNetworkCommons.AdminChannel, NetworkServer.PeerSnapshot, DeliveryMethod.ReliableOrdered);
             NetworkServer.ReturnWriter(writer);
 
-            // Broadcast updated lock state so clients track it
+            // client が追跡できるよう updated lock state を broadcast する。
             BasisGlobalLockManager.BroadcastLockState();
         }
 

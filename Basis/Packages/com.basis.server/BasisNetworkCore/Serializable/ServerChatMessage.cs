@@ -3,7 +3,7 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Server-to-client chat message. Wraps the chat payload with the sender's player ID.
+    /// server-to-client chat message。chat payload を sender の player ID で包む。
     /// </summary>
     public struct ServerChatMessage
     {

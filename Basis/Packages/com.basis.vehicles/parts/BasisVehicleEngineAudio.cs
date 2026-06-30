@@ -1,15 +1,15 @@
 // ============================
 // BasisVehicleEngineAudio.cs
-// (updated: supports network revs)
+// (更新: network revs を support)
 // ============================
 using UnityEngine;
 
 namespace Basis.Scripts.Vehicles.Parts
 {
     /// <summary>
-    /// Simple engine audio controller:
-    /// - Uses vehicle Rigidbody speed + BasisVehicleBody LinearActivation.z as "throttle" (local)
-    /// - OR uses NetworkRevs01 when UseNetworkRevs is true (remote)
+    /// simple な engine audio controller:
+    /// - local では vehicle Rigidbody speed + BasisVehicleBody LinearActivation.z を "throttle" として使う
+    /// - remote では UseNetworkRevs が true のとき NetworkRevs01 を使う
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class BasisVehicleEngineAudio : MonoBehaviour

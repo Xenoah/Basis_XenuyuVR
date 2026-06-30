@@ -7,14 +7,14 @@ using System;
 namespace Basis.Network.Server.Auth
 {
 
-    /// Newtype on `string`. This represents the server's configured password.
+    /// `string` の newtype。server に設定された password を表す。
     internal readonly struct ServerPassword
     {
         public readonly string V { get; }
         public ServerPassword(string password) { V = password; }
     }
 
-    /// Newtype on `string`. This represents the user's password.
+    /// `string` の newtype。user が送ってきた password を表す。
     internal readonly struct UserPassword
     {
         public readonly string V { get; }
@@ -35,7 +35,7 @@ namespace Basis.Network.Server.Auth
     {
         private readonly ServerPassword serverPassword;
 
-        /// If `serverPassword` is an empty string, the server has no password and any user can connect.
+        /// `serverPassword` が空文字列の場合、server には password がなく、どの user でも接続できる。
         public PasswordAuth(string serverPassword)
         {
             this.serverPassword = new ServerPassword(serverPassword);

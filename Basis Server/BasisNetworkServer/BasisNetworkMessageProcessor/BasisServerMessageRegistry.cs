@@ -16,10 +16,9 @@ using static BasisPermissions.PermissionManager;
 public delegate void BasisServerMessageHandler(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod);
 
 /// <summary>
-/// Table-driven inbound dispatch. Core messages bind to their dedicated channel (0-59);
-/// multiplexed plugin messages bind to a ushort id read from the 61-63 channel payload.
-/// Replaces the hardcoded switch so handlers can be added or removed without editing a
-/// shared constant table.
+/// table-driven inbound dispatch。core message は dedicated channel (0-59) に bind し、
+/// multiplexed plugin message は 61-63 channel payload から読む ushort id に bind する。
+/// hardcoded switch を置き換え、shared constant table を編集せずに handler を追加/削除できるようにする。
 /// </summary>
 public static class BasisServerMessageRegistry
 {
@@ -28,14 +27,14 @@ public static class BasisServerMessageRegistry
     private static readonly ConcurrentDictionary<ushort, SerializableBasis.BasisMessageDescriptor> PluginDescriptors = new();
     private static readonly ConcurrentDictionary<int, HashSet<ushort>> Subscriptions = new();
 
-    /// <summary>Plugin ids start above the core channel range (0-63) so they never collide with core ids in the flat manifest/subscription space.</summary>
+    /// <summary>plugin id は core channel range (0-63) より上から始まるため、flat manifest/subscription space で core id と衝突しない。</summary>
     private const ushort PluginIdBase = 64;
     private static int _nextPluginId = PluginIdBase;
     private static readonly ConcurrentDictionary<string, ushort> PluginIdsByName = new();
     private static readonly object _pluginIdLock = new object();
 
-    // The supplied manifest only changes when plugins (un)register, which is expected at startup.
-    // Cache it as one atomically-swapped snapshot so per-connect SendSupplyTo is allocation-free.
+    // supplied manifest は plugin が (un)register されたときだけ変わる。これは startup 時に想定される。
+    // per-connect SendSupplyTo が allocation-free になるよう、atomically-swapped snapshot として cache する。
     private sealed class SupplySnapshot
     {
         public readonly int Version;
@@ -54,17 +53,17 @@ public static class BasisServerMessageRegistry
         RegisterCoreHandlers();
     }
 
-    /// <summary>Force the static constructor to run (registers core handlers). Safe to call repeatedly.</summary>
+    /// <summary>static constructor を強制実行する (core handler を register)。繰り返し呼んでも安全。</summary>
     public static void EnsureInitialized() { }
 
     public static void RegisterCore(byte channel, BasisServerMessageHandler handler) => CoreHandlers[channel] = handler;
 
     public static BasisServerMessageHandler ResolveCore(byte channel) => CoreHandlers[channel];
 
-    /// <summary>Bind a multiplexed plugin message id (carried on channels 61-63) to a handler. Not advertised in the manifest; prefer the descriptor overload.</summary>
+    /// <summary>multiplexed plugin message id (channel 61-63 上で運ばれる) を handler に bind する。manifest では advertise されないため、descriptor overload を優先する。</summary>
     public static void RegisterPlugin(ushort id, BasisServerMessageHandler handler) => PluginHandlers[id] = handler;
 
-    /// <summary>Bind a plugin message and advertise it in the supplied manifest so clients can subscribe by name.</summary>
+    /// <summary>plugin message を bind し、client が name で subscribe できるよう supplied manifest で advertise する。</summary>
     public static void RegisterPlugin(SerializableBasis.BasisMessageDescriptor descriptor, BasisServerMessageHandler handler)
     {
         PluginHandlers[descriptor.Id] = handler;
@@ -72,7 +71,7 @@ public static class BasisServerMessageRegistry
         InvalidateSupply();
     }
 
-    /// <summary>Remove a plugin message handler and its manifest descriptor. Returns true if a handler was bound.</summary>
+    /// <summary>plugin message handler と manifest descriptor を削除する。handler が bind されていた場合 true を返す。</summary>
     public static bool UnregisterPlugin(ushort id)
     {
         PluginDescriptors.TryRemove(id, out _);
@@ -82,9 +81,9 @@ public static class BasisServerMessageRegistry
     }
 
     /// <summary>
-    /// Register a plugin message by name with an auto-assigned id, advertise it in the manifest,
-    /// and bind its handler. Returns the assigned id. Ids are assigned in registration order from
-    /// PluginIdBase; register plugins in a deterministic order for stable ids across restarts.
+    /// plugin message を name で register し、auto-assigned id を割り当て、manifest で advertise して handler を bind する。
+    /// assigned id を返す。id は PluginIdBase から registration order で割り当てられるため、
+    /// restart 間で stable id にするには deterministic order で plugin を register する。
     /// </summary>
     public static ushort RegisterServerPlugin(string name, DeliveryMethod delivery, BasisServerMessageHandler handler, byte version = 1, SerializableBasis.BasisMessageFlags extraFlags = SerializableBasis.BasisMessageFlags.None)
     {
@@ -111,12 +110,12 @@ public static class BasisServerMessageRegistry
         return id;
     }
 
-    /// <summary>Look up a plugin's assigned message id by name.</summary>
+    /// <summary>plugin に割り当てられた message id を name で lookup する。</summary>
     public static bool TryGetPluginId(string name, out ushort id) => PluginIdsByName.TryGetValue(name, out id);
 
     /// <summary>
-    /// Send a plugin message to a peer by name: prepends the id and uses the descriptor's channel.
-    /// Skips peers that did not subscribe to the id. Returns false if the plugin is unknown or skipped.
+    /// plugin message を name で peer へ送る。id を prepend し、descriptor の channel を使う。
+    /// id に subscribe していない peer は skip する。plugin が unknown または skip された場合 false を返す。
     /// </summary>
     public static bool SendToPeer(NetPeer peer, string name, Action<NetDataWriter> writePayload)
     {
@@ -137,7 +136,7 @@ public static class BasisServerMessageRegistry
         return true;
     }
 
-    /// <summary>Core catalog plus any registered plugin descriptors — the manifest supplied to each client. Cached until a plugin (un)registers.</summary>
+    /// <summary>core catalog と registered plugin descriptor の集合。各 client に供給される manifest。plugin が (un)register されるまで cache される。</summary>
     public static SerializableBasis.BasisMessageDescriptor[] BuildSupply()
     {
         int version = _supplyVersion;
@@ -168,10 +167,10 @@ public static class BasisServerMessageRegistry
         return result;
     }
 
-    /// <summary>Invalidate the cached manifest after a plugin (un)registers.</summary>
+    /// <summary>plugin の (un)register 後に cached manifest を invalidate する。</summary>
     private static void InvalidateSupply() => System.Threading.Interlocked.Increment(ref _supplyVersion);
 
-    /// <summary>Send the registry manifest to a peer (RegistryControlChannel, RegistrySub_Supply). Called once per connect.</summary>
+    /// <summary>registry manifest を peer へ送る (RegistryControlChannel, RegistrySub_Supply)。connect ごとに一度呼ぶ。</summary>
     public static void SendSupplyTo(NetPeer peer)
     {
         SerializableBasis.BasisMessageSupply supply = new SerializableBasis.BasisMessageSupply { Descriptors = BuildSupply() };
@@ -183,25 +182,25 @@ public static class BasisServerMessageRegistry
         NetworkServer.ReturnWriter(writer);
     }
 
-    /// <summary>Record the message ids a peer reported it can handle (from RegistrySub_Subscribe).</summary>
+    /// <summary>peer が handle できると報告した message id を記録する (RegistrySub_Subscribe 由来)。</summary>
     public static void SetSubscription(int peerId, ushort[] ids)
     {
         Subscriptions[peerId] = (ids == null || ids.Length == 0) ? new HashSet<ushort>() : new HashSet<ushort>(ids);
     }
 
-    /// <summary>True if the peer subscribed to this message id. Also true when the peer never sent a subscription (no filtering until it does).</summary>
+    /// <summary>peer がこの message id に subscribe している場合 true。peer が subscription を一度も送っていない場合も true (送るまでは filtering しない)。</summary>
     public static bool IsSubscribed(int peerId, ushort id)
     {
         return !Subscriptions.TryGetValue(peerId, out HashSet<ushort> set) || set.Contains(id);
     }
 
-    /// <summary>Drop a peer's subscription record on disconnect.</summary>
+    /// <summary>disconnect 時に peer の subscription record を drop する。</summary>
     public static void ClearSubscription(int peerId) => Subscriptions.TryRemove(peerId, out _);
 
     /// <summary>
-    /// Reads the leading ushort message id from a plugin channel payload and dispatches it.
-    /// Returns false (leaving the caller to recycle and error-count) when the id is unknown
-    /// or the payload is too short to carry an id.
+    /// plugin channel payload の先頭 ushort message id を読み、dispatch する。
+    /// id が unknown、または payload が短すぎて id を含められない場合は false を返し、
+    /// recycle と error-count を caller に任せる。
     /// </summary>
     public static bool DispatchPlugin(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
     {
@@ -321,7 +320,7 @@ public static class BasisServerMessageRegistry
 
         RegisterCore(BasisNetworkCommons.ServerStatisticsChannel, (peer, reader, channel, dm) =>
         {
-            // Permission-gated stats
+            // permission-gated stats。
             if (!TryWithPermission(peer, reader, PermNodes.ServerStats, out _))
             {
                 return;
@@ -391,7 +390,7 @@ public static class BasisServerMessageRegistry
             return false;
         }
 
-        // Allow if they have the specific node, or admin, or global wildcard
+        // specific node、admin、global wildcard のいずれかを持つ場合は許可する。
         if (PermissionIntegration.HasValidRequirement(uuid, permNode))
         {
             return true;

@@ -9,61 +9,61 @@ namespace Basis.Scripts.Vehicles.Parts
     {
         [Header("Steering")]
         /// <summary>
-        /// The maximum angle in radians that the wheel can steer.
+        /// wheel が steering できる最大角度 (radians)。
         /// </summary>
         [Range(0.0f, 90.0f)]
         [Tooltip("Realistic values are less than 45.0 degrees.")]
         public float MaxSteeringAngleDegrees = 0.0f;
 
         /// <summary>
-        /// The speed at which the wheel steering angle changes, in degrees per second. If negative, the angle changes instantly.
+        /// wheel steering angle が変化する速度 (degrees/sec)。負なら angle は即時に変化する。
         /// </summary>
         [Tooltip("Negative means instant change.")]
         public float SteeringDegreesPerSecond = 60.0f;
 
         /// <summary>
-        /// The ratio of the maximum steering angle the wheel is rotated to.
+        /// wheel を最大 steering angle のどの比率まで回すか。
         /// </summary>
         [Range(-1.0f, 1.0f)]
         [Tooltip("Negative values mean turn left. Set at runtime by the vehicle.")]
         public float TargetSteeringRatio = 0.0f;
 
         /// <summary>
-        /// The current steering angle in degrees, tending towards CurrentSteeringRatio * MaxSteeringAngleDegrees.
-        /// If SteeringDegreesPerSecond is negative, this will equal the target value.
+        /// 現在の steering angle (degrees)。CurrentSteeringRatio * MaxSteeringAngleDegrees に近づく。
+        /// SteeringDegreesPerSecond が負なら target value と等しくなる。
         /// </summary>
         private float _currentSteeringAngleDegrees = 0.0f;
 
         [Header("Force")]
         /// <summary>
-        /// The maximum force in Newtons (kg⋅m/s²) that the wheel can provide for propulsion.
+        /// wheel が推進に提供できる最大 force (Newtons、kg*m/s^2)。
         /// </summary>
         [Tooltip("N (kg\u22C5m/s\u00B2)")]
         public float MaxPropulsionForce = 0.0f;
 
         /// <summary>
-        /// The braking force in Newtons (kg⋅m/s²) that the wheel applies when the vehicle is trying to stop.
-        /// If negative, the wheel uses propulsion force as braking instead.
+        /// vehicle が停止しようとしているときに wheel がかける braking force (Newtons、kg*m/s^2)。
+        /// 負なら、wheel は propulsion force を braking として使う。
         /// </summary>
         [Tooltip("Negative means use propulsion force as braking.")]
         public float BrakingForce = -1.0f;
 
         /// <summary>
-        /// The speed at which the wheel propulsion force changes, in Newtons per second. If negative, the force changes instantly.
+        /// wheel propulsion force が変化する速度 (Newtons/sec)。負なら force は即時に変化する。
         /// </summary>
         [Tooltip("Negative means instant change.")]
         public float PropulsionForceChangePerSecond = -1.0f;
 
         /// <summary>
-        /// The ratio of the maximum force the wheel is using for propulsion.
+        /// wheel が推進に使っている最大 force に対する比率。
         /// </summary>
         [Range(-1.0f, 1.0f)]
         [Tooltip("Negative values mean reverse. Set at runtime by the vehicle.")]
         public float TargetPropulsionForceRatio = 0.0f;
 
         /// <summary>
-        /// The current force being applied by the wheel, tending towards CurrentForceRatio * MaxForce.
-        /// If ForceChangePerSecond is negative, this will equal the target value.
+        /// wheel が現在適用している force。CurrentForceRatio * MaxForce に近づく。
+        /// ForceChangePerSecond が負なら target value と等しくなる。
         /// </summary>
         private float _currentForce = 0.0f;
 
@@ -79,7 +79,7 @@ namespace Basis.Scripts.Vehicles.Parts
                 _negateSteering = true;
             }
             _wheelCollider = GetComponent<WheelCollider>();
-            // Find all child transforms to rotate with the wheel.
+            // wheel と一緒に回転させる child transform をすべて探す。
             for (int i = 0; i < transform.childCount; i++)
             {
                 Transform child = transform.GetChild(i);
@@ -103,7 +103,7 @@ namespace Basis.Scripts.Vehicles.Parts
                 }
                 return;
             }
-            // Move the wheel collider's steering angle towards the target.
+            // wheel collider の steering angle を target へ近づける。
             float steerTarget = TargetSteeringRatio * MaxSteeringAngleDegrees;
             if (SteeringDegreesPerSecond < 0.0f)
             {
@@ -115,7 +115,7 @@ namespace Basis.Scripts.Vehicles.Parts
                 _currentSteeringAngleDegrees = Mathf.MoveTowards(_currentSteeringAngleDegrees, steerTarget, steerChange);
             }
             _wheelCollider.steerAngle = _currentSteeringAngleDegrees;
-            // Figure out the target force the wheel is moving towards.
+            // wheel が近づく target force を求める。
             float forceTarget = 0.0f;
             bool shouldWheelsBrake = false;
             if (_parentVehicleBody != null)
@@ -126,7 +126,7 @@ namespace Basis.Scripts.Vehicles.Parts
             if (shouldWheelsBrake)
             {
                 float brakeForce = BrakingForce < 0.0f ? forceTarget : BrakingForce;
-                // Note: Unity's brakeTorque MUST be positive regardless of braking direction.
+                // 注意: Unity の brakeTorque は braking direction に関係なく必ず正でなければならない。
                 _wheelCollider.brakeTorque = Mathf.Abs(brakeForce * _wheelCollider.radius);
                 forceTarget = 0.0f; // Ramp down the motor torque to zero while braking.
             }
@@ -134,7 +134,7 @@ namespace Basis.Scripts.Vehicles.Parts
             {
                 _wheelCollider.brakeTorque = 0.0f;
             }
-            // Move the wheel collider's motor torque towards the target.
+            // wheel collider の motor torque を target へ近づける。
             if (PropulsionForceChangePerSecond < 0.0f)
             {
                 _currentForce = forceTarget;
@@ -148,9 +148,9 @@ namespace Basis.Scripts.Vehicles.Parts
             {
                 _particleEmission.rateOverTime = 100.0f * Mathf.Abs(_currentForce) / MaxPropulsionForce;
             }
-            // Note: Unity's motorTorque uses Newton-meters (N⋅m or kg⋅m²/s²) but forceAmount is in Newtons (N or kg⋅m/s²).
+            // 注意: Unity の motorTorque は Newton-meters (N*m または kg*m^2/s^2) だが、forceAmount は Newtons (N または kg*m/s^2)。
             _wheelCollider.motorTorque = _currentForce * _wheelCollider.radius;
-            // Transform all child objects to match the wheel collider's rotation and position.
+            // child object をすべて wheel collider の rotation と position に合わせる。
             _wheelCollider.GetWorldPose(out Vector3 wheelPosition, out Quaternion wheelRotation);
             foreach (KeyValuePair<Transform, BasisCalibratedCoords> entry in _childTransforms)
             {
@@ -162,15 +162,15 @@ namespace Basis.Scripts.Vehicles.Parts
         }
 
         /// <summary>
-        /// Sets the wheel's steering and thrust based on vehicle input.
+        /// vehicle input に基づいて wheel の steering と thrust を設定する。
         /// </summary>
-        /// <param name="angularInput">The vehicle's angular input on a range of -1.0 to 1.0.</param>
-        /// <param name="linearInput">The vehicle's linear input on a range of -1.0 to 1.0.</param>
+        /// <param name="angularInput">vehicle の angular input。範囲は -1.0 から 1.0。</param>
+        /// <param name="linearInput">vehicle の linear input。範囲は -1.0 から 1.0。</param>
         public override void SetFromVehicleInput(Vector3 angularInput, Vector3 linearInput)
         {
-            // NOTE: This code only supports wheels where 0 steering means forward.
-            // Ideally we should allow for wheels in other rotations but that would be more complicated.
-            // Set steering, prioritizing linear input when it's stronger, otherwise using angular input.
+            // NOTE: この code は 0 steering が forward を意味する wheel のみを support する。
+            // 理想的には他の rotation の wheel も許可したいが、より複雑になる。
+            // linear input が強い場合はそれを優先し、それ以外は angular input で steering を設定する。
             float source = (Mathf.Abs(linearInput.x) * 2.0f > Mathf.Abs(angularInput.y)) ? linearInput.x : angularInput.y;
             float steerRatio = source * source;
             if ((source < 0.0f) != _negateSteering)
@@ -178,7 +178,7 @@ namespace Basis.Scripts.Vehicles.Parts
                 steerRatio = -steerRatio;
             }
             TargetSteeringRatio = Mathf.Clamp(steerRatio, -1.0f, 1.0f);
-            // Set thrust from vehicle linear input.
+            // vehicle linear input から thrust を設定する。
             float forceRatio = linearInput.z * Mathf.Cos(_currentSteeringAngleDegrees * Mathf.Deg2Rad);
             TargetPropulsionForceRatio = Mathf.Clamp(forceRatio, -1.0f, 1.0f);
         }

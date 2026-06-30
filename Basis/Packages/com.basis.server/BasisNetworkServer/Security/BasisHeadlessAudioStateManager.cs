@@ -5,7 +5,7 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Runtime-only server toggle for headless audio clip playback.
+    /// headless audio clip playback 用の runtime-only server toggle。
     /// </summary>
     public static class BasisHeadlessAudioStateManager
     {

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Basis.MediaPipe
 {
-    /// <summary>Abstraction over the landmark inference engine (homuler MediaPipe, or a no-op).</summary>
+    /// <summary>landmark inference engine (homuler MediaPipe または no-op) の抽象化。</summary>
     public interface IBasisMediaPipeBackend
     {
         bool IsAvailable { get; }

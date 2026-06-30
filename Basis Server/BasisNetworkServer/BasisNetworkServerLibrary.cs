@@ -8,15 +8,15 @@ using static SerializableBasis;
 public static class BasisNetworkServerLibrary
 {
     /// <summary>
-    /// Wire format on <see cref="BasisNetworkCommons.ServerLibraryChannel"/>:
+    /// <see cref="BasisNetworkCommons.ServerLibraryChannel"/> 上の wire format:
     ///   [u16 rawLen][u16 compressedLen][bytes payload]
-    /// If <c>compressedLen == 0</c> the payload is the raw <see cref="ServerLibraryMessage"/>
-    /// bytes. Otherwise the payload is LZ4-encoded and decompresses to <c>rawLen</c> bytes.
+    /// <c>compressedLen == 0</c> の場合、payload は raw <see cref="ServerLibraryMessage"/> bytes。
+    /// それ以外の場合、payload は LZ4-encoded で、decompress すると <c>rawLen</c> bytes になる。
     ///
-    /// The wire payload is cached and only rebuilt when the admin mutates the
-    /// library (via <see cref="BroadcastLibraryToAll"/>). Per-peer joins just
-    /// memcpy the cached bytes into a pooled writer — zero new allocations on
-    /// the hot path.
+    /// wire payload は cache され、admin が library を mutate した場合
+    /// (<see cref="BroadcastLibraryToAll"/> 経由) だけ rebuild される。
+    /// peer ごとの join では cached byte を pooled writer へ memcpy するだけなので、
+    /// hot path の新規 allocation は 0。
     /// </summary>
     private static byte[] _cachedWire = Array.Empty<byte>();
     private static int _cachedWireLen;
@@ -33,7 +33,7 @@ public static class BasisNetworkServerLibrary
 
     public static void BroadcastLibraryToAll()
     {
-        // Library mutated — rebuild cache before broadcasting.
+        // library が mutate されたため、broadcast 前に cache を rebuild する。
         lock (_cacheLock) RebuildCacheLocked();
         if (_cachedWireLen == 0) return;
 
@@ -66,9 +66,9 @@ public static class BasisNetworkServerLibrary
         var loaded = BasisDefaultLibraryLoader.LoadedItems;
         int count = loaded?.Count ?? 0;
 
-        // Serialize directly from BasisDefaultLibraryLoader.LoadedItems into a
-        // rented writer — avoids the ServerLibraryItem[] alloc the prior version
-        // built. Mirrors ServerLibraryMessage.Serialize byte-for-byte.
+        // BasisDefaultLibraryLoader.LoadedItems から rented writer へ直接 serialize する。
+        // 以前の version が作っていた ServerLibraryItem[] allocation を避ける。
+        // ServerLibraryMessage.Serialize と byte-for-byte で一致させる。
         NetDataWriter raw = NetworkServer.RentWriter();
         try
         {
@@ -102,17 +102,17 @@ public static class BasisNetworkServerLibrary
                 int payloadLen = useCompressed ? compressedLen : rawLen;
                 int wireLen = 4 + payloadLen; // [u16 rawLen][u16 compressedLen]
 
-                // Grow the cache buffer only when the wire format actually got bigger;
-                // otherwise reuse the existing allocation.
+                // wire format が実際に大きくなった場合だけ cache buffer を grow する。
+                // それ以外は既存 allocation を再利用する。
                 if (_cachedWire.Length < wireLen)
                 {
                     _cachedWire = new byte[Math.Max(wireLen, 256)];
                 }
 
-                // [u16 rawLen] (little-endian — matches NetDataWriter.Put(ushort))
+                // [u16 rawLen] (little-endian。NetDataWriter.Put(ushort) と一致)
                 _cachedWire[0] = (byte)rawLen;
                 _cachedWire[1] = (byte)(rawLen >> 8);
-                // [u16 compressedLen] — 0 means the payload is raw
+                // [u16 compressedLen]。0 は payload が raw であることを意味する。
                 int compLenWire = useCompressed ? compressedLen : 0;
                 _cachedWire[2] = (byte)compLenWire;
                 _cachedWire[3] = (byte)(compLenWire >> 8);

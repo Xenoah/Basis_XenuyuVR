@@ -10,16 +10,16 @@ using static SerializableBasis;
 namespace BasisNetworkServer
 {
     /// <summary>
-    /// Server-side receiver for client error/exception reports sent on
-    /// <see cref="BasisNetworkCommons.EventsChannel"/> with sub-byte
-    /// <see cref="BasisNetworkCommons.EventType_ErrorReport"/>.
+    /// <see cref="BasisNetworkCommons.EventsChannel"/> 上で
+    /// <see cref="BasisNetworkCommons.EventType_ErrorReport"/> sub-byte として送られる、
+    /// client error / exception report の server-side receiver。
     ///
-    /// Wire (client→server): [eventType:1][severity:1][lenPrefixed PermissionCompression blob of (system, message, stack)]
+    /// wire (client→server): [eventType:1][severity:1][lenPrefixed PermissionCompression blob of (system, message, stack)]
     ///
-    /// The reporting client never sends its own identity — the authoritative UUID,
-    /// display name and platform are attached here from the peer's connect metadata.
-    /// Only the first occurrence of each unique error per user (this server session)
-    /// is written, to CrashReports/&lt;uuid&gt;.jsonl. Gated by BasisCrashReportStateManager.
+    /// report する client は自分の identity を送らない。authoritative な UUID、
+    /// display name、platform は peer の connect metadata からここで付与される。
+    /// user ごとの unique error は、この server session 内では初回だけ
+    /// CrashReports/&lt;uuid&gt;.jsonl へ書き込まれる。BasisCrashReportStateManager で gate される。
     /// </summary>
     public static class BasisNetworkHandleErrorReport
     {

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Basis.Integration.AudioLink
 {
     /// <summary>
-    /// Drives a renderer's emission (and optionally base) color from a CPU-readback AudioLink band via a MaterialPropertyBlock, so shared materials are not instanced.
+    /// CPU-readback AudioLink band から MaterialPropertyBlock 経由で renderer の emission 色 (任意で base 色も) を駆動し、shared material を instance 化しないようにする。
     /// </summary>
     [AddComponentMenu("Basis/AudioLink/Reactive Material")]
     public class BasisAudioLinkReactiveMaterial : BasisAudioLinkReactiveBase

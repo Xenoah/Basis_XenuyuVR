@@ -26,7 +26,7 @@ namespace Basis
                 Directory.CreateDirectory(configDir);
             }
             string configFilePath = Path.Combine(configDir, "config.xml");
-            // Capture this before LoadFromXml, which creates config.xml when it's missing.
+            // LoadFromXml は config.xml がない場合に作成するため、その前に初回起動かどうかを記録する。
             bool isFirstBoot = !File.Exists(configFilePath);
             Configuration config = Configuration.LoadFromXml(configFilePath);
             config.ProcessEnvironmentalOverrides();
@@ -34,8 +34,7 @@ namespace Basis
             string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Configuration.LogsFolderName);
             BasisServerSideLogging.Initialize(config, folderPath);
 
-            // Brand-new server: walk the operator through core settings and force them to
-            // designate an admin before anything boots.
+            // 新規サーバーでは、起動前に主要設定を確認し、管理者を必ず指定させる。
             if (isFirstBoot)
             {
                 BasisSetupWizard.Run(config, configFilePath);
@@ -50,12 +49,12 @@ namespace Basis
 
             NetworkServer.StartServer(config);
             
-            // Handle legacy resource directory name migrations and similar.
-            // after a version bump or two this should be removed
+            // 旧 resource directory 名の移行などを処理する。
+            // 数回の version bump 後には削除する想定。
             string[] legacyPaths = [
-                "initalresources",    // dooly spelling
-                "initialressources",  // if you're french
-                "intialresources",   // another common typo
+                "initalresources",    // dooly 表記
+                "initialressources",  // フランス語圏っぽい綴り
+                "intialresources",   // よくある別 typo
             ];
             
             string correctPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Configuration.InitialResourcesFolderName);
@@ -71,7 +70,7 @@ namespace Basis
                         BNL.Log($"Found legacy '{legacyName}' directory, migrating to '{Configuration.InitialResourcesFolderName}'...");
                         Directory.Move(legacyFullPath, correctPath);
                         BNL.Log("Directory migration completed successfully");
-                        break; // Exit after first successful migration
+                        break; // 最初に成功した移行で抜ける。
                     }
                     catch (Exception ex)
                     {
@@ -86,7 +85,7 @@ namespace Basis
             {
                 BNL.Log("Shutting down server...");
                 isRunning = false;
-                shutdownEvent.Set(); // Signal the main thread to exit
+                shutdownEvent.Set(); // main thread に終了を通知する。
 #if !UNITY_2017_1_OR_NEWER
                 Api?.Dispose();
 #endif
@@ -107,7 +106,7 @@ namespace Basis
                 BasisConsoleCommands.RegisterConfigurationCommands(config);
                 BasisConsoleCommands.StartConsoleListener();
             }
-            // Wait for shutdown signal
+            // shutdown signal を待つ。
             shutdownEvent.Wait();
         }
 

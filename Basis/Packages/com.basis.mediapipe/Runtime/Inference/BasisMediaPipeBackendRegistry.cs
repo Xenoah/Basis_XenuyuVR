@@ -3,9 +3,9 @@ using System;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// Decouples the core package from the optional homuler integration assembly.
-    /// The homuler assembly registers its factory at startup; when absent, Create()
-    /// returns a no-op backend so the feature stays inert.
+    /// core package を任意の homuler integration assembly から切り離す。
+    /// homuler assembly は startup 時に factory を登録する。存在しない場合、Create()
+    /// は no-op backend を返し、この機能を inert に保つ。
     /// </summary>
     public static class BasisMediaPipeBackendRegistry
     {

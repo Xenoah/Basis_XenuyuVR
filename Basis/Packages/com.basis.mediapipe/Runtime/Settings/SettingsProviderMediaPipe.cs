@@ -6,8 +6,8 @@ using UnityEngine;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// Adds the webcam tracking controls (enable, camera selection, per-feature toggles, calibrate)
-    /// as a section inside the framework's Tracker Settings tab via
+    /// Web カメラ tracking controls (有効化、camera 選択、機能別 toggle、calibrate) を、
+    /// framework の Tracker Settings tab 内 section として追加する。
     /// SettingsProvider.TrackerSettingsExtraBuilder.
     /// </summary>
     public static class SettingsProviderMediaPipe
@@ -257,7 +257,7 @@ namespace Basis.MediaPipe
 
             PanelSectionToggleHelpers.FinalizeFlatSectionFromIndex(webcamToggle, parent, webcamStart, false, visible =>
             {
-                // Expanding re-shows both rows; re-apply the enable gate over the settings.
+            // 展開すると両方の row が再表示されるため、settings 上の enable gate を再適用する。
                 if (visible)
                 {
                     RefreshWebcamSettingsVisibility(BasisMediaPipeSettings.Enable.RawValue);

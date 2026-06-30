@@ -29,7 +29,7 @@ namespace BasisNetworkServer
         private static readonly double MsToTick = Stopwatch.Frequency / 1000.0;
 
         /// <summary>
-        /// Client says their PIP camera was created or destroyed.
+        /// client が PIP camera の作成/破棄を通知する。
         /// </summary>
         public static void HandlePIPStateChange(NetPacketReader reader, NetPeer peer)
         {
@@ -66,7 +66,7 @@ namespace BasisNetworkServer
                 BNL.Log($"PIP camera destroyed for player {peerId}");
             }
 
-            // Broadcast state to all peers
+            // state を全 peer へ broadcast する。
             CameraPIPStateMessage outMsg = new CameraPIPStateMessage
             {
                 PlayerID = peerId,
@@ -87,7 +87,7 @@ namespace BasisNetworkServer
         }
 
         /// <summary>
-        /// Client sends a position update for their PIP camera.
+        /// client が自身の PIP camera の position update を送る。
         /// </summary>
         public static void HandlePIPPositionUpdate(NetPacketReader reader, NetPeer peer)
         {
@@ -111,8 +111,8 @@ namespace BasisNetworkServer
         }
 
         /// <summary>
-        /// Called from the reduction system tick loop. Sends PIP position updates
-        /// to recipients using the same distance-based interval as avatar movement.
+        /// reduction system の tick loop から呼ばれる。
+        /// avatar movement と同じ distance-based interval を使って、recipient へ PIP position update を送る。
         /// </summary>
         public static void UpdatePIPPositions(long nowTicks)
         {
@@ -127,14 +127,14 @@ namespace BasisNetworkServer
                 if (!pipState.IsActive || !pipState.HasNewData)
                     continue;
 
-                // Get the PIP owner's player position for distance calc
+                // distance calc 用に PIP owner の player position を取得する。
                 if (!BasisServerReductionSystemEvents.playerStates.TryGetValue(ownerId, out PlayerState ownerPlayerState))
                     continue;
 
                 if (!ownerPlayerState.IsActive)
                     continue;
 
-                // Build the outbound message once
+                // outbound message を一度だけ組み立てる。
                 CameraPIPPositionMessage posMsg = new CameraPIPPositionMessage
                 {
                     PlayerID = (ushort)ownerId,
@@ -164,7 +164,7 @@ namespace BasisNetworkServer
                     if (!recipientState.IsActive)
                         continue;
 
-                    // Distance between recipient and PIP owner
+                    // recipient と PIP owner の距離。
                     float distSq = DistanceSquared(recipientState.Position, ownerPlayerState.Position);
                     CalculateIntervalFromDistanceSq(distSq, out int actualInterval);
 
@@ -187,7 +187,7 @@ namespace BasisNetworkServer
         }
 
         /// <summary>
-        /// Send all active PIP camera states to a newly joined peer.
+        /// newly joined peer へ、active な PIP camera state をすべて送る。
         /// </summary>
         public static void SendPIPStateToPeer(NetPeer newPeer)
         {
@@ -220,7 +220,7 @@ namespace BasisNetworkServer
         }
 
         /// <summary>
-        /// On disconnect: if this player had an active PIP, broadcast destroy to all.
+        /// disconnect 時、この player が active PIP を持っていれば destroy を全員へ broadcast する。
         /// </summary>
         public static void RemovePlayer(int peerId)
         {

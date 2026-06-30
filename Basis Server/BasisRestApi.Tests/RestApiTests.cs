@@ -48,7 +48,7 @@ namespace BasisRestApi.Tests
             BasisNetworkPreloadResourceManagement.Reset();
         }
 
-        // ── Auth ──────────────────────────────────────────────────────────────
+        // ── 認証 ──────────────────────────────────────────────────────────────
 
         [Fact]
         public async Task NoAuthHeader_Returns401()
@@ -73,7 +73,7 @@ namespace BasisRestApi.Tests
             Assert.NotEqual(HttpStatusCode.Unauthorized, res.StatusCode);
         }
 
-        // ── Routing ───────────────────────────────────────────────────────────
+        // ── routing ───────────────────────────────────────────────────────────
 
         [Fact]
         public async Task UnknownPath_Returns404()
@@ -320,7 +320,7 @@ namespace BasisRestApi.Tests
 
             Assert.True(BasisNetworkResourceManagement.UshortNetworkDatabase.TryGetValue(netId, out var r));
             Assert.Equal(cleanUrl, r!.CombinedURL);
-            // Fragment passwords are base64-encoded; server decodes them before storing.
+            // fragment password は base64-encoded なので、server は保存前に decode する。
             string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(password));
             Assert.Equal(decoded, r.UnlockPassword);
         }
@@ -344,7 +344,7 @@ namespace BasisRestApi.Tests
         [Fact]
         public async Task SwitchWorld_WithDelay_NetIdReturnedImmediatelyLoadDeferred()
         {
-            // delay > 0: announce is sent first (cross-channel ordering), load starts after delay
+            // delay > 0: announce を先に送信し、cross-channel ordering を保ってから delay 後に load を開始する。
             var res = await PostJson("/api/worlds/switch",
                 """{"url":"https://example.com/next.bee","password":"pass","delay":1,"announceMessage":"Loading in 1s"}""");
 
@@ -360,7 +360,7 @@ namespace BasisRestApi.Tests
                 "load should be in DB after delay expires");
         }
 
-        // ── Helpers ───────────────────────────────────────────────────────────
+        // ── helper ───────────────────────────────────────────────────────────
 
         private Task<HttpResponseMessage> PostJson(string path, string json) =>
             _authed.PostAsync(path, new StringContent(json, Encoding.UTF8, "application/json"));

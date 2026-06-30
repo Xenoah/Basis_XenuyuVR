@@ -5,16 +5,16 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Per-user admin override for the Opus encoder bitrate (bits per second).
-    /// The server keeps the override keyed by netId; when the targeted user's peer is
-    /// connected, it pushes a UserOpusBitrateOverride message so the client applies
-    /// OPUS_SET_BITRATE to its live encoder. A value of 0 means "no override — use the
-    /// client's default bitrate". State is cleared when the peer disconnects.
+    /// user ごとの Opus encoder bitrate (bits per second) admin override。
+    /// server は override を netId で保持する。target user の peer が接続中なら、
+    /// UserOpusBitrateOverride message を push し、client が live encoder に OPUS_SET_BITRATE を適用する。
+    /// 0 は "override なし。client default bitrate を使う" という意味。
+    /// peer disconnect 時に state は clear される。
     /// </summary>
     public static class BasisUserOpusBitrateStateManager
     {
-        // Opus accepts 500..512000 bps; clamp to a slightly tighter, conservative range
-        // for voice. 0 is reserved as the "clear override" sentinel.
+        // Opus は 500..512000 bps を受け付ける。voice 用に少し狭い conservative range へ clamp する。
+        // 0 は "clear override" sentinel として予約する。
         public const int MinBitrate = 6000;
         public const int MaxBitrate = 510000;
 
@@ -24,8 +24,8 @@ namespace BasisNetworkServer.Security
             _overrides.TryGetValue(netId, out bitrate);
 
         /// <summary>
-        /// Set or clear the bitrate override for a user. Pass 0 to clear.
-        /// Returns the value that was actually stored after clamping (0 = cleared).
+        /// user の bitrate override を set / clear する。clear するには 0 を渡す。
+        /// clamp 後に実際に保存された値を返す (0 = cleared)。
         /// </summary>
         public static int SetBitrate(int netId, int bitrate)
         {

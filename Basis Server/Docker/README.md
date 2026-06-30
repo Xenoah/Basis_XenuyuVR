@@ -1,28 +1,28 @@
-# Basis Server Docker Setup
+# Basis Server Docker セットアップ
 
-This document guides you through setting up and running the Basis server, using Docker and Docker Compose.
+この文書では、Docker と Docker Compose を使って Basis server をセットアップし、実行する方法を説明します。
 
-## Table of Contents
+## 目次
 
-- [Prerequisites](#prerequisites)
-- [Directory Structure](#directory-structure)
-- [Configuration](#configuration)
-- [Docker Compose Configuration](#docker-compose-configuration)
-- [Getting Started](#getting-started)
-- [Customizing Configuration](#customizing-configuration)
-- [Volumes and Persistence](#volumes-and-persistence)
-- [Logging and Monitoring](#logging-and-monitoring)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+- [前提条件](#前提条件)
+- [ディレクトリ構成](#ディレクトリ構成)
+- [設定](#設定)
+- [Docker Compose 設定](#docker-compose-設定)
+- [はじめ方](#はじめ方)
+- [設定のカスタマイズ](#設定のカスタマイズ)
+- [volume と永続化](#volume-と永続化)
+- [ログと監視](#ログと監視)
+- [トラブルシューティング](#トラブルシューティング)
+- [ライセンス](#ライセンス)
 
-## Prerequisites
+## 前提条件
 
-- Docker (latest version recommended)
-- Docker Compose (v2 syntax: `docker compose`)
+- Docker (最新版を推奨)
+- Docker Compose (v2 構文: `docker compose`)
 
-## Directory Structure
+## ディレクトリ構成
 
-When you first run the server using `docker compose up`, the following directories will be created within the `Docker/` folder if they do not already exist:
+`docker compose up` で初めてサーバーを実行すると、存在しない場合は `Docker/` フォルダー内に次のディレクトリが作成されます。
 
 ```text
 Docker/
@@ -30,22 +30,23 @@ Docker/
 └── initialresources/
 ```
 
-- `config/`: Contains XML configuration files for the server (e.g., main settings, admin lists, ban lists). The server may auto-generate or update these based on its internal defaults and environment variables.
-- `initialresources/`: Contains static assets required by the server at runtime. These are typically mounted as read-only into the container.
+- `config/`: サーバー用の XML 設定ファイルを格納します。例: メイン設定、管理者リスト、BAN リスト。サーバーは内部デフォルトや環境変数に基づいて、これらを自動生成または更新する場合があります。
+- `initialresources/`: サーバー実行時に必要な static asset を格納します。通常はコンテナへ read-only で mount されます。
 
-## Configuration
+## 設定
 
-The server's behavior is primarily controlled by environment variables when running with Docker, which can override settings that might otherwise be loaded from or written to XML configuration files.
+Docker で実行する場合、サーバーの挙動は主に環境変数で制御されます。環境変数は、XML 設定ファイルから読み込まれる値や XML 設定ファイルへ書き込まれる値を上書きできます。
 
-### Configuration Files
+### 設定ファイル
 
-Upon startup, or if not present, the server may generate default configuration files in the `config/` directory (mounted from `./config` as per `docker-compose.yml`):
+起動時、またはファイルが存在しない場合、サーバーは `config/` ディレクトリにデフォルト設定ファイルを生成することがあります。`docker-compose.yml` では `./config` から mount されます。
 
-- `config/config.xml`: Main server settings (ports, timeouts, peer limits, authentication, etc.).
-- `config/admins.xml`: List of admin user identifiers.
-- `config/banned_players.xml`: List of banned user identifiers.
+- `config/config.xml`: メインのサーバー設定。port、timeout、peer limit、認証など。
+- `config/admins.xml`: 管理者ユーザー識別子のリスト。
+- `config/banned_players.xml`: BAN 済みユーザー識別子のリスト。
 
-Example snippet from a `config/config.xml` (values here might be defaults before environment variables are applied):
+`config/config.xml` の例です。ここにある値は、環境変数が適用される前のデフォルトである可能性があります。
+
 ```xml
 <Configuration>
   <PeerLimit>1024</PeerLimit>
@@ -56,140 +57,151 @@ Example snippet from a `config/config.xml` (values here might be defaults before
 </Configuration>
 ```
 
-### Environment Variables
+### 環境変数
 
-Key settings can be overridden or set via environment variables in your `docker-compose.yml` file or `docker run` command. These take precedence.
+主要な設定は、`docker-compose.yml` または `docker run` コマンドの環境変数で上書き/設定できます。環境変数が優先されます。
 
-Commonly used environment variables:
+よく使う環境変数:
 
-| Environment Variable | Default in `docker-compose.yml` | Description                                       |
+| 環境変数 | `docker-compose.yml` でのデフォルト | 説明 |
 | -------------------- | ------------------------------- | ------------------------------------------------- |
-| `SetPort`            | `4296`                          | UDP port for game client traffic.                 |
-| `HealthCheckPort`    | `10666`                         | TCP port for server health checks.                |
-| `PromethusPort`      | `1234`                          | TCP port for Prometheus metrics.                  |
-| `PeerLimit`          | `1024`                          | Maximum number of concurrent connected peers.     |
-| `Password`           | `default_password`              | Connection password for clients. **Change this!** |
-| `EnableStatistics`   | `true`                          | Enables the statistics module.                    |
-| `EnableConsole`      | `false`                         | Enables the interactive server console (CLI).     |
-| `DisallowHeadless`   | `false`                         | Disconnects connected headless clients and blocks new ones. |
+| `SetPort` | `4296` | game client traffic 用の UDP port。 |
+| `HealthCheckPort` | `10666` | server health check 用の TCP port。 |
+| `PromethusPort` | `1234` | Prometheus metrics 用の TCP port。 |
+| `PeerLimit` | `1024` | 同時接続 peer 数の上限。 |
+| `Password` | `default_password` | client 接続用 password。**必ず変更してください。** |
+| `EnableStatistics` | `true` | statistics module を有効にします。 |
+| `EnableConsole` | `false` | interactive server console (CLI) を有効にします。 |
+| `DisallowHeadless` | `false` | 接続済み headless client を切断し、新規 headless client を拒否します。 |
 
-A more comprehensive list of configurable settings can typically be found by inspecting the generated `config/config.xml` after an initial run, or by checking the server's internal documentation if available.
+設定可能な項目のより包括的な一覧は、通常は初回実行後に生成された `config/config.xml` を確認するか、利用できる場合はサーバー内部ドキュメントを確認することで把握できます。
 
-## Docker Compose Configuration
+## Docker Compose 設定
 
-The `docker-compose.yml` file orchestrates the server deployment. Here's the provided example (`Docker/docker-compose.yml`):
+`docker-compose.yml` はサーバーの deployment をまとめて扱います。提供されている例は `Docker/docker-compose.yml` です。
 
 ```yaml
 services:
   basis-server:
     build:
-      context: ../ # Build context is the parent directory (Basis Server/)
-      dockerfile: Docker/Dockerfile # Path to the Dockerfile
-    image: basis-server:latest # Name and tag for the built image
-    container_name: basis-server # Custom name for the running container
-    restart: unless-stopped # Policy for restarting the container
+      context: ../ # build context は親ディレクトリ (Basis Server/)
+      dockerfile: Docker/Dockerfile # Dockerfile への path
+    image: basis-server:latest # build された image の名前と tag
+    container_name: basis-server # 実行中 container の custom name
+    restart: unless-stopped # container の restart policy
     environment:
-      # Environment variables to configure the server
+      # サーバー設定用の環境変数
       SetPort: 4296
       HealthCheckPort: 10666
       PromethusPort: 1234
-      Password: default_password # IMPORTANT: Change for production!
+      Password: default_password # 重要: production では変更してください
       PeerLimit: 1024
       EnableStatistics: true
-      EnableConsole: false # Set to true for interactive console debugging
+      EnableConsole: false # interactive console debugging では true にします
     ports:
-      # Mapping host ports to container ports
-      - "4296:4296/udp"    # Game traffic
-      - "10666:10666/tcp"  # Health checks
+      # host port と container port の mapping
+      - "4296:4296/udp"    # game traffic
+      - "10666:10666/tcp"  # health check
       - "1234:1234/tcp"    # Prometheus metrics
     volumes:
-      # Mounting host directories into the container
-      - ./initialresources:/app/initialresources:ro # Read-only static assets
-      - ./config:/app/config                         # Read-write server configuration
+      # host directory を container に mount
+      - ./initialresources:/app/initialresources:ro # read-only static assets
+      - ./config:/app/config                         # read-write server configuration
 ```
-**Security Note:** The default password `default_password` is set for ease of setup. **You MUST change this** in your `docker-compose.yml` for any non-local or production deployment.
 
-## Getting Started
+**セキュリティメモ:** セットアップしやすいよう、デフォルト password は `default_password` になっています。local 以外、または production deployment では、`docker-compose.yml` 内で**必ず変更してください**。
 
-1.  **Navigate to the Docker directory:**
-    Open your terminal and change to the directory containing the `docker-compose.yml` file:
+## はじめ方
+
+1. **Docker ディレクトリへ移動します。**
+    terminal を開き、`docker-compose.yml` があるディレクトリへ移動します。
+
     ```bash
     cd path/to/your/project/Basis\ Server/Docker/
     ```
 
-2.  **Build the Docker image:**
-    This command builds the server image using the `Dockerfile`.
+2. **Docker image を build します。**
+    このコマンドは `Dockerfile` を使って server image を build します。
+
     ```bash
     docker compose build
     ```
 
-3.  **Start the server:**
-    This command starts the server in detached mode (`-d`), meaning it runs in the background.
+3. **サーバーを起動します。**
+    このコマンドは detached mode (`-d`) でサーバーを起動します。つまり background で実行されます。
+
     ```bash
     docker compose up -d
     ```
-    **Important:** For the first run, ensure `config/` and `initialresources/` directories exist or are created by this process.
 
-4.  **View server logs:**
-    To monitor the server's output and check for errors:
+    **重要:** 初回実行時は、`config/` と `initialresources/` ディレクトリが存在するか、この処理で作成されることを確認してください。
+
+4. **サーバーログを表示します。**
+    サーバー出力を監視し、error を確認します。
+
     ```bash
     docker compose logs -f basis-server
     ```
-    (Use `Ctrl+C` to stop following logs)
 
-5.  **Stop the server:**
-    This command stops and removes the containers defined in `docker-compose.yml`.
+    ログ追跡を止めるには `Ctrl+C` を使います。
+
+5. **サーバーを停止します。**
+    このコマンドは `docker-compose.yml` で定義された container を停止し、削除します。
+
     ```bash
     docker compose down
     ```
 
-## Customizing Configuration
+## 設定のカスタマイズ
 
--   **Environment Variables (Recommended for Docker):**
-    Modify the `environment` section in `docker-compose.yml` to change settings like ports, password, peer limit, etc. After changes, you may need to rebuild and/or restart:
+- **環境変数 (Docker では推奨):**
+  port、password、peer limit などの設定を変更するには、`docker-compose.yml` の `environment` section を編集します。変更後は rebuild や restart が必要になる場合があります。
+
     ```bash
-    docker compose up -d --build # To rebuild and restart
+    docker compose up -d --build # rebuild して restart
     # or
-    docker compose restart basis-server # To just restart the service if only ENV vars changed
+    docker compose restart basis-server # ENV var のみを変えた場合は service だけ restart
     ```
 
--   **XML Configuration Files (`config/`):**
-    For more advanced settings not exposed via environment variables, you can sometimes edit the XML files in the `config/` directory *while the server is stopped*. The server will load these on its next start. However, be aware that environment variables might still override these.
-    After modifying files in `config/`, restart the service:
+- **XML 設定ファイル (`config/`):**
+  環境変数として公開されていない高度な設定は、場合によっては *server 停止中* に `config/` ディレクトリ内の XML ファイルを編集できます。次回起動時にサーバーが読み込みます。ただし、環境変数がこれらの値を上書きする場合がある点に注意してください。
+
+  `config/` 内のファイルを変更したら、service を restart します。
+
     ```bash
     docker compose restart basis-server
     ```
 
-## Volumes and Persistence
+## volume と永続化
 
--   `./config:/app/config`: This volume mounts the `Docker/config/` directory on your host to `/app/config` inside the container. This allows server configuration to persist across container restarts. The server can read from and write to these files.
--   `./initialresources:/app/initialresources:ro`: This mounts `Docker/initialresources/` as read-only into the container. These are static assets the server needs.
+- `./config:/app/config`: host 側の `Docker/config/` ディレクトリを、container 内の `/app/config` に mount します。これにより、container restart をまたいで server configuration が保持されます。サーバーはこれらのファイルを読み書きできます。
+- `./initialresources:/app/initialresources:ro`: `Docker/initialresources/` を read-only で container に mount します。これはサーバーが必要とする static asset です。
 
-## Logging and Monitoring
+## ログと監視
 
--   **Docker Logs:** Access real-time logs using `docker compose logs -f basis-server`.
--   **Metrics Endpoint:** If enabled and configured (default: `PromethusPort: 1234`), Prometheus-compatible metrics should be available at `http://<host_ip>:1234/metrics`.
--   **Health Check Endpoint:** If enabled and configured (default: `HealthCheckPort: 10666`), a health check endpoint should be available at `http://<host_ip>:10666/health`.
+- **Docker Logs:** `docker compose logs -f basis-server` で real-time log を確認できます。
+- **Metrics Endpoint:** 有効かつ設定済みの場合、デフォルトでは `PromethusPort: 1234` により、Prometheus-compatible metrics が `http://<host_ip>:1234/metrics` で利用できるはずです。
+- **Health Check Endpoint:** 有効かつ設定済みの場合、デフォルトでは `HealthCheckPort: 10666` により、health check endpoint が `http://<host_ip>:10666/health` で利用できるはずです。
 
-## Troubleshooting
+## トラブルシューティング
 
--   **Server Fails to Start:**
-    -   Check logs: `docker compose logs basis-server`. Look for error messages related to port binding, configuration loading, or missing files.
-    -   Ensure Docker daemon is running.
+- **サーバーが起動しない:**
+  - log を確認してください: `docker compose logs basis-server`。port binding、configuration loading、missing file に関する error message を探します。
+  - Docker daemon が実行中であることを確認してください。
 
--   **Port Conflicts:**
-    -   If you see errors like "port is already allocated," another service on your host is using one of the ports (4296/udp, 10666/tcp, 1234/tcp).
-    -   Change the conflicting port mapping in `docker-compose.yml` (e.g., `"8080:4296/udp"` to use host port 8080 for game traffic).
+- **port conflict:**
+  - "port is already allocated" のような error が出る場合、host 上の別 service がいずれかの port (4296/udp, 10666/tcp, 1234/tcp) を使用しています。
+  - `docker-compose.yml` の競合する port mapping を変更してください。例: game traffic に host port 8080 を使うなら `"8080:4296/udp"`。
 
--   **Configuration Changes Not Applied:**
-    -   If you changed `docker-compose.yml` (e.g., environment variables), you need to stop and restart the services: `docker compose down && docker compose up -d`. Sometimes a `docker compose up -d --force-recreate` or `docker compose restart basis-server` is sufficient.
-    -   If you changed the `Dockerfile`, you must rebuild the image: `docker compose build` and then restart.
-    -   If you manually edited files in the `config/` volume, ensure the server was stopped and then restarted: `docker compose restart basis-server`.
+- **設定変更が反映されない:**
+  - `docker-compose.yml` を変更した場合、たとえば環境変数を変更した場合は、service を停止して再起動する必要があります: `docker compose down && docker compose up -d`。場合によっては `docker compose up -d --force-recreate` または `docker compose restart basis-server` で十分です。
+  - `Dockerfile` を変更した場合は image の rebuild が必要です: `docker compose build` の後、restart してください。
+  - `config/` volume 内のファイルを手動編集した場合は、server を停止してから編集し、その後 restart したことを確認してください: `docker compose restart basis-server`。
 
--   **Interactive Console Not Working:**
-    -   The `EnableConsole` environment variable in `docker-compose.yml` must be set to `true`.
-    -   You'll need to attach to the container to use it: `docker attach basis-server` (or `docker compose attach basis-server` if supported by your compose version). Detach with `Ctrl+P` then `Ctrl+Q`.
+- **interactive console が動かない:**
+  - `docker-compose.yml` の `EnableConsole` 環境変数を `true` にする必要があります。
+  - 使用するには container に attach する必要があります: `docker attach basis-server`。Compose version が対応している場合は `docker compose attach basis-server` も使えます。detach は `Ctrl+P` のあと `Ctrl+Q` です。
 
-## License
+## ライセンス
 
-This project is licensed under the MIT License. See the [LICENSE](../../LICENSE) file for details.
+このプロジェクトは MIT License の下でライセンスされています。詳細は [LICENSE](../../LICENSE) ファイルを参照してください。

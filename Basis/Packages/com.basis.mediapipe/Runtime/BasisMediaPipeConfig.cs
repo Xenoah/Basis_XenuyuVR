@@ -1,6 +1,6 @@
 namespace Basis.MediaPipe
 {
-    /// <summary>Runtime configuration for the webcam tracker. Bound to Basis settings in M4.</summary>
+    /// <summary>Web カメラ tracker の runtime configuration。M4 では Basis settings に bind される。</summary>
     public struct BasisMediaPipeConfig
     {
         public bool EnableFace;

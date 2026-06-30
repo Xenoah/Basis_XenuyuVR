@@ -4,17 +4,17 @@ public static partial class SerializableBasis
 {
     public struct ClientAvatarChangeMessage
     {
-        // Downloading - attempts to download from a URL, make sure a hash also exists.
-        // BuiltIn - loads as an addressable in Unity.
+        // Downloading - URL から download を試みる。hash も存在することを確認する。
+        // BuiltIn - Unity 内の addressable として load する。
         public byte loadMode;
         public byte[] byteArray;
-        //we increment this and then wrap around when > 255
+        // これを increment し、255 を超えたら wrap する。
         public byte LocalAvatarIndex;
         public void Deserialize(NetDataReader Writer)
         {
-            // Read the load mode
+            // load mode を読む。
             loadMode = Writer.GetByte();
-            // Initialize the byte array with the specified length
+            // 指定 length で byte array を初期化する。
             ushort Length = Writer.GetUShort();
             if (Length == 0)
             {
@@ -32,14 +32,14 @@ public static partial class SerializableBasis
                     byteArray = new byte[Length];
                 }
 
-                // Read each byte manually into the array
+                // 各 byte を手動で array へ読む。
                 Writer.GetBytes(byteArray, 0, byteArray.Length);
             }
             LocalAvatarIndex = Writer.GetByte();
         }
         public void Serialize(NetDataWriter Writer)
         {
-            // Write the load mode
+            // load mode を書く。
             Writer.Put(loadMode);
             if (byteArray == null)
             {

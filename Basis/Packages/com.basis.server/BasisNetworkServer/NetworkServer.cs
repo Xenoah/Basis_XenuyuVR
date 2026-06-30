@@ -25,17 +25,16 @@ public static class NetworkServer
     public static readonly object AuthenticatedPeerTag = new object();
     public static Configuration Configuration;
     /// <summary>
-    /// Allow-list consulted at <see cref="BasisServerHandle.BasisServerHandleEvents.OnNetworkAccepted"/>
-    /// when <see cref="Configuration.BasisUserRestrictionMode"/> is set to <c>AllowList</c>.
-    /// File-backed (BasisAllowList.txt under the config folder) so admin-panel mutations
-    /// persist across restarts.
+    /// <see cref="Configuration.BasisUserRestrictionMode"/> が <c>AllowList</c> のとき、
+    /// <see cref="BasisServerHandle.BasisServerHandleEvents.OnNetworkAccepted"/> で参照する allow-list。
+    /// admin-panel からの変更が restart 後も残るよう、config folder 下の BasisAllowList.txt を backing store にする。
     /// </summary>
     public static BasisNetworkServer.Security.BasisAllowList AllowList;
     public static BasisNetworkServer.Security.BasisBanList BanList;
-    // Cached snapshot rebuilt on connect/disconnect — avoids ToArray() alloc on every broadcast.
+    // connect/disconnect 時に再構築する cached snapshot。broadcast ごとの ToArray() allocation を避ける。
     private static volatile NetPeer[] _peerSnapshot = Array.Empty<NetPeer>();
-    // Guards the read-then-publish: OnNetworkAccepted runs on parallel DID-auth continuations, so
-    // concurrent joins could otherwise lost-update _peerSnapshot to a stale array that drops a peer.
+    // read-then-publish を保護する。OnNetworkAccepted は並列 DID-auth continuation 上で走るため、
+    // 同時 join により _peerSnapshot が古い array へ lost-update し、peer を落とす可能性がある。
     private static readonly object _peerSnapshotLock = new object();
     public static NetPeer[] PeerSnapshot => _peerSnapshot;
 
@@ -47,8 +46,8 @@ public static class NetworkServer
         }
     }
 
-    // Centralized NetDataWriter pool — single source of truth for all server code.
-    // Capped so writers don't accumulate unboundedly after player count spikes.
+    // 集約された NetDataWriter pool。server code 全体の単一の正とする。
+    // player 数の spike 後に writer が無制限に溜まらないよう上限を設ける。
     private static readonly ConcurrentQueue<NetDataWriter> _writerPool = new();
     private const int MaxPooledWriters = 64;
     public static NetDataWriter RentWriter(int initialCapacity = 208)
@@ -63,7 +62,7 @@ public static class NetworkServer
         {
             _writerPool.Enqueue(writer);
         }
-        // else: drop it — GC reclaims, keeps pool bounded
+        // else: 破棄する。GC に回収させ、pool の上限を維持する
     }
 
     public static IAuth Auth;
@@ -76,8 +75,8 @@ public static class NetworkServer
         StopServer();
         Configuration = configuration;
 
-        // Rejoin-only lockdown means "the players here right now" — meaningless after a restart, and a
-        // persisted RejoinOnly would boot with an empty snapshot and lock everyone out. Reset to Normal.
+        // Rejoin-only lockdown は「今ここにいる player」を意味し、restart 後には意味がない。
+        // RejoinOnly が永続化されると空 snapshot で起動して全員を締め出すため、Normal へ戻す。
         if (configuration.BasisUserRestrictionMode == BasisNetworkCore.Security.BasisUserRestrictionMode.RejoinOnly)
             configuration.BasisUserRestrictionMode = BasisNetworkCore.Security.BasisUserRestrictionMode.Normal;
 
@@ -147,7 +146,7 @@ public static class NetworkServer
 
         if (HasFileSupport)
         {
-            // Keep permissions with other config files
+            // permissions を他の config file と同じ場所に置く
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
             string configDir = Path.Combine(baseDir, Configuration.ConfigFolderName);
@@ -160,7 +159,7 @@ public static class NetworkServer
         else
         {
             PermissionIntegration.InitWithoutDisc();
-            // Best-effort in-memory allowlist when the host disabled disk support.
+            // host が disk support を無効化している場合の best-effort な in-memory allowlist。
             AllowList = new BasisNetworkServer.Security.BasisAllowList();
             BanList = new BasisNetworkServer.Security.BasisBanList();
         }
@@ -282,9 +281,9 @@ public static class NetworkServer
         }
     }
 
-    // Returns true if the send actually went out (vs dropped by the per-channel queue cap).
-    // Splits the queue/send decision from the stats record so broadcast loops can fold N×
-    // Interlocked into one RecordOutboundBatch call per (channel, broadcast).
+    // 実際に send された場合に true を返す (channel ごとの queue cap で drop された場合とは区別)。
+    // queue/send の判定を stats record から分離し、broadcast loop が N 回の Interlocked を
+    // (channel, broadcast) ごとの RecordOutboundBatch 1 回に畳み込めるようにする。
     private static bool TrySendNoRecord(NetPeer client, NetDataWriter writer, byte channel, DeliveryMethod deliveryMethod, int maxMessages)
     {
         if (deliveryMethod == DeliveryMethod.Sequenced || deliveryMethod == DeliveryMethod.Unreliable)

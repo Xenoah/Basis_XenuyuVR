@@ -2,8 +2,8 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Single library entry the server pushes to a client on connect.
-    /// Mode follows BundledContentHolder.Mode on the client: 0=Avatar, 1=World, 2=Prop.
+    /// client 接続時に server が push する単一 library entry。
+    /// Mode は client 側の BundledContentHolder.Mode に従う。0=Avatar、1=World、2=Prop。
     /// </summary>
     public struct ServerLibraryItem
     {
@@ -27,8 +27,8 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Wraps the full default-library list. Sent once per client on connect over
-    /// BasisNetworkCommons.ServerLibraryChannel. Empty array is valid (means: no defaults).
+    /// default-library list 全体を包む。client 接続時に BasisNetworkCommons.ServerLibraryChannel 上で
+    /// client ごとに一度送られる。empty array は有効で、default がないことを意味する。
     /// </summary>
     public struct ServerLibraryMessage
     {

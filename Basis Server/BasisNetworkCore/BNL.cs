@@ -1,7 +1,7 @@
 using System;
 
 /// <summary>
-/// Basis Network Logger with Console Colors
+/// console color 対応の Basis network logger。
 /// </summary>
 public static class BNL
 {
@@ -18,7 +18,7 @@ public static class BNL
         }
         else
         {
-            WriteWithColor(formattedMessage, ConsoleColor.White); // Info is white
+            WriteWithColor(formattedMessage, ConsoleColor.White); // info は白
         }
     }
 
@@ -30,7 +30,7 @@ public static class BNL
         }
         else
         {
-            WriteWithColor(message, ConsoleColor.Yellow); // Warning is yellow
+            WriteWithColor(message, ConsoleColor.Yellow); // warning は黄色
         }
     }
 
@@ -42,7 +42,7 @@ public static class BNL
         }
         else
         {
-            WriteWithColor(message, ConsoleColor.Red); // Error is red
+            WriteWithColor(message, ConsoleColor.Red); // error は赤
         }
     }
     private static void WriteWithColor(string message, ConsoleColor color)

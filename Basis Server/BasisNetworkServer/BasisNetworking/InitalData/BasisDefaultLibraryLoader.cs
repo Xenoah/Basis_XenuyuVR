@@ -50,9 +50,9 @@ namespace BasisNetworking.InitialData
         }
 
         /// <summary>
-        /// Persist a single entry as a new XML file under the configured folder
-        /// and append it to the in-memory list. Returns the absolute path written
-        /// or an empty string on failure.
+        /// 単一 entry を設定済み folder 下の新しい XML file として永続化し、
+        /// in-memory list に追加する。書き込んだ absolute path を返し、
+        /// 失敗時は空文字を返す。
         /// </summary>
         public static string SaveItem(string folderName, BasisDefaultLibraryConfiguration config)
         {
@@ -91,9 +91,9 @@ namespace BasisNetworking.InitialData
         }
 
         /// <summary>
-        /// Removes every persisted default-library XML whose Url matches (case-insensitive)
-        /// and drops matching entries from the in-memory list. Returns the number of files
-        /// deleted; 0 if nothing matched (treated as success on the caller side).
+        /// Url が一致する (case-insensitive) 永続化済み default-library XML をすべて削除し、
+        /// in-memory list からも一致 entry を落とす。削除した file 数を返す。
+        /// 一致がない場合は 0 (caller 側では成功扱い)。
         /// </summary>
         public static int RemoveItem(string folderName, string url)
         {
@@ -162,8 +162,8 @@ namespace BasisNetworking.InitialData
             string baseName = $"{modeName}_{stamp}.xml";
             string candidate = Path.Combine(folder, baseName);
 
-            // Defensive: collisions are virtually impossible with millisecond precision
-            // but two clicks within the same millisecond would clobber. Append a counter.
+            // 防御的措置: millisecond 精度なら衝突はほぼ起きないが、
+            // 同じ millisecond 内の 2 回 click では上書きされ得るため counter を付ける。
             int counter = 1;
             while (File.Exists(candidate))
             {
@@ -177,9 +177,9 @@ namespace BasisNetworking.InitialData
         public const string exampleXml = @"<BasisDefaultLibraryConfiguration>
     <!-- 0 = Avatar, 1 = World, 2 = Prop -->
     <Mode>0</Mode>
-    <!-- Bee file URL -->
+    <!-- Bee file の URL -->
     <Url></Url>
-    <!-- Unlock password -->
+    <!-- ロック解除用 password -->
     <Password></Password>
 </BasisDefaultLibraryConfiguration>";
     }

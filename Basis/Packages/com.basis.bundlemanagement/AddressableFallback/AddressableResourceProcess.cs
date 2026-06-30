@@ -21,11 +21,11 @@ namespace Basis.Scripts.Addressable_Driver.Resource
                 return spawned;
             }
 
-            // A failed load (no addressable location for the key, or a wrong asset type) completes
-            // with a null result, so the old "Unexpected result type: " + result.GetType() dereferenced
-            // null and threw a misleading NullReferenceException here instead of surfacing the real
-            // cause. Release the handle and throw a clear message; callers such as
-            // BasisAvatarFactory.LoadAvatarRemote catch this to run their fallback-avatar path.
+            // load 失敗 (key に対応する addressable location がない、または asset type が違う) は
+            // null result で完了する。そのため以前の "Unexpected result type: " + result.GetType() は
+            // null を dereference し、本当の原因ではなく誤解を招く NullReferenceException をここで投げていた。
+            // handle を release し、明確な message を投げる。BasisAvatarFactory.LoadAvatarRemote などの caller は
+            // これを catch して fallback-avatar path を走らせる。
             string reason = result == null
                 ? (data.OperationException?.Message ?? "no addressable location for key")
                 : "unexpected result type " + result.GetType();
@@ -36,8 +36,8 @@ namespace Basis.Scripts.Addressable_Driver.Resource
             throw new System.Exception($"Failed to load '{loadstring}' as a GameObject: {reason}");
         }
         /// <summary>
-        /// loads a system based gameobject,
-        /// use this to get around loading things with required checks.
+        /// system based gameobject を load する。
+        /// required check 付きで load する処理を回避するために使う。
         /// </summary>
         /// <param name="loadstring"></param>
         /// <param name="InstantiationParameters"></param>

@@ -1,8 +1,7 @@
 # DID Authentication
 
-Serves as the home for authentication based on Decentralized Identifiers
-(DIDs).
+Decentralized Identifiers (DIDs) に基づく authentication の置き場所です。
 
-## How to use
+## 使い方
 
-See the `ServerExample.cs` test in Did.Tests.
+Did.Tests の `ServerExample.cs` test を参照してください。

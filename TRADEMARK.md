@@ -1,17 +1,17 @@
-# Trademark Policy
+# 商標ポリシー
 
-Source code comprising the Basis Framework is released subject to the MIT license. However, we require permission to use the logo and the Basis/BasisVR/Basis Framework names.
+Basis Framework を構成するソースコードは MIT ライセンスの条件で公開されています。ただし、ロゴおよび Basis / BasisVR / Basis Framework の名称を使用する場合は許可が必要です。
 
-We encourage and authorize consumers of the framework to credit their projects with "Made with Basis" or "Built with Basis", or similar, to signal their usage. We request, however, that users of these marks to otherwise avoid claiming implicit or explicit affiliation or endorsement by the Basis Project without express written permission to do so.
+このフレームワークを利用するプロジェクトが、利用実績を示すために "Made with Basis"、"Built with Basis"、または同様の表現でクレジットを記載することは推奨し、許可します。ただし、これらの標章を使用する際は、Basis Project との提携、関係、承認を暗示または明示する表現を、書面による明示的な許可なく行わないでください。
 
-Additionally, we would also like to avoid confusion between consumers of the products built using the Basis Framework and the Basis Project itself whenever possible. For example, although projects naming themselves "Basis 2" or "Basis Pro" or similar may not violate the source code license, unauthorized use of the trademark may cause unnecessary confusion.
+また、Basis Framework を利用して作られた製品の利用者と、Basis Project 自体との混同は可能な限り避けたいと考えています。たとえば、自身のプロジェクトに "Basis 2" や "Basis Pro" などの名称を付けることは、ソースコードライセンスには違反しない場合でも、商標の無断使用として不要な混乱を招く可能性があります。
 
-We explicitly grant permission to use the name and logo for contributions made to the Basis Project, its documentation, or educational materials or tutorials for Basis. Additionally, we authorize use of the name and logo in text or video to truthfully refer to and/or link to the Basis Project and Framework.
+Basis Project へのコントリビューション、そのドキュメント、または Basis に関する教育資料やチュートリアルでは、名称とロゴの使用を明示的に許可します。さらに、Basis Project と Framework を正確に参照したりリンクしたりする目的で、テキストや動画内で名称とロゴを使用することも許可します。
 
-If there is any confusion about these permissions, please get in touch so we can help clarify or improve our guidelines.
+これらの許可範囲について不明点がある場合は、ガイドラインの明確化や改善を手伝えるよう、連絡してください。
 
-TL;DR:
-* MIT covers the code; name/logo remain trademarked.
-* Use “Built with Basis” descriptively - no implied endorsement.
-* Don’t name forks using the Basis name i.e. “Basis 2/Pro”, or use the logo without permission.
-* Contact us if unsure.
+要約:
+* MIT ライセンスはコードに適用されます。名称とロゴは商標として扱われます。
+* "Built with Basis" は説明的に使ってください。承認を暗示しないでください。
+* フォークに "Basis 2/Pro" のような Basis 名を使ったり、許可なくロゴを使ったりしないでください。
+* 迷った場合は連絡してください。

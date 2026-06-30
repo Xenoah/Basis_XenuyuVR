@@ -284,7 +284,7 @@ namespace BasisDidLink
             {
                 return;
             }
-            admins ??= new string[0]; // Ensure it's not null
+            admins ??= new string[0]; // null にならないようにする
 
             try
             {
@@ -321,7 +321,7 @@ namespace BasisDidLink
                     }
                 }
 
-                // If file is missing or corrupted, create a new one
+                // file がない、または壊れている場合は新しく作成する。
                 BNL.Log("Creating a new admin list...");
                 string[] newAdmins = new string[0];
                 SaveAdmins(newAdmins, filePath);

@@ -8,7 +8,7 @@ namespace BasisNetworking.InitialData
     [Serializable]
     public class BasisDefaultLibraryConfiguration
     {
-        // Mirrors BundledContentHolder.Mode on the client: 0=Avatar, 1=World, 2=Prop.
+        // client 側の BundledContentHolder.Mode と対応する: 0=Avatar, 1=World, 2=Prop。
         public byte Mode = 0;
         public string Url = "";
         public string Password = "";

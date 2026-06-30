@@ -118,8 +118,8 @@ namespace Basis.Network.Core
                         loaded = serializer.Deserialize(reader);
                     }
 
-                    // Heal an older sidecar: re-save when it predates the current schema version
-                    // or is missing any setting we now write, so new settings get added.
+                    // 古い sidecar を修復する: 現在の schema version より古い場合や、
+                    // 現在書き込む設定が欠けている場合は再保存し、新しい設定を追加する。
                     if (BasisConfigXmlDocs.NeedsUpgrade(path, type, loaded))
                     {
                         BasisConfigXmlDocs.StampVersion(loaded);

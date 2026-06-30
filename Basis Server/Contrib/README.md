@@ -1,41 +1,24 @@
-# Basis Third-Party Contributions
+# Basis 第三者コントリビューション
 
-This directory is for community contributions to Basis which are incubating,
-insufficiently generic, or may have a practical reason to avoid direct
-inclusion in the core project. For (non-exhaustive) examples of code that
-should go in `contrib`:
+このディレクトリは、Basis へのコミュニティコントリビューションのうち、育成中のもの、十分に汎用化されていないもの、または core project へ直接含めない実務上の理由があるものを置く場所です。`contrib` に入るコードの例は次のとおりです。これは網羅的な一覧ではありません。
 
-* Integrations with third party cloud APIs/services.
-* Code that is "insufficiently generic" or tailored to use cases that are too
-  specific to be useful for all Basis-derived projects.
-* Code that has not yet been agreed upon for general inclusion in all
-  Basis-derived projects.
+* 第三者 cloud API / service との integration。
+* "十分に汎用化されていない" コード、またはすべての Basis 派生プロジェクトで有用と言うには用途が具体的すぎるコード。
+* すべての Basis 派生プロジェクトへ一般的に含めることについて、まだ合意されていないコード。
 
-## Directory and Project Structure
+## ディレクトリとプロジェクト構成
 
-Contributions are grouped into "categories", which are directories like
-`contrib/auth` for authentication integrations, or `contrib/assets` for asset
-related integrations.
+コントリビューションは "category" にまとめます。category は、認証 integration 用の `contrib/auth` や、asset 関連 integration 用の `contrib/assets` のようなディレクトリです。
 
-Beneath each category are a list of directories, one directory per distinct
-contribution. Each one will be one or more C# class libraries, with their own
-`.csproj` files. This will allow applications that wish to use the code to depend
-on it via MSBuild using either the [`<ProjectReference>`][ProjectReference]
-property or other means.
+各 category の下には、個別のコントリビューションごとに 1 つのディレクトリを置きます。それぞれは 1 つ以上の C# class library で構成され、独自の `.csproj` ファイルを持ちます。これにより、そのコードを使いたい application は、[`<ProjectReference>`][ProjectReference] property またはその他の手段で、MSBuild 経由の依存関係として扱えます。
 
-## Disclaimers
+## 免責事項
 
-* Projects in `contrib`, or `contrib` itself, may be relocated in the future,
-  either incorporated into the core project or moved into an external repository,
-  or both in parts.
-* Although prior discussion is ideal, this may happen without much prior notice.
-* Code in `contrib` should be considered "unsupported" API, for the purposes of
-  API breakage.
-* Incorporation of `contrib` libraries into the Basis Demo does not imply
-  intent to merge into the core project.
-* Alignment with the core project is not necessarily a requirement for
-  inclusion into contrib.
-* Contributors are encouraged to seek modular solutions that can be hosted in
-  external repositories, when possible.
+* `contrib` 内の project、または `contrib` 自体は、将来移動される可能性があります。core project に取り込まれる、外部 repository に移動される、または部分的にその両方が行われる場合があります。
+* 事前の議論が望ましいものの、十分な事前通知なく行われる可能性があります。
+* API 破壊の観点では、`contrib` 内のコードは "unsupported" API と見なしてください。
+* `contrib` library が Basis Demo に取り込まれていても、それは core project へ merge する意図を意味しません。
+* contrib に含めるうえで、core project と方向性が一致していることが必ずしも要件になるわけではありません。
+* contributor には、可能な場合は外部 repository で host できる modular な解決策を探すことを推奨します。
 
 [ProjectReference]: https://learn.microsoft.com/en-us/visualstudio/msbuild/common-msbuild-project-items?view=vs-2022#projectreference

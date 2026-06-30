@@ -90,7 +90,7 @@ public static class BasisBundleLoadAsset
         if (!string.IsNullOrEmpty(scenePaths[0]))
         {
             string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePaths[0]);
-            // Load the scene asynchronously
+            // scene を非同期に load する
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(scenePaths[0], LoadSceneMode.Additive);
             asyncLoad.allowSceneActivation = true;
             while (!asyncLoad.isDone)
@@ -102,7 +102,7 @@ public static class BasisBundleLoadAsset
             BasisDebug.Log("Scene loaded successfully from AssetBundle.");
             Scene loadedScene = SceneManager.GetSceneByPath(scenePaths[0]);
             bundle.MetaLink = loadedScene.path;
-            // Set the loaded scene as the active scene
+            // loaded scene を active scene に設定する
             if (loadedScene.IsValid())
             {
                 ChecksRequired ChecksRequired = new ChecksRequired();

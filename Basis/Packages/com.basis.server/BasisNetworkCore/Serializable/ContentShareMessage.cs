@@ -3,7 +3,7 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Content types that can be shared via a content sphere.
+    /// content sphere 経由で share できる content type。
     /// </summary>
     public enum ContentShareType : byte
     {
@@ -11,42 +11,41 @@ public static partial class SerializableBasis
         Prop = 1,
         World = 2,
         /// <summary>
-        /// A saved-server entry. ContentURL carries the connection string
-        /// (address[:port][#password]); UnlockPassword is unused for this type.
-        /// Receivers don't spawn an in-world orb — they get a confirmation
-        /// dialog asking whether to add the server to their saved list.
+        /// saved-server entry。ContentURL は connection string
+        /// (address[:port][#password]) を運ぶ。この type では UnlockPassword は未使用。
+        /// receiver は in-world orb を spawn せず、server を saved list に追加するか確認する dialog を受け取る。
         /// </summary>
         Server = 3,
     }
 
     /// <summary>
-    /// Sent by a client to drop a content share sphere into the world.
-    /// Contains everything another player needs to load the content.
+    /// client が content share sphere を world に drop するために送る。
+    /// 他 player が content を load するために必要なものをすべて含む。
     /// </summary>
     public struct ContentShareMessage
     {
         /// <summary>
-        /// Unique ID for this sphere instance (GUID string).
+        /// この sphere instance の unique ID (GUID string)。
         /// </summary>
         public string SphereNetID;
 
         /// <summary>
-        /// The URL to the content bundle.
+        /// content bundle への URL。
         /// </summary>
         public string ContentURL;
 
         /// <summary>
-        /// Password to unlock/decrypt the content bundle.
+        /// content bundle を unlock/decrypt するための password。
         /// </summary>
         public string UnlockPassword;
 
         /// <summary>
-        /// What kind of content this sphere represents.
+        /// この sphere が表す content の種類。
         /// </summary>
         public ContentShareType ContentType;
 
         /// <summary>
-        /// World position where the sphere was dropped.
+        /// sphere が drop された world position。
         /// </summary>
         public float PositionX;
         public float PositionY;
@@ -76,8 +75,8 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Server wraps the client's ContentShareMessage with the sender's player ID
-    /// and authoritative identity (UUID + display name) resolved from saved state.
+    /// server は client の ContentShareMessage を sender の player ID と、
+    /// saved state から解決した authoritative identity (UUID + display name) で包む。
     /// </summary>
     public struct ServerContentShareMessage
     {
@@ -104,7 +103,7 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Sent to remove a content share sphere from the world.
+    /// content share sphere を world から削除するために送る。
     /// </summary>
     public struct ContentShareCleanupMessage
     {
@@ -122,7 +121,7 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Server wraps cleanup with sender player ID.
+    /// server は cleanup を sender player ID で包む。
     /// </summary>
     public struct ServerContentShareCleanupMessage
     {

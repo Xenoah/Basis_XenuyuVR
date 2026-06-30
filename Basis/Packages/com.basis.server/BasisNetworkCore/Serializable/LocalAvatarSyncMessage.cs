@@ -7,14 +7,14 @@ public static partial class SerializableBasis
 {
     public struct LocalAvatarSyncMessage
     {
-        // On-wire contract:
-        // Client→Server (channel 2):  [DataQualityLevel:1][PayloadBytes:FixedByQuality][AdditionalSize:1][LinkedAvatarIndex?][Additional...]
-        // Server→Client (even ch):    [PayloadBytes:FixedByQuality]
-        // Server→Client (odd ch):     [PayloadBytes:FixedByQuality][AdditionalSize:1][LinkedAvatarIndex:1][Additional...]
-        //   Quality and additional-data presence are derived from the channel number.
+        // on-wire contract:
+        // client->server (channel 2):  [DataQualityLevel:1][PayloadBytes:FixedByQuality][AdditionalSize:1][LinkedAvatarIndex?][Additional...]
+        // server->client (even ch):    [PayloadBytes:FixedByQuality]
+        // server->client (odd ch):     [PayloadBytes:FixedByQuality][AdditionalSize:1][LinkedAvatarIndex:1][Additional...]
+        //   quality と additional-data の有無は channel number から derive する。
         //
-        // Payload layout (current order):
-        // Position (12) -> bone rotations (bitstream, varies by quality) -> Posit16 scale (2) -> rotation (7) -> hips tail
+        // payload layout (current order):
+        // position (12) -> bone rotations (bitstream、quality により変化) -> Posit16 scale (2) -> rotation (7) -> hips tail
 
         public byte DataQualityLevel; // 0=Low, 1=Medium, 2=High
         public byte[] array;          // payload bytes (length must match ConvertToSize(quality))
@@ -41,7 +41,7 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Deserialize when DataQualityLevel is in the payload (client→server path).
+        /// DataQualityLevel が payload 内にある場合に deserialize する (client->server path)。
         /// </summary>
         public void Deserialize(NetDataReader reader)
         {
@@ -55,8 +55,8 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Deserialize when quality and additional-data presence are derived from the channel (server→client path).
-        /// Even channels carry no additional data section at all. Odd channels carry additional data.
+        /// quality と additional-data の有無が channel から derive される場合に deserialize する (server->client path)。
+        /// even channel は additional data section をまったく持たない。odd channel は additional data を持つ。
         /// </summary>
         public void Deserialize(NetDataReader reader, byte channelDerivedQuality, bool hasAdditionalData)
         {
@@ -153,7 +153,7 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Serialize with DataQualityLevel in the payload (initial player creation, non-quality channels).
+        /// DataQualityLevel を payload 内に含めて serialize する (initial player creation、non-quality channel)。
         /// </summary>
         public void Serialize(NetDataWriter writer, BitQuality Quality)
         {
@@ -199,8 +199,8 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Serialize for the channel-based path (quality channels).
-        /// Quality and additional-data presence are encoded in the channel — not written to the payload.
+        /// channel-based path (quality channel) 用に serialize する。
+        /// quality と additional-data の有無は channel に encode され、payload には書かれない。
         /// </summary>
         public void SerializeForChannel(NetDataWriter writer, BitQuality Quality)
         {
@@ -224,7 +224,7 @@ public static partial class SerializableBasis
 
             writer.Put(array, 0, expected);
 
-            // Additional data only written when present — the channel tells the receiver.
+            // additional data は存在する場合だけ書く。receiver には channel が知らせる。
             if (AdditionalAvatarDatas != null && AdditionalAvatarDatas.Length > 0 && AdditionalAvatarDatas.Length <= 255)
             {
                 AdditionalAvatarDataSize = (byte)AdditionalAvatarDatas.Length;

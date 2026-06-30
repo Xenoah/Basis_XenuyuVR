@@ -5,38 +5,39 @@ namespace Basis.Scripts.Vehicles.Parts
     public abstract class BasisVehiclePart : MonoBehaviour
     {
         /// <summary>
-        /// The Rigidbody of the parent vehicle body this part is attached to.
+        /// この part が取り付く親 vehicle body の Rigidbody。
         /// </summary>
         protected Rigidbody _parentBody = null;
 
         /// <summary>
-        /// The BasisVehicleBody of the parent vehicle this part is attached to,
-        /// if the Rigidbody is on the same GameObject as a BasisVehicleBody component.
+        /// この part が取り付く親 vehicle の BasisVehicleBody。
+        /// Rigidbody が BasisVehicleBody component と同じ GameObject 上にある場合に設定される。
         /// </summary>
         protected Main.BasisVehicleBody _parentVehicleBody = null;
 
         /// <summary>
-        /// The particle system used for visual effects, if any.
+        /// visual effect に使う particle system (あれば)。
         /// </summary>
         protected ParticleSystem _particles = null;
         /// <summary>
-        /// The emission module of the particle system, if any.
+        /// particle system の emission module (あれば)。
         /// </summary>
         protected ParticleSystem.EmissionModule _particleEmission;
 
         /// <summary>
-        /// If false, the part will not rotate or apply active forces (thrust, etc), but will still apply passive forces (lift, drag, etc).
-        /// If you want to completely disable the part, disable the component instead using <see cref="UnityEngine.Behaviour.enabled"/>.
+        /// false の場合、この part は回転せず active force (thrust など) も適用しないが、
+        /// passive force (lift、drag など) は引き続き適用する。
+        /// part を完全に無効化したい場合は、<see cref="UnityEngine.Behaviour.enabled"/> で component を無効化する。
         /// </summary>
         [Tooltip("Whether to apply active forces. Passive forces still apply.")]
         public bool Active = true;
 
         /// <summary>
-        /// Sets the wheel's steering and thrust based on vehicle input.
-        /// All non-abstract classes extending BasisVehiclePart must implement handling of vehicle input.
+        /// vehicle input に基づいて steering と thrust を設定する。
+        /// BasisVehiclePart を継承する非 abstract class は、vehicle input の処理を実装する必要がある。
         /// </summary>
-        /// <param name="angularInput">The vehicle's angular input on a range of -1.0 to 1.0.</param>
-        /// <param name="linearInput">The vehicle's linear input on a range of -1.0 to 1.0.</param>
+        /// <param name="angularInput">vehicle の angular input。範囲は -1.0 から 1.0。</param>
+        /// <param name="linearInput">vehicle の linear input。範囲は -1.0 から 1.0。</param>
         public abstract void SetFromVehicleInput(Vector3 angularInput, Vector3 linearInput);
 
         protected virtual void Awake()
@@ -48,7 +49,7 @@ namespace Basis.Scripts.Vehicles.Parts
             }
             if (_particles != null)
             {
-                // This is a struct, but somehow the correct way is indeed to copy it.
+                // これは struct だが、正しい扱いは copy すること。
                 _particleEmission = _particles.emission;
             }
         }

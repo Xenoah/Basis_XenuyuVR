@@ -62,10 +62,10 @@ namespace BasisServerHandle
         #region Peer Connection and Disconnection
 
         /// <summary>
-        /// Runs the idempotent per-peer subsystem cleanup shared by graceful
-        /// disconnects and reconnect-collision eviction. Does NOT broadcast a
-        /// disconnect to other peers and does NOT reset server-wide state — the
-        /// caller decides whether either is appropriate.
+        /// graceful disconnect と reconnect-collision eviction で共有する、
+        /// peer ごとの idempotent subsystem cleanup を実行する。
+        /// 他 peer へ disconnect を broadcast せず、server-wide state も reset しない。
+        /// どちらが適切かは caller が判断する。
         /// </summary>
         private static bool CleanupPeerSubsystems(NetPeer peer, int id)
         {
@@ -159,9 +159,9 @@ namespace BasisServerHandle
             writer.Put(reason ?? string.Empty);
             byte[] reasonBytes = writer.CopyData();
             NetworkServer.ReturnWriter(writer);
-            // Key-value-matched remove: "Peer already exists" rejects the duplicate,
-            // so only evict if the stored NetPeer is actually this one — otherwise
-            // we'd silently kick the alive peer that owns the slot.
+            // key-value-matched remove: "Peer already exists" は duplicate を拒否するため、
+            // stored NetPeer が実際にこの peer の場合だけ evict する。
+            // そうしないと、この slot を所有する alive peer を静かに kick してしまう。
             var kvp = new KeyValuePair<int, NetPeer>(id, request);
             if (((ICollection<KeyValuePair<int, NetPeer>>)NetworkServer.AuthenticatedPeers).Remove(kvp))
             {
@@ -231,7 +231,7 @@ namespace BasisServerHandle
                 }
                 else
                 {
-                    //we still want to read the data to move the needle along
+                    // needle を進めるため、data は読みたい。
                     BytesMessage authMessage = new BytesMessage();
                     authMessage.Deserialize(ConReq.Data, out byte[] UnusedBytes);
                 }
@@ -272,10 +272,9 @@ namespace BasisServerHandle
         {
             ushort PeerId = (ushort)newPeer.Id;
 
-            // AllowList gate. Both auth paths (DID challenge + plain ReadyMessage) funnel
-            // through here with a verified UUID, so this is the single point that enforces
-            // BasisUserRestrictionMode.AllowList on entry. Banlist is enforced separately
-            // at HandleConnectionRequest / BasisDIDAuthIdentity.ProcessConnection.
+            // AllowList gate。両方の auth path (DID challenge + plain ReadyMessage) は verified UUID 付きで
+            // ここへ流れ込むため、entry 時に BasisUserRestrictionMode.AllowList を enforce する single point になる。
+            // banlist は HandleConnectionRequest / BasisDIDAuthIdentity.ProcessConnection で別途 enforce される。
             if (NetworkServer.Configuration.BasisUserRestrictionMode == BasisUserRestrictionMode.AllowList
                 && NetworkServer.AllowList != null
                 && !NetworkServer.AllowList.IsAllowed(UUID))
@@ -294,8 +293,8 @@ namespace BasisServerHandle
                 return;
             }
 
-            // Rejoin-only lockdown: only UUIDs captured when the mode was enabled may (re)connect.
-            // Config-editor admins always bypass so an admin can't lock themselves out.
+            // rejoin-only lockdown: mode 有効化時に capture された UUID だけが (re)connect できる。
+            // config-editor admin は常に bypass し、admin が自分を lock out できないようにする。
             if (NetworkServer.Configuration.BasisUserRestrictionMode == BasisUserRestrictionMode.RejoinOnly
                 && !BasisRejoinLockManager.IsAllowed(UUID)
                 && !PermissionIntegration.HasValidRequirement(UUID, PermNodes.ConfigurationEditor))
@@ -317,11 +316,11 @@ namespace BasisServerHandle
             bool added = NetworkServer.AuthenticatedPeers.TryAdd(PeerId, newPeer);
             if (!added)
             {
-                // Reconnect collision: LiteNetLib recycled this peer-id slot before the
-                // previous disconnect's subsystem cleanup completed (or the original
-                // PeerDisconnectedEvent has not yet been dispatched). The old entry is
-                // stale because LNL will not hand us two live peers with the same Id —
-                // evict it synchronously and retry the insert.
+                // reconnect collision: 前回 disconnect の subsystem cleanup が完了する前、
+                // または元の PeerDisconnectedEvent がまだ dispatch される前に、
+                // LiteNetLib がこの peer-id slot を recycle した。
+                // LNL が同じ Id の live peer を 2 つ渡すことはないため old entry は stale。
+                // 同期的に evict し、insert を retry する。
                 if (NetworkServer.AuthenticatedPeers.TryGetValue(PeerId, out NetPeer stale) &&
                     !ReferenceEquals(stale, newPeer))
                 {
@@ -336,16 +335,16 @@ namespace BasisServerHandle
                 newPeer.Tag = NetworkServer.AuthenticatedPeerTag;
                 NetworkServer.RebuildPeerSnapshot();
                 BNL.Log($"Peer connected: {newPeer.Id}");
-                //never ever assume the UUID provided by the user is good always recalc on the server.
-                //this means that as long as they pass auth but locally have a bad UUID that only they locally are effected.
-                //there is no way to force a user locally to be a certain UUID, that's not how the internet works.
-                //instead we can make sure all additional clients have them correct.
-                //this only occurs if the server is doing Auth checks.
+                // user が提供した UUID が正しいと決して仮定せず、server 側で必ず再計算する。
+                // これにより、auth を通過したが local で bad UUID を持つ場合でも、影響はその user local に限られる。
+                // user local に特定 UUID を強制する方法はない。internet はそういう仕組みではない。
+                // 代わりに、追加の client 全員が正しい値を持つことを保証できる。
+                // これは server が auth check を行っている場合だけ起きる。
                 ReadyMessage.playerMetaDataMessage.playerUUID = UUID;
                 PermissionIntegration.StorePlayerMeta(UUID, ReadyMessage.playerMetaDataMessage);
 
                Configuration Config = NetworkServer.Configuration;
-                //lets dump to the local client there data after the server has had its way
+                // server 側で処理した後、その data を local client へ送る。
                 ServerMetaDataMessage ServerMetaDataMessage = new ServerMetaDataMessage
                 {
                     ClientMetaDataMessage = ReadyMessage.playerMetaDataMessage,
@@ -403,10 +402,10 @@ namespace BasisServerHandle
             }
         }
         #endregion
-        // Define the delegate type
+        // delegate type を定義する。
         public delegate void AuthEventHandler(NetPacketReader reader, NetPeer peer);
 
-        // Declare an event of the delegate type
+        // delegate type の event を宣言する。
         public static event AuthEventHandler OnAuthReceived;
         public static void HandleAuth(NetPacketReader Reader, NetPeer Peer)
         {
@@ -422,7 +421,7 @@ namespace BasisServerHandle
             ClientAvatarChangeMessage.Deserialize(Reader);
             Reader.Recycle();
 
-            // Global avatar lock: reject network broadcast but still save state locally
+            // global avatar lock: network broadcast は拒否するが、local state は保存する。
             if (BasisNetworkServer.Security.BasisGlobalLockManager.AvatarsLocked)
             {
                 bool hasBypass = false;
@@ -472,9 +471,9 @@ namespace BasisServerHandle
         }
 
         /// <summary>
-        /// Handles shout voice sent by a client on ShoutVoiceChannel (channel 0).
-        /// Only processes if the sender is authorized for shout mode.
-        /// Broadcasts to ALL connected peers.
+        /// client が ShoutVoiceChannel (channel 0) で送った shout voice を処理する。
+        /// sender が shout mode を許可されている場合だけ処理する。
+        /// connected peer 全員へ broadcast する。
         /// </summary>
         public static void HandleShoutVoiceMessage(NetPacketReader reader, NetPeer peer)
         {
@@ -498,7 +497,7 @@ namespace BasisServerHandle
                 },
             };
 
-            // Serialize once, then send raw to each peer — skips N writer→packet copies.
+            // 一度だけ serialize し、各 peer へ raw 送信する。N 個の writer->packet copy を skip する。
             var writer = NetworkServer.RentWriter();
             serverAudio.Serialize(writer);
             int len = writer.Length;
@@ -522,7 +521,7 @@ namespace BasisServerHandle
         }
 
         /// <summary>
-        /// Broadcasts a shout mode state change to all clients via the AdminChannel.
+        /// shout mode state change を AdminChannel 経由で全 client へ broadcast する。
         /// </summary>
         public static void BroadcastShoutModeState(ushort targetPlayerId, bool enabled, ushort initiatorPlayerId)
         {
@@ -543,7 +542,7 @@ namespace BasisServerHandle
         }
 
         /// <summary>
-        /// Sends current shout mode states to a newly connected peer.
+        /// newly connected peer へ現在の shout mode state を送る。
         /// </summary>
         public static void SendShoutStateToPeer(NetPeer newPeer)
         {
@@ -570,8 +569,8 @@ namespace BasisServerHandle
                 return;
             }
 
-            // Snapshot under the list lock so a concurrent rebuild or RemovePlayer
-            // can't race our indexer reads. Lock is short — just a ref-array copy.
+            // concurrent rebuild や RemovePlayer が indexer read と race しないよう、list lock 下で snapshot する。
+            // lock は短く、ref-array copy だけ。
             NetPeer[] snapshot;
             int snapshotCount;
             lock (targetPeers)
@@ -590,7 +589,7 @@ namespace BasisServerHandle
             bool largeId = sender.Id > byte.MaxValue;
             byte channel = largeId ? BasisNetworkCommons.VoiceLargeChannel : BasisNetworkCommons.VoiceChannel;
 
-            // Serialize once into a byte[], then send raw to each peer — skips N writer→packet copies.
+            // byte[] へ一度だけ serialize し、各 peer へ raw 送信する。N 個の writer->packet copy を skip する。
             var writer = NetworkServer.RentWriter();
             audioSegment.Serialize(writer, largeId);
             int len = writer.Length;
@@ -620,7 +619,7 @@ namespace BasisServerHandle
         }
 
         /// <summary>
-        /// Inverted mode: the message contains IDs to EXCLUDE. Everyone else is a recipient.
+        /// inverted mode: message には EXCLUDE する ID が含まれる。それ以外の全員が recipient。
         /// </summary>
         public static void UpdateVoiceReceiversInverted(NetPacketReader Reader, NetPeer Peer, bool largeCount)
         {
@@ -637,7 +636,7 @@ namespace BasisServerHandle
 
                 if (excluded.Users == null || excluded.UsersLength == 0)
                 {
-                    // No exclusions: everyone except sender is a recipient
+                    // exclusion なし。sender 以外の全員が recipient。
                     foreach (var kvp in NetworkServer.AuthenticatedPeers)
                     {
                         if (kvp.Key != senderId)
@@ -646,7 +645,7 @@ namespace BasisServerHandle
                 }
                 else
                 {
-                    // Reuse thread-local set to avoid allocation
+                    // allocation を避けるため thread-local set を再利用する。
                     if (_excludedSet == null)
                         _excludedSet = new HashSet<int>(64);
                     else
@@ -666,8 +665,8 @@ namespace BasisServerHandle
         }
 
         /// <summary>
-        /// Bitfield mode: each set bit at position N means playerID N is a recipient.
-        /// Wire format: [byteCount: ushort][bitfield bytes]
+        /// bitfield mode: position N の set bit は playerID N が recipient であることを意味する。
+        /// wire format: [byteCount: ushort][bitfield bytes]
         /// </summary>
         public static void UpdateVoiceReceiversBitfield(NetPacketReader Reader, NetPeer Peer)
         {
@@ -740,7 +739,7 @@ namespace BasisServerHandle
             return serverReadyMessage;
         }
         /// <summary>
-        /// notify existing clients about a new player
+        /// 既存 client に new player を通知する。
         /// </summary>
         /// <param name="serverSideSyncPlayerMessage"></param>
         /// <param name="authClient"></param>
@@ -778,7 +777,7 @@ namespace BasisServerHandle
             }
         }
         /// <summary>
-        /// send everyone to the new client
+        /// new client へ全員を送る。
         /// </summary>
         /// <param name="authClient"></param>
         public static void SendClientListToNewClient(NetPeer authClient)
@@ -841,10 +840,10 @@ namespace BasisServerHandle
                         AdditionalAvatarDataSize = 0,
                         LinkedAvatarIndex = 0
                     };
-                    // Optionally log fallback
+                    // 必要なら fallback を log する。
                     // BNL.LogError("Unable to get Last Player Avatar Data! Using Error Fallback");
                 }
-                // Meta Data
+                // metadata。
                 if (!BasisSavedState.GetLastPlayerMetaData(peer, out var metaData))
                 {
                     metaData = new ClientMetaDataMessage
@@ -856,7 +855,7 @@ namespace BasisServerHandle
                     BNL.LogError("Unable to get Last Player Meta Data! Using Error Fallback");
                 }
 
-                // Construct ServerReadyMessage
+                // ServerReadyMessage を組み立てる。
                 ServerReadyMessage = new ServerReadyMessage
                 {
                     localReadyMessage = new ReadyMessage
@@ -887,9 +886,9 @@ namespace BasisServerHandle
             NetIDMessage ServerUniqueIDMessage = new NetIDMessage();
             ServerUniqueIDMessage.Deserialize(Reader);
             Reader.Recycle();
-            //returns a message with the ushort back to the client, or it sends it to everyone if its new.
+            // ushort を含む message を client に返す。new の場合は全員へ送る。
             BasisNetworkIDDatabase.AddOrFindNetworkID(Peer, ServerUniqueIDMessage.playerID);
-            //we need to convert the string int a  ushort.
+            // string を ushort に変換する必要がある。
         }
         public static void LoadResource(NetPacketReader Reader, NetPeer Peer,string UUID)
         {
@@ -946,7 +945,7 @@ namespace BasisServerHandle
                     BNL.LogError($"Missing Mode {LocalLoadResource.Mode}");
                     return;
             }
-            // Route based on load strategy
+            // load strategy に基づいて route する。
             switch (LocalLoadResource.LoadStrategy)
             {
                 case 0:
@@ -996,16 +995,16 @@ namespace BasisServerHandle
                     return;
             }
 
-            //returns a message with the ushort back to the client, or it sends it to everyone if its new.
+            // ushort を含む message を client に返す。new の場合は全員へ送る。
             BasisNetworkResourceManagement.UnloadResource(UnLoadResource, Peer);
-            //we need to convert the string int a  ushort.
+            // string を ushort に変換する必要がある。
         }
         public static void HandleModifyResource(NetPacketReader Reader, NetPeer Peer)
         {
             ModifyResource modifyResource = new ModifyResource();
             modifyResource.Deserialize(Reader);
             Reader.Recycle();
-            // Authorization (creator or moderator) is enforced inside SetStatic.
+            // authorization (creator または moderator) は SetStatic 内で enforce される。
             BasisNetworkResourceManagement.SetStatic(modifyResource, Peer);
         }
         #endregion

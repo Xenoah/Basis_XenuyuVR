@@ -7,18 +7,18 @@ using System.Text;
 namespace Basis.Network.Core
 {
     /// <summary>
-    /// Deflate compression for extra permission strings sent over the wire.
-    /// Wire format: [byte flag][payload...]
-    ///   flag 0 = raw UTF8, flag 1 = Deflate compressed.
-    /// Strings are NUL-joined before compression.
+    /// wire 上で送られる extra permission string 用の Deflate compression。
+    /// wire format: [byte flag][payload...]
+    ///   flag 0 = raw UTF8, flag 1 = Deflate compressed。
+    /// string は compression 前に NUL で join される。
     /// </summary>
     public static class PermissionCompression
     {
         private const int MaxDecompressedBytes = 1 * 1024 * 1024;
 
         /// <summary>
-        /// Compresses an array of permission strings into a single byte payload.
-        /// Uses Deflate when it saves space, otherwise sends raw UTF8.
+        /// permission string array を単一の byte payload に compress する。
+        /// size を節約できる場合は Deflate を使い、それ以外は raw UTF8 を送る。
         /// </summary>
         public static byte[] CompressExtras(string[] strings)
         {
@@ -39,25 +39,25 @@ namespace Basis.Network.Core
                 deflated = ms.ToArray();
             }
 
-            // Pick whichever is smaller (1 byte flag overhead)
+            // 1 byte の flag overhead を含め、小さい方を選ぶ。
             if (deflated.Length < raw.Length)
             {
                 byte[] result = new byte[1 + deflated.Length];
-                result[0] = 1; // compressed
+                result[0] = 1; // compressed。
                 Buffer.BlockCopy(deflated, 0, result, 1, deflated.Length);
                 return result;
             }
             else
             {
                 byte[] result = new byte[1 + raw.Length];
-                result[0] = 0; // raw
+                result[0] = 0; // raw。
                 Buffer.BlockCopy(raw, 0, result, 1, raw.Length);
                 return result;
             }
         }
 
         /// <summary>
-        /// Decompresses a byte payload back into the original string array.
+        /// byte payload を元の string array に decompress する。
         /// </summary>
         public static string[] DecompressExtras(byte[] data, int expectedCount)
         {

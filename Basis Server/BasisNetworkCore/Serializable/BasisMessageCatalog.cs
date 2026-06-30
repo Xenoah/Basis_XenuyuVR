@@ -4,17 +4,17 @@ using System.Collections.Generic;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// The canonical set of core message descriptors (channels 0-60). The server combines
-    /// this with any registered plugin descriptors to build the manifest it supplies to each
-    /// client on connect, so a client can be told what every message index means without a
-    /// shared compiled constant table. Core ids equal their dedicated channel.
+    /// core message descriptor の canonical set (channels 0-60)。
+    /// server はこれと registered plugin descriptor を組み合わせて、connect 時に各 client へ供給する manifest を作る。
+    /// これにより、shared compiled constant table なしで、client に各 message index の意味を伝えられる。
+    /// core id は dedicated channel と同じ。
     /// </summary>
     public static class BasisMessageCatalog
     {
-        /// <summary>Schema version of the core message set. Bump when a core payload layout changes.</summary>
+        /// <summary>core message set の schema version。core payload layout が変わったときに上げる。</summary>
         public const byte CoreVersion = 1;
 
-        // Core never changes at runtime; build the descriptor array once and share it (read-only).
+        // core は runtime 中に変わらないため、descriptor array を一度だけ build して read-only で共有する。
         private static volatile BasisMessageDescriptor[] _core;
 
         public static BasisMessageDescriptor[] BuildCore()

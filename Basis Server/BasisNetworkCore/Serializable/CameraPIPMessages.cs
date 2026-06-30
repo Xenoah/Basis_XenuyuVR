@@ -3,14 +3,14 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Sent reliably when a player's PIP camera is created or destroyed.
-    /// Server stores this and replays to late joiners.
+    /// player の PIP camera が作成/破棄されたとき reliable に送る。
+    /// server はこれを保存し、late joiner へ replay する。
     /// </summary>
     public struct CameraPIPStateMessage
     {
         public ushort PlayerID;
         public bool IsActive;
-        // Position and rotation only sent when IsActive == true (initial spawn)
+        // position と rotation は IsActive == true (initial spawn) の場合だけ送る。
         public float PositionX;
         public float PositionY;
         public float PositionZ;
@@ -53,7 +53,7 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Position and rotation update for PIP camera.
+    /// PIP camera 用の position / rotation update。
     /// </summary>
     public struct CameraPIPPositionMessage
     {
@@ -92,7 +92,7 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Client -> server: camera state change (no PlayerID, server fills it from peer).
+    /// client -> server: camera state change (PlayerID なし。server が peer から埋める)。
     /// </summary>
     public struct ClientCameraPIPStateMessage
     {
@@ -137,7 +137,7 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Client -> server: position and rotation update (no PlayerID, server fills it from peer).
+    /// client -> server: position / rotation update (PlayerID なし。server が peer から埋める)。
     /// </summary>
     public struct ClientCameraPIPPositionMessage
     {

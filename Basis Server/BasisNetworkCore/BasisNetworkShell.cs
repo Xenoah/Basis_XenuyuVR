@@ -95,8 +95,8 @@ namespace Basis.Network.Core
         public float TimeSinceLastPacket { get; }
         public long RemoteTimeDelta { get; }
         public DateTime RemoteUtcTime => new DateTime(DateTime.UtcNow.Ticks + RemoteTimeDelta);
-        // Maximum UDP payload (no fragmentation) negotiated for this peer. Used by the
-        // avatar bundle compressor to size compressed payloads to fit one datagram.
+        // この peer と negotiate 済みの最大 UDP payload (fragmentation なし)。
+        // avatar bundle compressor が、compressed payload を 1 datagram に収めるために使う。
         public int Mtu { get; }
 
         public object Tag { get; set; }
@@ -182,7 +182,7 @@ namespace Basis.Network.Core
 				if (!EndOfData && AvailableBytes > 0)
 				{
 					BNL.LogWarning($"Message on channel {channel} with delivery method {method} had {AvailableBytes} bytes remaining when recycling! Is this a parsing bug?");
-					// TODO: consider printing the bytes of the message.
+					// TODO: message の byte 表示を検討する。
 				}
 			}
 #endif
@@ -191,7 +191,7 @@ namespace Basis.Network.Core
         }
     }
 
-    // Lifted straight from litenetlib
+    // litenetlib から直接持ってきたもの。
 
 
     public enum NetLogLevel
@@ -212,33 +212,33 @@ namespace Basis.Network.Core
     }
 
     /// <summary>
-    /// Sending method type
+    /// 送信方式の type。
     /// </summary>
     public enum DeliveryMethod : byte
     {
         /// <summary>
-        /// Unreliable. Packets can be dropped, can be duplicated, can arrive without order.
+        /// unreliable。packet は drop / duplicate される可能性があり、順序どおりに届くとは限らない。
         /// </summary>
         Unreliable = 4,
 
         /// <summary>
-        /// Reliable. Packets won't be dropped, won't be duplicated, can arrive without order.
+        /// reliable。packet は drop / duplicate されないが、順序どおりに届くとは限らない。
         /// </summary>
         ReliableUnordered = 0,
 
         /// <summary>
-        /// Unreliable. Packets can be dropped, won't be duplicated, will arrive in order.
+        /// unreliable。packet は drop される可能性があるが duplicate されず、順序どおりに届く。
         /// </summary>
         Sequenced = 1,
 
         /// <summary>
-        /// Reliable and ordered. Packets won't be dropped, won't be duplicated, will arrive in order.
+        /// reliable かつ ordered。packet は drop / duplicate されず、順序どおりに届く。
         /// </summary>
         ReliableOrdered = 2,
 
         /// <summary>
-        /// Reliable only last packet. Packets can be dropped (except the last one), won't be duplicated, will arrive in order.
-        /// Cannot be fragmented
+        /// 最後の packet のみ reliable。最後以外の packet は drop される可能性があり、duplicate されず、順序どおりに届く。
+        /// fragment できない。
         /// </summary>
         ReliableSequenced = 3
     }

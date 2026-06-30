@@ -2,7 +2,7 @@ using Basis.Scripts.Settings;
 
 namespace Basis.MediaPipe
 {
-    /// <summary>Persistent settings for webcam tracking, surfaced in the Settings "Webcam Tracking" tab.</summary>
+    /// <summary>Web カメラ tracking の永続設定。Settings の "Webcam Tracking" tab に表示される。</summary>
     public static class BasisMediaPipeSettings
     {
         public static readonly BasisSettingsBinding<bool> Enable =
@@ -96,8 +96,9 @@ namespace Basis.MediaPipe
             new BasisSettingsBinding<float>("mediapipe_tonguestrength", new BasisPlatformDefault<float>(1f));
 
         /// <summary>
-        /// Re-reads every binding from the loaded settings dictionary. Must run after
-        /// BasisSettingsSystem has loaded from disk (it replaces the dictionary), mirroring
+        /// 読み込まれた settings dictionary から全 binding を再読込する。
+        /// BasisSettingsSystem が disk から読み込んだ後に実行する必要がある
+        /// (dictionary を差し替えるため)。BasisSettingsDefaults の扱いに合わせる。
         /// BasisSettingsDefaults.LoadAll. Otherwise bindings keep their construction-time defaults.
         /// </summary>
         public static void LoadAll()

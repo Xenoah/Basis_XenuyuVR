@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Basis.Network.Core
 {
     /// <summary>
-    /// Maps well-known permission nodes to bit indices for compact bitset serialization.
-    /// APPEND ONLY — never reorder or remove entries, or you break wire compatibility.
-    /// Values mirror PermNodes constants from the server package.
+    /// compact bitset serialization 用に、well-known permission node を bit index へ対応付ける。
+    /// APPEND ONLY。並べ替えや削除を行うと wire compatibility が壊れる。
+    /// value は server package の PermNodes constant を mirror する。
     /// </summary>
     public static class PermissionBitsetMap
     {
@@ -55,14 +55,14 @@ namespace Basis.Network.Core
 
         public static int KnownCount => IndexToNode.Length;
 
-        /// <summary>Minimum bytes needed to represent all known nodes as bits.</summary>
+        /// <summary>すべての known node を bit として表現するために必要な最小 byte 数。</summary>
         public static int ByteCount => (IndexToNode.Length + 7) >> 3;
 
         /// <summary>
-        /// Splits allowed permission nodes into a compact bitset (known nodes)
-        /// and a string array (unknown/dynamic nodes that don't have a bit index).
-        /// When "*" (wildcard) is in allowedNodes, all known bits are set.
-        /// Any nodes in deniedNodes are cleared from the bitset.
+        /// allowed permission node を compact bitset (known node) と string array
+        /// (bit index を持たない unknown / dynamic node) に分割する。
+        /// allowedNodes に "*" (wildcard) が含まれる場合、すべての known bit を立てる。
+        /// deniedNodes 内の node は bitset から clear される。
         /// </summary>
         public static void Encode(IReadOnlyCollection<string> allowedNodes, out byte[] bitset, out string[] extras,
                                    IReadOnlyCollection<string> deniedNodes = null)
@@ -92,7 +92,7 @@ namespace Basis.Network.Core
                 }
             }
 
-            // Wildcard: set every known permission bit so the client sees all nodes explicitly
+            // wildcard: client がすべての node を明示的に見られるよう、known permission bit をすべて立てる。
             if (hasWildcard)
             {
                 for (int i = 0; i < KnownCount; i++)
@@ -101,7 +101,7 @@ namespace Basis.Network.Core
                 }
             }
 
-            // Clear any explicitly denied nodes
+            // 明示的に deny された node を clear する。
             if (deniedNodes != null)
             {
                 foreach (string node in deniedNodes)
@@ -117,7 +117,7 @@ namespace Basis.Network.Core
         }
 
         /// <summary>
-        /// Reconstructs the full set of allowed permission strings from bitset + extras.
+        /// bitset + extras から、allowed permission string の完全な set を復元する。
         /// </summary>
         public static HashSet<string> Decode(byte[] bitset, string[] extras)
         {

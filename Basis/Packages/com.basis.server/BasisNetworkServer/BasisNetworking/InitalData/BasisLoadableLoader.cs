@@ -11,18 +11,18 @@ namespace BasisNetworking.InitialData
         {
             try
             {
-                // Get the directory of the executable
+                // 実行ファイルのディレクトリを取得する
                 string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-                // Define the new folder name
+                // 新しいフォルダー名を定義する
                 string newFolderPath = Path.Combine(exeDirectory, FolderName);
 
-                // Check if the folder already exists, if not, create it
+                // フォルダーが存在するか確認し、なければ作成する
                 if (!Directory.Exists(newFolderPath))
                 {
                     Directory.CreateDirectory(newFolderPath);
                     BNL.Log("Folder created successfully: " + newFolderPath);
-                    // Provide an example XML file content for the user to copy or uncomment
+                    // ユーザーがコピーまたはコメント解除できる XML サンプルを用意する
 
                     string exampleFilePath = Path.Combine(newFolderPath, "ExampleConfigdisabled.xml[remove]");
                     File.WriteAllText(exampleFilePath, exampleXml);
@@ -97,18 +97,18 @@ namespace BasisNetworking.InitialData
     <PositionY>0</PositionY>
     <PositionZ>0</PositionZ>
 
-    <!-- Quaternion values -->
+    <!-- Quaternion 値 -->
     <QuaternionX>0</QuaternionX>
     <QuaternionY>0</QuaternionY>
     <QuaternionZ>0</QuaternionZ>
     <QuaternionW>1</QuaternionW>
 
-    <!-- Scale values -->
+    <!-- Scale 値 -->
     <ScaleX>1</ScaleX>
     <ScaleY>1</ScaleY>
     <ScaleZ>1</ScaleZ>
 
-    <!-- Persist flag -->
+    <!-- 永続化 flag -->
     <Persist>false</Persist>
 </BasisLoadableConfiguration>";
     }

@@ -7,41 +7,41 @@ namespace Basis.Scripts.Vehicles.Parts
     {
         [Header("Gimbal")]
         /// <summary>
-        /// The maximum angle the part can gimbal or rotate in degrees. This can technically be any number,
-        /// but larger values result in strange behavior, even close to 90 degrees and especially beyond.
-        /// Note: The initial gimbal must be set before adding the object to the hierarchy.
+        /// part が gimbal または rotate できる最大角度 (degrees)。技術的には任意の数値にできるが、
+        /// 大きい値では奇妙な挙動になり、90 度付近やそれ以上では特に顕著。
+        /// 注意: initial gimbal は object を hierarchy に追加する前に設定する必要がある。
         /// </summary>
         [Range(0.0f, 90.0f)]
         [Tooltip("Recommended values are close to 0.0, usually not more than 30.0.")]
         public float MaxGimbalDegrees = 0.0f;
 
         /// <summary>
-        /// Optionally, you may also want to allow the gimbal to be adjusted based on linear input.
-        /// For example, if the user wants to go forward, and the thruster points downward,
-        /// we can gimbal the thruster slightly backward to help thrust forward.
-        /// The default is 0.0 for thrusters and 0.5 for hover thrusters.
+        /// 必要に応じて、linear input に基づく gimbal 調整も許可できる。
+        /// たとえば user が前進したくて thruster が下向きの場合、
+        /// thruster を少し後ろへ gimbal して前方 thrust を補助できる。
+        /// default は thruster で 0.0、hover thruster で 0.5。
         /// </summary>
         [Range(0.0f, 1.0f)]
         [Tooltip("Recommended values are between 0.0 and 0.5.")]
         public float LinearGimbalAdjustRatio = 0.0f;
 
         /// <summary>
-        /// The speed at which the gimbal angle changes, in degrees per second. If negative, the angle changes instantly.
+        /// gimbal angle が変化する速度 (degrees/sec)。負なら angle は即時に変化する。
         /// </summary>
         [Tooltip("Negative means instant change.")]
         public float GimbalDegreesPerSecond = 60.0f;
 
         /// <summary>
-        /// The ratio of the maximum gimbal angles the part is rotated to.
-        /// The vector's length may not be longer than 1.0.
-        /// Note: The initial gimbal must be set before adding the object to the hierarchy.
+        /// part を最大 gimbal angle のどの比率まで回すか。
+        /// vector の length は 1.0 を超えてはならない。
+        /// 注意: initial gimbal は object を hierarchy に追加する前に設定する必要がある。
         /// </summary>
         [Tooltip("Length must not exceed 1.0.")]
         public Vector2 TargetGimbalRatio = Vector2.zero;
 
         /// <summary>
-        /// The current gimbal angles in radians, tending towards TargetGimbalRatio * MaxGimbalDegrees * Mathf.Deg2Rad.
-        /// If GimbalDegreesPerSecond is negative, this will equal the target value.
+        /// 現在の gimbal angle (radians)。TargetGimbalRatio * MaxGimbalDegrees * Mathf.Deg2Rad に近づく。
+        /// GimbalDegreesPerSecond が負なら target value と等しくなる。
         /// </summary>
         private Vector2 _currentGimbalRadians = Vector2.zero;
 
@@ -60,7 +60,7 @@ namespace Basis.Scripts.Vehicles.Parts
 
         protected virtual void FixedUpdate()
         {
-            // Move the current gimbal radians towards the target value.
+            // current gimbal radians を target value へ近づける。
             Vector2 targetGimbalRadians = Vector2.ClampMagnitude(TargetGimbalRatio, 1.0f) * (Mathf.Deg2Rad * MaxGimbalDegrees);
             if (GimbalDegreesPerSecond < 0.0f)
             {
@@ -80,7 +80,7 @@ namespace Basis.Scripts.Vehicles.Parts
             {
                 return;
             }
-            // Get the transform from the parent to the body.
+            // parent から body への transform を取得する。
             _parentTransformToBody = BasisCalibratedCoords.Identity;
             Transform t = transform.parent;
             while (t != null && t.gameObject != _parentBody.gameObject)
@@ -89,13 +89,13 @@ namespace Basis.Scripts.Vehicles.Parts
                 _parentTransformToBody.position = t.localPosition + (t.localRotation * _parentTransformToBody.position);
                 t = t.parent;
             }
-            // Get the rotation of the rest orientation of the part's gimbal.
+            // part の gimbal の rest orientation rotation を取得する。
             Quaternion gimbalInv = Quaternion.Inverse(GetGimbalRotationQuaternion());
             _restQuaternion = transform.localRotation * gimbalInv;
-            // Use both of those to determine the rest quaternion to body and its inverse.
+            // 両方を使って body への rest quaternion とその inverse を求める。
             _restQuaternionToBody = _parentTransformToBody.rotation * _restQuaternion;
             _bodyToRestQuaternion = Quaternion.Inverse(_restQuaternionToBody);
-            // Where is this part relative to the center of mass? We may need to negate the gimbal.
+            // この part は center of mass に対してどこにあるか。gimbal の反転が必要な場合がある。
             Quaternion restRot = _parentTransformToBody.rotation * _restQuaternion;
             Vector3 restPos = _parentTransformToBody.position + (_parentTransformToBody.rotation * transform.localPosition);
             Vector3 offset = restPos - _parentBody.centerOfMass;
@@ -103,7 +103,7 @@ namespace Basis.Scripts.Vehicles.Parts
         }
 
         /// <summary>
-        /// Derived classes can call this to set the gimbal before using the linear input for linear force.
+        /// 派生 class は linear input を linear force に使う前に、これを呼んで gimbal を設定できる。
         /// </summary>
         protected void SetGimbalFromVehicleInput(Vector3 angularInput, Vector3 linearInput)
         {
@@ -112,10 +112,10 @@ namespace Basis.Scripts.Vehicles.Parts
                 TargetGimbalRatio = Vector2.zero;
                 return;
             }
-            // Set the gimbal based on the local angular input.
+            // local angular input に基づいて gimbal を設定する。
             Vector3 localAngularInput = _bodyToRestQuaternion * angularInput;
             TargetGimbalRatio = Vector2.ClampMagnitude(new Vector2(-localAngularInput.x, -localAngularInput.y), 1.0f);
-            // Adjust the gimbal based on linear input (optional but significantly improves handling).
+            // linear input に基づいて gimbal を調整する (任意だが handling を大きく改善する)。
             if (linearInput == Vector3.zero || LinearGimbalAdjustRatio == 0.0f)
             {
                 return;
@@ -144,12 +144,12 @@ namespace Basis.Scripts.Vehicles.Parts
         }
 
         /// <summary>
-        /// Sqrt(1/2) aka sqrt(0.5) aka 1/sqrt(2) aka sqrt(2)/2 aka sin(45 degrees) aka cos(45 degrees).
+        /// Sqrt(1/2)、つまり sqrt(0.5)、1/sqrt(2)、sqrt(2)/2、sin(45 degrees)、cos(45 degrees)。
         /// </summary>
         private const float SQRT12 = 0.707106781186547524400844362104849f;
         private void MakeDebugMesh()
         {
-            // Make a debug mesh to visualize the gimbal.
+            // gimbal を可視化する debug mesh を作る。
             GameObject capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             Destroy(capsule.GetComponent<CapsuleCollider>());
             capsule.transform.SetParent(transform, false);

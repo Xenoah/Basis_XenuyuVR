@@ -5,27 +5,27 @@ using System.Text;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Client-to-server chat message. Contains UTF-8 encoded text.
+    /// client-to-server chat message。UTF-8 encoded text を含む。
     /// </summary>
     public struct ChatMessage
     {
         /// <summary>
-        /// Maximum allowed message length in bytes.
+        /// 許可される message length の最大値 (bytes)。
         /// </summary>
         public const int MaxPayloadBytes = 512;
 
         /// <summary>
-        /// The UTF-8 encoded chat message bytes.
+        /// UTF-8 encoded chat message bytes。
         /// </summary>
         public byte[] payload;
 
         /// <summary>
-        /// Length of the payload in bytes.
+        /// payload length (bytes)。
         /// </summary>
         public ushort payloadSize;
 
         /// <summary>
-        /// Whether receivers should play their chat notification sound.
+        /// receiver が chat notification sound を再生するべきか。
         /// </summary>
         public bool playNotificationSound;
 

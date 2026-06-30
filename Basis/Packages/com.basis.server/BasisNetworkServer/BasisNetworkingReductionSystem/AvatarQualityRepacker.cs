@@ -5,33 +5,33 @@ using static Basis.Network.Core.Compression.BasisAvatarBitPacking;
 namespace BasisNetworkServer.BasisNetworkingReductionSystem
 {
     /// <summary>
-    /// Server-side repacker that converts HIGH quality bone rotation data
-    /// into medium/low/very-low quality by re-quantizing each bone's
-    /// smallest-three components at a lower bits-per-component (BPC).
+    /// HIGH quality の bone rotation data を server-side で repack し、
+    /// 各 bone の smallest-three component をより低い bits-per-component (BPC) で
+    /// re-quantize して medium/low/very-low quality に変換する。
     /// </summary>
     public static class AvatarQualityRepacker
     {
         static readonly int Slots = BasisBoneRotationCompression.SyncBoneCount; // 54
 
-        // Cache BPC tables for each quality
+        // quality ごとの BPC table を cache する。
         static readonly byte[] HighBpc  = BasisBoneRotationCompression.BPC_HIGH;
         static readonly byte[] MedBpc   = BasisBoneRotationCompression.BPC_MEDIUM;
         static readonly byte[] LowBpc   = BasisBoneRotationCompression.BPC_LOW;
         static readonly byte[] VLowBpc  = BasisBoneRotationCompression.BPC_VERY_LOW;
 
-        // Cache byte counts (via MuscleBytes which now routes to RotationBytes)
+        // byte count を cache する (現在は RotationBytes へ route される MuscleBytes 経由)。
         static readonly int HighRotBytes = MuscleBytes(BitQuality.High);
         static readonly int MedRotBytes  = MuscleBytes(BitQuality.Medium);
         static readonly int LowRotBytes  = MuscleBytes(BitQuality.Low);
         static readonly int VLowRotBytes = MuscleBytes(BitQuality.VeryLow);
 
-        // Cache payload sizes
+        // payload size を cache する。
         static readonly int HighPayloadSize = WritePosition + HighRotBytes + TailBytes;
         static readonly int MedPayloadSize  = WritePosition + MedRotBytes  + TailBytes;
         static readonly int LowPayloadSize  = WritePosition + LowRotBytes  + TailBytes;
         static readonly int VLowPayloadSize = WritePosition + VLowRotBytes + TailBytes;
 
-        // Cache per-bone bit offsets for each quality
+        // quality ごとの per-bone bit offset を cache する。
         static readonly int[] HighOffs = BuildBitOffsets(HighBpc);
         static readonly int[] MedOffs  = BuildBitOffsets(MedBpc);
         static readonly int[] LowOffs  = BuildBitOffsets(LowBpc);
@@ -65,43 +65,43 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             EnsureBuffer(ref low, BitQuality.Low, LowPayloadSize);
             EnsureBuffer(ref veryLow, BitQuality.VeryLow, VLowPayloadSize);
 
-            // Copy position (12 bytes, unchanged)
+            // position を copy する (12 bytes、変更なし)。
             Buffer.BlockCopy(srcHigh.array, 0, medium.array, 0, WritePosition);
             Buffer.BlockCopy(srcHigh.array, 0, low.array, 0, WritePosition);
             Buffer.BlockCopy(srcHigh.array, 0, veryLow.array, 0, WritePosition);
 
             int rotBase = WritePosition;
 
-            // Clear rotation regions (BitWriter ORs into bytes)
+            // rotation region を clear する (BitWriter は byte に OR する)。
             Array.Clear(medium.array, rotBase, MedRotBytes);
             Array.Clear(low.array, rotBase, LowRotBytes);
             Array.Clear(veryLow.array, rotBase, VLowRotBytes);
 
-            // Repack each bone: read smallest-three at HIGH BPC, rescale components to lower BPC
+            // 各 bone を repack する。HIGH BPC の smallest-three を読み、component を lower BPC へ rescale する。
             for (int slot = 0; slot < Slots; slot++)
             {
                 int bpcSrc = HighBpc[slot];
                 int totalBitsSrc = 2 + 3 * bpcSrc;
 
-                // Read the full packed bone (index + 3 components) as raw bits
+                // packed bone 全体 (index + 3 components) を raw bit として読む。
                 ulong raw = BitReader.ReadBitsU64(srcHigh.array, rotBase, HighOffs[slot], totalBitsSrc);
 
-                // Extract the 2-bit index (which component was dropped)
+                // 2-bit index (どの component が drop されたか) を取り出す。
                 uint idx = (uint)(raw & 3UL);
 
-                // Extract 3 components at source BPC
+                // source BPC で 3 component を取り出す。
                 uint maskSrc = (uint)((1 << bpcSrc) - 1);
                 uint qa = (uint)((raw >> 2) & maskSrc);
                 uint qb = (uint)((raw >> (2 + bpcSrc)) & maskSrc);
                 uint qc = (uint)((raw >> (2 + 2 * bpcSrc)) & maskSrc);
 
-                // Rescale and write for each target quality
+                // target quality ごとに rescale して書く。
                 RepackBone(medium.array, rotBase, MedOffs[slot], MedBpc[slot], idx, qa, qb, qc, bpcSrc);
                 RepackBone(low.array, rotBase, LowOffs[slot], LowBpc[slot], idx, qa, qb, qc, bpcSrc);
                 RepackBone(veryLow.array, rotBase, VLowOffs[slot], VLowBpc[slot], idx, qa, qb, qc, bpcSrc);
             }
 
-            // Copy tail (scale + body rotation)
+            // tail (scale + body rotation) を copy する。
             int srcTailOffset = WritePosition + HighRotBytes;
             Buffer.BlockCopy(srcHigh.array, srcTailOffset, medium.array, WritePosition + MedRotBytes, TailBytes);
             Buffer.BlockCopy(srcHigh.array, srcTailOffset, low.array, WritePosition + LowRotBytes, TailBytes);
@@ -111,12 +111,12 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         static void RepackBone(byte[] dst, int baseByteOffset, int bitOffset, int bpcDst,
             uint idx, uint qa, uint qb, uint qc, int bpcSrc)
         {
-            // Rescale each component from source BPC to destination BPC
+            // 各 component を source BPC から destination BPC へ rescale する。
             uint da = RescaleQuant(qa, bpcSrc, bpcDst);
             uint db = RescaleQuant(qb, bpcSrc, bpcDst);
             uint dc = RescaleQuant(qc, bpcSrc, bpcDst);
 
-            // Pack: [idx:2][da:bpcDst][db:bpcDst][dc:bpcDst]
+            // pack: [idx:2][da:bpcDst][db:bpcDst][dc:bpcDst]
             ulong packed = (ulong)idx
                 | ((ulong)da << 2)
                 | ((ulong)db << (2 + bpcDst))

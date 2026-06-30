@@ -128,8 +128,8 @@ namespace BasisNetworkServer
                 BNL.LogError($"[P2P] Empty session token from peer {sender.Id}, dropping Request.");
                 return;
             }
-            // Admin-controlled instance lockout: non-admins may not establish direct (P2P) connections.
-            // Admins (basis.moderation.globallock) are exempt so they can still connect for moderation.
+            // admin 管理の instance lockout: 非 admin は direct (P2P) connection を確立できない。
+            // admin (basis.moderation.globallock) は moderation のため接続できるよう除外する。
             if (BasisNetworkServer.Security.BasisGlobalLockManager.DirectConnectLocked &&
                 !BasisPermissions.PermissionManager.PermissionIntegration.HasValidRequirement(sender, BasisPermissions.PermNodes.ModerationGlobalLock))
             {
@@ -162,7 +162,7 @@ namespace BasisNetworkServer
             BNL.Log($"[P2P] Forwarding Request from peer {sender.Id} to peer {msg.otherPlayerId} (token {msg.sessionToken}).");
             SendSub(target, BasisNetworkCommons.P2PSub_Request, msg.sessionToken, (ushort)sender.Id, msg.ephemeralPublicKey);
 
-            // ServerArmed confirms registration before either side starts punching, avoiding a race.
+            // ServerArmed はどちらかが punching を始める前に registration を確認し、race を避ける。
             SendSub(sender, BasisNetworkCommons.P2PSub_ServerArmed, msg.sessionToken, msg.otherPlayerId);
         }
 
@@ -195,7 +195,7 @@ namespace BasisNetworkServer
 
         private static void HandleLinkLost(NetPeer sender, BasisP2PSignalMessage msg)
         {
-            // Re-arm session + clear offload so relay resumes during re-punch window.
+            // session を再 arm し、offload を clear して re-punch window 中に relay を再開する。
             if (_sessions.TryGetValue(msg.sessionToken, out Session s))
             {
                 bool wasOffloaded = _offloadedPairs.ContainsKey(PackPair(s.InitiatorPeerId, s.TargetPeerId));
@@ -237,7 +237,7 @@ namespace BasisNetworkServer
             }
             BNL.Log($"[P2P] NatIntroduceRequest token={Preview(token)} from internal={localEndPoint} external={remoteEndPoint}; HasA={s.HasA} HasB={s.HasB}.");
 
-            // Arrival order labels the slots; NatIntroduce is symmetric so it doesn't matter which is which.
+            // arrival order で slot にラベルを付ける。NatIntroduce は対称なのでどちらでも構わない。
             lock (s)
             {
                 if (!s.HasA)
@@ -261,9 +261,8 @@ namespace BasisNetworkServer
                                    s.EndpointA_External.Address.Equals(s.EndpointB_External.Address);
                     string lanTag = sameNat ? " [SAME-NETWORK]" : "";
 
-                    // Spray predicted ports on both sides (A/B are arrival-ordered, not
-                    // mapped to a specific peer), except on a same-network pair where the
-                    // internal punch already handles it.
+                    // 両側に predicted port を spray する (A/B は arrival order であり、特定 peer への
+                    // mapping ではない)。same-network pair では internal punch が処理済みなので除外する。
                     int spray = (firstFire && !sameNat) ? GetPredictionRange() : 0;
 
                     BNL.Log($"[P2P] Both NAT endpoints collected for token {Preview(token)}: A={s.EndpointA_External} (int {s.EndpointA_Internal}), B={s.EndpointB_External} (int {s.EndpointB_Internal}). Firing NatIntroduce (spray={spray}).{lanTag}");

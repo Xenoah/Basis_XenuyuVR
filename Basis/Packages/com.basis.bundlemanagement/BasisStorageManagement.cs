@@ -6,23 +6,23 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// Manages BEE file storage on disk: tracks total size, enforces a configurable max (default 128 GB),
-/// evicts oldest files (LRU by file write time), and provides listing/deletion APIs.
+/// disk 上の BEE file storage を管理する。total size を追跡し、設定可能な上限 (default 128 GB) を適用し、
+/// 最も古い file (file write time による LRU) を evict し、listing/deletion API を提供する。
 /// </summary>
 public static class BasisStorageManagement
 {
     /// <summary>
-    /// Default maximum cache size in bytes (128 GB).
+    /// default の最大 cache size (bytes、128 GB)。
     /// </summary>
     public const long DefaultMaxCacheSizeBytes = 128L * 1024 * 1024 * 1024;
 
     /// <summary>
-    /// Current maximum cache size in bytes. Updated by settings.
+    /// 現在の最大 cache size (bytes)。settings で更新される。
     /// </summary>
     public static long MaxCacheSizeBytes = DefaultMaxCacheSizeBytes;
 
     /// <summary>
-    /// Represents a single stored BEE file entry with its metadata.
+    /// 保存済み BEE file 1 件と metadata を表す。
     /// </summary>
     public class StoredBeeFileInfo
     {
@@ -38,7 +38,7 @@ public static class BasisStorageManagement
     }
 
     /// <summary>
-    /// Returns the total size in bytes of all files in the BEEData folder.
+    /// BEEData folder 内の全 file の合計 size を bytes で返す。
     /// </summary>
     public static long GetTotalCacheSizeBytes()
     {
@@ -55,14 +55,14 @@ public static class BasisStorageManagement
             }
             catch (Exception)
             {
-                // File may have been deleted between enumeration and access
+                // enumeration と access の間に file が削除された可能性がある
             }
         }
         return total;
     }
 
     /// <summary>
-    /// Returns a list of all stored BEE files with their metadata.
+    /// 保存済み BEE file と metadata の list を返す。
     /// </summary>
     public static List<StoredBeeFileInfo> GetAllStoredFiles()
     {
@@ -100,7 +100,7 @@ public static class BasisStorageManagement
                 }
                 catch (Exception)
                 {
-                    // Ignore access errors
+                    // access error は無視する
                 }
             }
 
@@ -120,15 +120,15 @@ public static class BasisStorageManagement
             });
         }
 
-        // Sort by last write time (oldest first)
+        // last write time で sort する (古い順)
         result.Sort((a, b) => a.LastWriteTimeUtc.CompareTo(b.LastWriteTimeUtc));
         return result;
     }
 
     /// <summary>
-    /// Deletes a single stored BEE file by its remote URL key.
-    /// Cleans up the .BEE file, .BME meta file, and all in-memory references.
-    /// Returns true if the entry was found and cleaned up.
+    /// remote URL key で保存済み BEE file 1 件を削除する。
+    /// .BEE file、.BME meta file、すべての in-memory reference を片付ける。
+    /// entry が見つかって clean up できた場合 true を返す。
     /// </summary>
     public static bool DeleteStoredFile(string remoteUrl)
     {
@@ -155,18 +155,18 @@ public static class BasisStorageManagement
             return false;
         }
 
-        // Unload from memory if loaded
+        // loaded なら memory から unload する
         BasisLoadHandler.UnloadAllForUrl(remoteUrl);
 
         return true;
     }
 
     /// <summary>
-    /// Deletes all stored BEE files, clearing the entire cache.
+    /// 保存済み BEE file をすべて削除し、cache 全体を clear する。
     /// </summary>
     public static void ClearAllCache()
     {
-        // Get all keys first to avoid concurrent modification
+        // concurrent modification を避けるため、先に全 key を取得する
         var entries = BasisLoadHandler.OnDiscData.ToList();
 
         foreach (var entry in entries)
@@ -190,7 +190,7 @@ public static class BasisStorageManagement
             }
         }
 
-        // Also clean up any orphaned files not tracked in OnDiscData
+        // OnDiscData で tracking されていない orphan file も片付ける
         string folderPath = GetCacheFolderPath();
         if (Directory.Exists(folderPath))
         {
@@ -204,9 +204,9 @@ public static class BasisStorageManagement
     }
 
     /// <summary>
-    /// Enforces the cache size limit by evicting the oldest (LRU) files
-    /// that are not currently loaded in memory, until total size is under MaxCacheSizeBytes.
-    /// Call this after downloading a new file.
+    /// 現在 memory に loaded されていない最古 (LRU) file を evict し、
+    /// total size が MaxCacheSizeBytes 未満になるまで cache size limit を適用する。
+    /// 新しい file を download したあとに呼ぶ。
     /// </summary>
     public static void EnforceCacheSizeLimit()
     {
@@ -216,7 +216,7 @@ public static class BasisStorageManagement
 
         BasisDebug.Log($"Cache size {FormatBytes(currentSize)} exceeds limit {FormatBytes(MaxCacheSizeBytes)}. Evicting oldest files...", BasisDebug.LogTag.Event);
 
-        // Get all files sorted oldest first, skip currently loaded ones
+        // 全 file を古い順に取得し、現在 loaded のものは skip する
         var allFiles = GetAllStoredFiles();
         var evictable = allFiles.Where(f => !f.IsLoadedInMemory && f.FileSizeBytes > 0).ToList();
 
@@ -241,7 +241,7 @@ public static class BasisStorageManagement
     }
 
     /// <summary>
-    /// Formats a byte count into a human-readable string (B, KB, MB, GB).
+    /// byte count を human-readable string (B, KB, MB, GB) に format する。
     /// </summary>
     public static string FormatBytes(long bytes)
     {

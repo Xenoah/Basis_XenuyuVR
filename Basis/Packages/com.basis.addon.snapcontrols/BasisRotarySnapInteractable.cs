@@ -5,22 +5,21 @@ using UnityEngine;
 namespace Basis.Scripts.BasisSdk.Interactions
 {
     /// <summary>
-    /// Snap-path interactable for rotary controls — knobs, levers, switches, and any object
-    /// that swings between discrete detents around a pivot. Snap points are placed where the
-    /// detents should sit and the interactable both translates between them and rotates by the
-    /// angle swept between them, so the control's orientation tracks its position around the
-    /// pivot.
+    /// knob、lever、switch など、pivot の周囲にある離散 detent 間を動く
+    /// 回転 control 用の snap-path interactable。snap point は detent の位置に置き、
+    /// interactable はその間を移動しつつ、移動で sweep した角度だけ回転する。
+    /// そのため control の向きは pivot 周りの位置に追従する。
     ///
-    /// The rotation axis is derived from the marker world positions themselves (cross product
-    /// of two chords); the pivot transform supplies the rotational centre and a rotation
-    /// reference, but its own up-axis is not assumed to align with anything in particular —
-    /// author markers wherever the detents need to sit and the swing axis follows.
+    /// 回転軸は marker の world position 自体から導出する (2 本の chord の cross product)。
+    /// pivot transform は回転中心と回転 reference を提供するが、pivot 自身の up-axis が
+    /// 特定方向に揃っているとは仮定しない。detent が必要な場所に marker を配置すれば、
+    /// swing axis はそれに追従する。
     ///
-    /// Index selection runs entirely in world space:
-    /// * A hand whose bone is within <see cref="BasisInteractableObject.GrabRadius"/>×2 of the
-    ///   interactable selects the marker closest to the bone position.
-    /// * Otherwise (hand laser, desktop center-eye), the marker with the smallest perpendicular
-    ///   distance to the input's <see cref="BasisInput.RaycastCoord"/> ray wins.
+    /// index selection は完全に world space で行う:
+    /// * interactable から <see cref="BasisInteractableObject.GrabRadius"/> x 2 以内に
+    ///   bone がある手は、bone position に最も近い marker を選択する。
+    /// * それ以外 (hand laser、desktop center-eye) では、input の
+    ///   <see cref="BasisInput.RaycastCoord"/> ray への垂直距離が最小の marker を選ぶ。
     /// </summary>
     public class BasisRotarySnapInteractable : BasisSnapPathInteractable
     {
@@ -76,11 +75,11 @@ namespace Basis.Scripts.BasisSdk.Interactions
         }
 
         /// <summary>
-        /// Plane normal of the marker arc, derived from the cross product of the chord
-        /// <c>snapPoints[mid] - snapPoints[0]</c> with <c>snapPoints[last] - snapPoints[mid]</c>.
-        /// Sign is flipped if necessary so that traversing 0 → last is a positive angle around
-        /// the returned axis (right-hand rule). Returns <see cref="Vector3.zero"/> when the
-        /// markers are colinear or there are fewer than three.
+        /// marker arc の plane normal。<c>snapPoints[mid] - snapPoints[0]</c> と
+        /// <c>snapPoints[last] - snapPoints[mid]</c> という 2 本の chord の cross product から導出する。
+        /// 0 から last へ進む向きが、返す axis 周りの正角 (right-hand rule) になるよう、
+        /// 必要なら符号を反転する。marker が colinear、または 3 個未満なら
+        /// <see cref="Vector3.zero"/> を返す。
         /// </summary>
         private Vector3 ComputeArcAxis()
         {
@@ -112,9 +111,9 @@ namespace Basis.Scripts.BasisSdk.Interactions
         }
 
         /// <summary>
-        /// Signed angle (in degrees) around the cached arc axis from <paramref name="fromIndex"/>'s
-        /// projected direction to <paramref name="toIndex"/>'s, measured from the current pivot
-        /// position so the rotation stays correct if the pivot itself moves.
+        /// cached arc axis 周りの signed angle (degrees)。<paramref name="fromIndex"/> の
+        /// projected direction から <paramref name="toIndex"/> の direction までを測る。
+        /// pivot 自身が動いても回転が正しく保たれるよう、現在の pivot position から測定する。
         /// </summary>
         private float ComputeArcAngle(int fromIndex, int toIndex)
         {

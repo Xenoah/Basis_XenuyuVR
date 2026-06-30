@@ -7,54 +7,52 @@ using Basis.Contrib.Auth.Handles.Newtypes;
 
 namespace Basis.Contrib.Auth.Handles
 {
-	/// Resolves whether a handle points to a given identity.
+	/// handle が指定 identity を指しているか解決する。
 	public interface IHandleVerifier
 	{
-		/// For documentation on this function, see `HandleVerifier`.
+		/// この function の documentation は `HandleVerifier` を参照。
 		public Task<bool> HandlePointsToIdentity(IHandle handle, Identity identity);
 
-		/// The particular kind of handle
+		/// handle の具体的な種類。
 		public HandleKind Kind { get; }
 
 		public HandleProperties Properties { get; }
 	}
 
-	/// All handle types implement `IHandle`
+	/// すべての handle type は `IHandle` を実装する。
 	public interface IHandle
 	{
-		/// Which type of handle?
+		/// handle の type。
 		public HandleKind Kind { get; }
 
 		public HandleProperties Properties { get; }
 
-		/// Gets the display name to show.
+		/// 表示する display name を取得する。
 		public string DisplayName { get; }
 	}
 
-	/// Information inherent to a particular `HandleKind` kind/type of handle.
-	// TODO: Does it make sense to switch to a record struct?
+	/// 特定の `HandleKind` kind/type に固有の情報。
+	// TODO: record struct へ切り替える意味はあるか?
 	public record HandleProperties(
 		HandleKind Kind,
 		HandleMutability Mutability,
 		bool IsGloballyUnique
 	);
 
-	/// The degree to which the set of identities that a handle points to can be
-	/// changed.
+	/// handle が指す identity set をどの程度変更できるか。
 	public enum HandleMutability
 	{
-		/// Handles always point to the same set of identities.
+		/// handle は常に同じ identity set を指す。
 		Immutable,
 
-		/// Once an identity is added to the set it always remains, but new identities
-		/// can also be added.
+		/// identity が一度 set に追加されると残り続けるが、新しい identity も追加できる。
 		AppendOnly,
 
-		/// Identities can be added and deleted from the set at will.
+		/// identity を set に自由に追加/削除できる。
 		Mutable,
 	}
 
-	/// The different supported DidMethods.
+	/// support する DidMethod の種類。
 	public enum HandleKind
 	{
 		Local,

@@ -6,7 +6,7 @@ namespace Basis.Network.Core.Serializable
     public static partial class SerializableBasis
     {
         /// <summary>
-        /// Consists of a ushort length, followed by a byte array (of the same length).
+        /// ushort length と、それに続く同じ length の byte array で構成される。
         /// </summary>
         [System.Serializable]
         public struct BytesMessage

@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Basis.Integration.AudioLink
 {
     /// <summary>
-    /// Re-publishes AudioLink globals after a Basis mode switch so consumers that resolve <c>_AudioTexture</c> by global lookup keep working across Desktop/VR transitions.
+    /// Basis mode switch 後に AudioLink globals を再 publish し、global lookup で <c>_AudioTexture</c> を解決する consumer が Desktop/VR 遷移をまたいでも動き続けるようにする。
     /// </summary>
-    /// <remarks>Workaround for <see href="https://github.com/llealloo/audiolink/issues/365"/>.</remarks>
+    /// <remarks><see href="https://github.com/llealloo/audiolink/issues/365"/> の workaround。</remarks>
     internal static class BasisAudioLinkRepublisher
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

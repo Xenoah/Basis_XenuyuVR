@@ -6,7 +6,7 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Runtime-only server policy controlling whether headless clients may stay connected.
+    /// headless client が接続状態を維持できるかを制御する runtime-only server policy。
     /// </summary>
     public static class BasisHeadlessConnectionPolicyManager
     {

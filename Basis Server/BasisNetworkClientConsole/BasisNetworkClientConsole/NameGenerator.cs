@@ -5,10 +5,10 @@ namespace Basis.Utilities
         public static string[] adjectives = { "Swift", "Brave", "Clever", "Fierce", "Nimble", "Silent", "Bold", "Lucky", "Strong", "Mighty", "Sneaky", "Fearless", "Wise", "Vicious", "Daring" };
         public static string[] nouns = { "Warrior", "Hunter", "Mage", "Rogue", "Paladin", "Shaman", "Knight", "Archer", "Monk", "Druid", "Assassin", "Sorcerer", "Ranger", "Guardian", "Berserker" };
         public static string[] titles = { "the Swift", "the Bold", "the Silent", "the Brave", "the Fierce", "the Wise", "the Protector", "the Shadow", "the Flame", "the Phantom" };
-        // Thread-safe unique player name generation
+        // thread-safe な unique player name generation。
         public static string[] animals = { "Wolf", "Tiger", "Eagle", "Dragon", "Lion", "Bear", "Hawk", "Panther", "Raven", "Serpent", "Fox", "Falcon" };
 
-        // Colors with their corresponding names and hex codes for Unity's Rich Text
+        // Unity Rich Text 用の色名と対応する hex code。
         public static (string Name, string Hex)[] colors =
         {
             ("Red", "#FF0000"),
@@ -28,18 +28,18 @@ namespace Basis.Utilities
         {
             Random random = Random.Shared;
 
-            // Randomly select one element from each array
+            // 各 array から 1 要素を random に選ぶ。
             string adjective = adjectives[random.Next(adjectives.Length)];
             string noun = nouns[random.Next(nouns.Length)];
             string title = titles[random.Next(titles.Length)];
             (string Name, string Hex) color = colors[random.Next(colors.Length)];
             string animal = animals[random.Next(animals.Length)];
 
-            // Combine elements with rich text for the color
+            // 色部分に rich text を使って要素を組み合わせる。
             string colorText = $"<color={color.Hex}>{color.Name}</color>";
             string generatedName = $"{adjective}{noun} {title} of the {colorText} {animal}";
 
-            // Ensure uniqueness by appending a counter
+            // counter を追加できる形にして uniqueness を確保する。
             return $"{generatedName}";
         }
     }

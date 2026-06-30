@@ -4,48 +4,48 @@ using UnityEngine;
 namespace Basis.Scripts.Vehicles.Main
 {
     /// <summary>
-    /// A BasisSeat designed for its occupant to pilot a BasisVehicleBody node.
+    /// occupant が BasisVehicleBody node を操縦するための BasisSeat。
     /// </summary>
     public class BasisVehiclePilotSeat : BasisSdk.Interactions.BasisSeat
     {
         /// <summary>
-        /// The control schemes supported by the pilot seat. Each member's summary refers to keyboard/mouse
-        /// for simplicity, but see the Basis input mapping for the actual bound controls on various devices.
+        /// pilot seat が support する control scheme。各 member の summary では簡単のため
+        /// keyboard/mouse を参照するが、各 device の実際の bound control は Basis input mapping を参照。
         /// </summary>
         public enum ControlScheme
         {
             /// <summary>
-            /// Automatically determine the control scheme based on the vehicle's components.
-            /// Throttled vehicles default to Navball, else wheeled vehicles default to Car,
-            /// else hover thruster vehicles default to SixDofHorizontal, else SixDof.
+            /// vehicle の component に基づいて control scheme を自動判定する。
+            /// throttle 付き vehicle は Navball、wheel 付き vehicle は Car、
+            /// hover thruster vehicle は SixDofHorizontal、それ以外は SixDof を default にする。
             /// </summary>
             Auto,
             /// <summary>
-            /// No controls; the vehicle will ignore pilot input.
+            /// control なし。vehicle は pilot input を無視する。
             /// </summary>
             None,
             /// <summary>
-            /// Uses WS for forward/back movement and AD for steering, like most driving games.
-            /// Also, use RF for pitch, and QEUO for roll, if the car has such capabilities.
+            /// 多くの driving game と同様に、前後移動に WS、steering に AD を使う。
+            /// car に能力があれば pitch に RF、roll に QEUO も使う。
             /// </summary>
             Car,
             /// <summary>
-            /// Uses WASDRF for linear movement, QE roll, mouse pitch/yaw, or IJKLUO rotation, like Space Engineers.
+            /// Space Engineers のように、linear movement に WASDRF、roll に QE、mouse pitch/yaw、または IJKLUO rotation を使う。
             /// </summary>
             SixDof,
             /// <summary>
-            /// Like SixDof but flattens the horizontal WASDRF input, like Minecraft creative mode.
-            /// This is good for Empyrion-style hovercraft control, but you may want to use Car instead.
+            /// SixDof に似るが、Minecraft creative mode のように horizontal WASDRF input を平面化する。
+            /// Empyrion 風 hovercraft control に向くが、代わりに Car を使いたい場合もある。
             /// </summary>
             SixDofHorizontal,
             /// <summary>
-            /// Uses WASDQE for rotation, with W as up and S as down. The pitch is inverted compared to flight sims.
-            /// Also, RF are either forward/backward or throttle up/down.
+            /// rotation に WASDQE を使い、W が up、S が down。flight sim と比べて pitch は反転する。
+            /// RF は forward/backward または throttle up/down として使う。
             /// </summary>
             Navball,
             /// <summary>
-            /// Uses WASDQE for rotation, with W as down and S as up, like Kerbal Space Program and flight sims.
-            /// Also, RF are either forward/backward or throttle up/down.
+            /// Kerbal Space Program や flight sim のように rotation に WASDQE を使い、W が down、S が up。
+            /// RF は forward/backward または throttle up/down として使う。
             /// </summary>
             NavballInverted,
         }
@@ -54,21 +54,21 @@ namespace Basis.Scripts.Vehicles.Main
 
         [Header("Pilot Seat Settings")]
         /// <summary>
-        /// The control scheme to use. More can be added by editing BasisVehiclePilotSeat.cs.
+        /// 使用する control scheme。BasisVehiclePilotSeat.cs を編集すれば追加できる。
         /// </summary>
         [Tooltip("Auto considers the vehicle's parts.")]
         public ControlScheme controlScheme = ControlScheme.Auto;
 
         /// <summary>
-        /// Will be set automatically when <see cref="EnterPilotSeat"/> is called.
-        /// Can also be overridden for custom use cases.
+        /// <see cref="EnterPilotSeat"/> 呼び出し時に自動設定される。
+        /// custom use case では override もできる。
         /// </summary>
         [Tooltip("Set when the local player enters the seat.")]
         public bool UseLocalControls = false;
 
         private BasisVehicleBody _pilotedVehicleBody = null;
         /// <summary>
-        /// The vehicle body being piloted.
+        /// 操縦対象の vehicle body。
         /// </summary>
         public BasisVehicleBody PilotedVehicleBody
         {
@@ -84,7 +84,7 @@ namespace Basis.Scripts.Vehicles.Main
         }
 
         /// <summary>
-        /// Should be set at runtime when a player enters the pilot seat via <see cref="EnterPilotSeat"/>
+        /// player が <see cref="EnterPilotSeat"/> 経由で pilot seat に入ったとき、runtime で設定されるべき値。
         /// </summary>
         [Tooltip("Leave blank, this is set at runtime.")]
         public BasisPlayer PilotingPlayer = null;
@@ -182,7 +182,7 @@ namespace Basis.Scripts.Vehicles.Main
                 vehicleInput.DisableAll();
             }
             UseLocalControls = false;
-            // Zero out activations on exit (to avoid cars with the gas pedal stuck down).
+            // exit 時に activation を 0 にする (gas pedal が踏まれっぱなしの car を避ける)。
             if (_pilotedVehicleBody != null)
             {
                 _pilotedVehicleBody.AngularActivation = Vector3.zero;
@@ -217,7 +217,7 @@ namespace Basis.Scripts.Vehicles.Main
 
         public bool DoesPilotSeatNeedMouseInput()
         {
-            // 6DoF control schemes need a desktop user's mouse input for pitch/yaw.
+            // 6DoF control scheme では pitch/yaw に desktop user の mouse input が必要。
             ControlScheme actualControlScheme = GetActualControlScheme();
             return actualControlScheme == ControlScheme.SixDof || actualControlScheme == ControlScheme.SixDofHorizontal;
         }
@@ -229,10 +229,10 @@ namespace Basis.Scripts.Vehicles.Main
         }
 
         /// <summary>
-        /// Throttled vehicles default to Navball, else wheeled vehicles default to Car,
-        /// else hover thruster vehicles default to SixDofHorizontal, else SixDof.
+        /// throttle 付き vehicle は Navball、wheel 付き vehicle は Car、
+        /// hover thruster vehicle は SixDofHorizontal、それ以外は SixDof を default にする。
         /// </summary>
-        /// <returns>The actual control scheme to use (anything but Auto).</returns>
+        /// <returns>実際に使う control scheme (Auto 以外)。</returns>
         private ControlScheme GetActualControlScheme()
         {
             if (controlScheme != ControlScheme.Auto)
@@ -255,11 +255,11 @@ namespace Basis.Scripts.Vehicles.Main
         }
 
         /// <summary>
-        /// Gets the angular input based on the current control scheme.
-        /// The details of this function are Basis-specific, considered unstable, and subject to change.
+        /// 現在の control scheme に基づいて angular input を取得する。
+        /// この function の詳細は Basis 固有で、unstable とみなし、変更され得る。
         /// </summary>
-        /// <param name="actualControlScheme">The actual control scheme being used.</param>
-        /// <returns>The angular input vector.</returns>
+        /// <param name="actualControlScheme">実際に使われている control scheme。</param>
+        /// <returns>angular input vector。</returns>
         private Vector3 GetAngularInput(ControlScheme actualControlScheme)
         {
             if (actualControlScheme == ControlScheme.None)
@@ -286,11 +286,11 @@ namespace Basis.Scripts.Vehicles.Main
         }
 
         /// <summary>
-        /// Gets the linear input based on the current control scheme.
-        /// The details of this function are Basis-specific, considered unstable, and subject to change.
+        /// 現在の control scheme に基づいて linear input を取得する。
+        /// この function の詳細は Basis 固有で、unstable とみなし、変更され得る。
         /// </summary>
-        /// <param name="actualControlScheme">The actual control scheme being used.</param>
-        /// <returns>The linear input vector.</returns>
+        /// <param name="actualControlScheme">実際に使われている control scheme。</param>
+        /// <returns>linear input vector。</returns>
         private Vector3 GetLinearInput(ControlScheme actualControlScheme)
         {
             if (actualControlScheme == ControlScheme.None)
@@ -319,10 +319,10 @@ namespace Basis.Scripts.Vehicles.Main
         }
 
         /// <summary>
-        /// Stretches a Vector2 that was limited to a circle into a square in a continuous way.
+        /// circle に制限された Vector2 を、連続的に square へ引き伸ばす。
         /// </summary>
-        /// <param name="vector">The circular-limited vector.</param>
-        /// <returns>The square-limited vector.</returns>
+        /// <param name="vector">circle に制限された vector。</param>
+        /// <returns>square に制限された vector。</returns>
         private static Vector2 StretchToSquare(Vector2 vector)
         {
             if (vector == Vector2.zero)

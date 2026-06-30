@@ -5,10 +5,10 @@ using System.Globalization;
 namespace BasisNetworkServer.BasisNetworking
 {
     /// <summary>
-    /// Advanced word filter using homoglyph detection and trigram-based false positive prevention.
-    /// Adapted from KoboldKare's word-filter package by naelstrof.
-    /// Detects banned words even when obfuscated with Unicode lookalikes or inserted characters,
-    /// while avoiding false positives like matching "ass" in "assignment".
+    /// homoglyph detection と trigram-based な false positive 防止を使う advanced word filter。
+    /// naelstrof による KoboldKare の word-filter package から adaptation したもの。
+    /// Unicode lookalike や挿入文字で obfuscate されていても banned word を検出しつつ、
+    /// "assignment" 内の "ass" のような false positive を避ける。
     /// </summary>
     public static class BasisWordFilter
     {
@@ -330,8 +330,8 @@ namespace BasisNetworkServer.BasisNetworking
         {
             if (trigram.Length != 3) return false;
 
-            // Skip if all trigram chars are also in the banned word.
-            // This prevents the trigram check from blocking detection of the banned word itself.
+            // trigram char がすべて banned word 内にも含まれる場合は skip する。
+            // これにより、trigram check が banned word 自体の検出を block することを防ぐ。
             bool allInBannedWord = true;
             foreach (char c in trigram)
             {
@@ -350,7 +350,7 @@ namespace BasisNetworkServer.BasisNetworking
         {
             string current = elements[index].Value.ToLowerInvariant();
 
-            // Forward trigram: [index, index+1, index+2]
+            // forward trigram: [index, index+1, index+2]
             if (index + 2 < elements.Count)
             {
                 string tri = current
@@ -359,7 +359,7 @@ namespace BasisNetworkServer.BasisNetworking
                 if (IsValidTrigram(tri, bannedWord)) return true;
             }
 
-            // Backward trigram: [index-2, index-1, index]
+            // backward trigram: [index-2, index-1, index]
             if (index >= 2)
             {
                 string tri = elements[index - 2].Value.ToLowerInvariant()
@@ -368,7 +368,7 @@ namespace BasisNetworkServer.BasisNetworking
                 if (IsValidTrigram(tri, bannedWord)) return true;
             }
 
-            // Middle trigram: [index-1, index, index+1]
+            // middle trigram: [index-1, index, index+1]
             if (index >= 1 && index + 1 < elements.Count)
             {
                 string tri = elements[index - 1].Value.ToLowerInvariant()
@@ -381,11 +381,10 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// After a match is found, checks if the match is embedded in a longer word
-        /// by looking for valid trigrams crossing the match boundaries.
-        /// Unlike the main trigram check, this does NOT skip trigrams whose characters
-        /// are all in the banned word — that's the key to catching cases like "assassinate"
-        /// where the banned word's characters (a,s) dominate the surrounding context.
+        /// match が見つかった後、match boundary を跨ぐ valid trigram を探して、
+        /// match が長い word に埋め込まれていないか確認する。
+        /// main trigram check と違い、文字がすべて banned word 内にある trigram も skip しない。
+        /// これが、banned word の文字 (a,s) が周辺 context を支配する "assassinate" のような case を検出する鍵になる。
         /// </summary>
         private static bool IsEmbeddedInWord(List<TextElementInfo> elements, List<int> matchedElementIndices)
         {
@@ -394,7 +393,7 @@ namespace BasisNetworkServer.BasisNetworking
             int firstIdx = matchedElementIndices[0];
             int lastIdx = matchedElementIndices[matchedElementIndices.Count - 1];
 
-            // Check end boundary: last 2 matched chars + next char after match
+            // end boundary を確認する: last 2 matched chars + match 後の next char。
             if (lastIdx + 1 < elements.Count)
             {
                 string nextEl = elements[lastIdx + 1].Value;
@@ -408,7 +407,7 @@ namespace BasisNetworkServer.BasisNetworking
                 }
             }
 
-            // Check start boundary: char before match + first 2 matched chars
+            // start boundary を確認する: match 前の char + first 2 matched chars。
             if (firstIdx > 0)
             {
                 string prevEl = elements[firstIdx - 1].Value;
@@ -426,9 +425,9 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// Checks whether the text contains any banned word from the blacklist.
-        /// Handles Unicode homoglyph substitution and character insertion evasion.
-        /// Uses trigram analysis to avoid false positives (e.g. "ass" in "assignment").
+        /// text に blacklist 内の banned word が含まれるか確認する。
+        /// Unicode 同形異字置換と文字挿入による回避を扱う。
+        /// false positive (例: "assignment" 内の "ass") を避けるため trigram analysis を使う。
         /// </summary>
         public static bool ContainsBannedWord(string text, string[] blacklist, out string matchedWord)
         {
@@ -472,7 +471,7 @@ namespace BasisNetworkServer.BasisNetworking
                             matchedWord = word;
                             return true;
                         }
-                        // Match was embedded in a longer word — reset and continue
+                        // match は長い word に埋め込まれていたため、reset して続行する。
                         state = 0;
                         matchedElementIndices.Clear();
                     }
@@ -484,9 +483,9 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// Filters a message by replacing banned word characters with asterisks.
-        /// Handles Unicode homoglyph substitution and character insertion evasion.
-        /// Uses trigram analysis to avoid false positives.
+        /// banned word の文字を asterisk に置き換えて message を filter する。
+        /// Unicode 同形異字置換と文字挿入による回避を扱う。
+        /// false positive を避けるため trigram analysis を使う。
         /// </summary>
         public static string Filter(string text, string[] blacklist)
         {
@@ -533,7 +532,7 @@ namespace BasisNetworkServer.BasisNetworking
                         {
                             if (IsEmbeddedInWord(elements, matchedElementIndices))
                             {
-                                // Match is part of a longer word — reset and continue
+                                // match は長い word の一部なので、reset して続行する。
                                 state = 0;
                                 matchedPositions.Clear();
                                 matchedElementIndices.Clear();

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// Result of a meta-only load attempt. Distinguishes transient network failures
-/// (caller should keep cached state intact and retry later) from genuine corruption
-/// or missing data (caller may safely evict the item).
+/// meta-only load 試行の結果。一時的な network failure
+/// (caller は cached state を維持して後で retry すべき) と、本当の corruption
+/// または missing data (caller は安全に item を evict してよい) を区別する。
 /// </summary>
 public readonly struct BasisMetaLoadResult
 {
@@ -26,7 +26,7 @@ public readonly struct BasisMetaLoadResult
     public static BasisMetaLoadResult Transient(string error) => new BasisMetaLoadResult(false, true, error);
     public static BasisMetaLoadResult Corrupt(string error) => new BasisMetaLoadResult(false, false, error);
 
-    // Implicit bool conversion preserves legacy `bool x = await HandleMetaOnlyLoad(...)` call sites.
+    // implicit bool conversion は legacy な `bool x = await HandleMetaOnlyLoad(...)` call site を維持する。
     public static implicit operator bool(BasisMetaLoadResult r) => r.Loaded;
 
     public static bool LooksLikeTransientError(string error)
@@ -49,7 +49,7 @@ public static class BasisBeeManagement
     }
 
     /// <summary>
-    /// this allows obtaining the entire bee file
+    /// bee file 全体の取得を可能にする。
     /// </summary>
     /// <param name="wrapper"></param>
     /// <param name="report"></param>
@@ -87,7 +87,7 @@ public static class BasisBeeManagement
         }
         if(output.Item2 == null || output.Item2.Length == 0)
         {
-            //lets force download it again. this guards against partial file, corrupt file or reattempt at downloading if it fails.
+            // もう一度 force download する。partial file、corrupt file、download 失敗後の再試行に備える。
             BasisDebug.Log("Local load returned null section data, forcing re-download", BasisDebug.LogTag.Event);
             output = await BasisBundleManagement.DownloadLoadBundleConnector(wrapper, report, cancellationToken, MaxDownloadSizeInBytes);
             didForceRedownload = true;
@@ -224,8 +224,8 @@ public static class BasisBeeManagement
             : value.Replace('\\', '/').TrimStart('/').ToLowerInvariant();
     }
     /// <summary>
-    /// Loads a BEE that lives on the local filesystem (no download, no on-disc cache copy).
-    /// Reads connector + platform section directly and generates the asset bundle.
+    /// local filesystem 上の BEE を読み込む (download なし、on-disc cache copy なし)。
+    /// connector と platform section を直接読み、asset bundle を生成する。
     /// </summary>
     private static async Task HandleLocalBeeBundle(BasisTrackedBundleWrapper wrapper, string localBeePath, BasisProgressReport report, CancellationToken cancellationToken)
     {
@@ -272,7 +272,7 @@ public static class BasisBeeManagement
         #endif
     }
     /// <summary>
-    /// Saves or updates on-disc metadata when it is missing or was refreshed by a forced re-download.
+    /// on-disc metadata がない場合、または forced re-download で更新された場合に保存/更新する。
     /// </summary>
     private static async Task SaveMetaIfNeeded(BasisTrackedBundleWrapper wrapper, bool wasMetaOnDisc, bool didForceRedownload, string downloadedPlatform)
     {
@@ -291,13 +291,13 @@ public static class BasisBeeManagement
         }
     }
     /// <summary>
-    /// this allows us to obtain just the meta data.
+    /// metadata だけを取得できるようにする。
     /// </summary>
     /// <param name="wrapper"></param>
     /// <param name="report"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns>A <see cref="BasisMetaLoadResult"/> describing whether the connector was obtained,
-    /// and if not, whether the failure was transient (network/cancel) or fatal (missing/corrupt).</returns>
+    /// <returns>connector を取得できたか、失敗した場合は transient (network/cancel) か
+    /// fatal (missing/corrupt) かを表す <see cref="BasisMetaLoadResult"/>。</returns>
     public static async Task<BasisMetaLoadResult> HandleMetaOnlyLoad(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
         string beeLocation = wrapper.LoadableBundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation;
@@ -325,8 +325,8 @@ public static class BasisBeeManagement
         }
         if (!string.IsNullOrEmpty(output.ErrorMessage))
         {
-            // A transient failure (SSL/DNS/timeout/cancel) must not be treated as corruption by the caller.
-            // The on-disc cache (if any) is still intact; only the download attempt failed.
+            // transient failure (SSL/DNS/timeout/cancel) を caller が corruption と扱ってはいけない。
+            // on-disc cache (あれば) はまだ intact で、失敗したのは download attempt だけ。
             if (BasisMetaLoadResult.LooksLikeTransientError(output.ErrorMessage))
             {
                 BasisDebug.LogWarning($"Meta-only load deferred (transient): {output.ErrorMessage}");

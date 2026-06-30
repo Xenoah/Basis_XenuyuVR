@@ -9,7 +9,7 @@ using static SerializableBasis;
 namespace BasisPermissions
 {
     // =========================
-    // Permission Node Constants
+    // permission node constants
     // =========================
     public static class PermNodes
     {
@@ -26,12 +26,12 @@ namespace BasisPermissions
         public const string ResourceLoadAvatar = "basis.resource.load.avatar";
         public const string ResourceUnloadAvatar = "basis.resource.unload.avatar";
 
-        // Bypass the global lockouts (BasisGlobalLockManager). Users without
-        // the matching bypass node are blocked from loading while the lock is on.
+        // global lockout (BasisGlobalLockManager) を bypass する。
+        // matching bypass node を持たない user は、lock 中に loading を block される。
         public const string ResourceLockBypassAvatar = "basis.resource.lockbypass.avatar";
         public const string ResourceLockBypassProp = "basis.resource.lockbypass.prop";
         public const string ResourceLockBypassWorld = "basis.resource.lockbypass.world";
-        /// <summary>Bypass <c>ServersLocked</c> when initiating a server share.</summary>
+        /// <summary>server share 開始時に <c>ServersLocked</c> を bypass する。</summary>
         public const string ResourceLockBypassServer = "basis.resource.lockbypass.server";
 
         public const string OwnershipTransfer = "basis.ownership.transfer";
@@ -42,7 +42,7 @@ namespace BasisPermissions
         public const string ContentShareCreate = "basis.contentshare.create";
 
         /// <summary>
-        /// used to indicate that this persons actions are protected from interference
+        /// この person の action が interference から保護されていることを示すために使う。
         /// </summary>
         public const string protection = "basis.protection";
 
@@ -62,7 +62,7 @@ namespace BasisPermissions
         public const string ModerationGlobalLock = "basis.moderation.globallock";
         public const string ModerationHeadlessAudio = "basis.moderation.headlessaudio";
         public const string ModerationOpusBitrate = "basis.moderation.opusbitrate";
-        /// <summary>Add/remove UUIDs on the server's allow-list (separate from ban management).</summary>
+        /// <summary>server allow-list 上の UUID を add/remove する (ban management とは別)。</summary>
         public const string ModerationAllowlist = "basis.moderation.whitelist";
         public const string AdminLogs = "basis.admin.logs";
 
@@ -71,23 +71,23 @@ namespace BasisPermissions
     }
 
     // =========================
-    // Data Model
+    // data model
     // =========================
     public sealed class PermissionUser
     {
         public string Uuid = "";
-        // Raw nodes assigned to user (can include "-node" deny entries)
+        // user に割り当てられた raw node ("-node" deny entry を含められる)。
         public HashSet<string> Nodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        // Group memberships
+        // group membership。
         public HashSet<string> Groups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 
     public sealed class PermissionGroup
     {
         public string Name = "";
-        // Raw nodes assigned to group (can include "-node" deny entries)
+        // group に割り当てられた raw node ("-node" deny entry を含められる)。
         public HashSet<string> Nodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        // Parent group inheritance
+        // parent group inheritance。
         public HashSet<string> Parents = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 
@@ -98,8 +98,8 @@ namespace BasisPermissions
     }
     public sealed class EffectivePermissions
     {
-        // Decision table: node => allow(true) / deny(false)
-        // Contains exact nodes and wildcard nodes ("a.*", "*") after inheritance resolution.
+        // 判定テーブル: node => allow(true) / deny(false)。
+        // inheritance resolution 後の exact node と wildcard node ("a.*", "*") を含む。
         private readonly Dictionary<string, bool> _decisions;
 
         internal EffectivePermissions(Dictionary<string, bool> decisions)
@@ -107,7 +107,7 @@ namespace BasisPermissions
             _decisions = decisions;
         }
 
-        // O(depth) check: a.b.c -> a.b.* -> a.* -> *
+        // O(depth) の確認: a.b.c -> a.b.* -> a.* -> *
         public bool Has(string node)
         {
             if (string.IsNullOrWhiteSpace(node))
@@ -117,13 +117,13 @@ namespace BasisPermissions
 
             node = node.Trim();
 
-            // exact
+            // exact。
             if (_decisions.TryGetValue(node, out bool exact))
             {
                 return exact;
             }
 
-            // climb wildcards
+            // wildcard を上に辿る。
             int idx = node.Length;
             while (true)
             {
@@ -137,12 +137,13 @@ namespace BasisPermissions
                 }
             }
 
-            // global wildcard
+            // global wildcard。
             return _decisions.TryGetValue("*", out bool star) ? star : false;
         }
 
-        // Returns all nodes with allow(true) in the decision map.
-        // Note: This returns effective *rules*, not "expanded" node lists (expansion requires a registry of possible nodes).
+        // decision map 内で allow(true) の node をすべて返す。
+        // note: これは effective *rule* を返すもので、"expanded" node list ではない
+        // (expand には possible node の registry が必要)。
         public IReadOnlyCollection<string> GetAllAllowedRules()
         {
             List<string> allowed = new List<string>(_decisions.Count);
@@ -171,41 +172,41 @@ namespace BasisPermissions
             return denied;
         }
 
-        // For debugging/admin UIs
+        // debugging / admin UI 用。
         public IReadOnlyDictionary<string, bool> GetDecisionMap() => _decisions;
     }
 
     // ============================================
-    // Permission Manager (Thread-safe + Cached)
+    // permission manager (thread-safe + cached)
     // ============================================
     public sealed class PermissionManager
     {
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         private PermissionStore _store = new PermissionStore();
 
-        // Cache: uuid -> (version, effective perms)
+        // cache: uuid -> (version, effective perms)
         private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>(StringComparer.OrdinalIgnoreCase);
         private int _version = 0;
 
-        // File path for persistence
+        // persistence 用 file path。
         private string _xmlPath = "permissions.xml";
 
-        // Save debounce to avoid writing on every tiny change
+        // 小さな change ごとに write しないよう save を debounce する。
         private readonly object _saveGate = new object();
         private Timer? _saveTimer;
         private volatile bool _dirty = false;
 
-        // Tune this
+        // 必要に応じて調整する。
         public int SaveDebounceMs { get; set; } = 750;
 
         /// <summary>
-        /// Fired after a permission mutation, outside the write lock.
-        /// Argument is the affected UUID, or null when a group change affects all users.
+        /// permission mutation 後、write lock の外で fire される。
+        /// argument は affected UUID。group change が全 user に影響する場合は null。
         /// </summary>
         public Action<string> OnPermissionsChanged;
 
         // -------------
-        // Public API
+        // public API
         // -------------
         public void SetXmlPath(string path)
         {
@@ -240,7 +241,7 @@ namespace BasisPermissions
             _dirty = false;
         }
 
-        // Debounced save: call this after edits
+        // debounced save: edit 後に呼ぶ。
         public void SaveToXmlDebounced()
         {
             _dirty = true;
@@ -266,7 +267,7 @@ namespace BasisPermissions
             }
             catch
             {
-                // Swallow: you may want to log this
+                // swallow する。必要ならここで log する。
             }
         }
 
@@ -299,7 +300,7 @@ namespace BasisPermissions
             finally { _lock.ExitReadLock(); }
         }
 
-        // Create or get user
+        // user を create / get する。
         public PermissionUser GetOrCreateUser(string uuid)
         {
             _lock.EnterUpgradeableReadLock();
@@ -329,7 +330,7 @@ namespace BasisPermissions
             finally { _lock.ExitUpgradeableReadLock(); }
         }
 
-        // Create or get group
+        // group を create / get する。
         public PermissionGroup GetOrCreateGroup(string name)
         {
             _lock.EnterUpgradeableReadLock();
@@ -354,7 +355,7 @@ namespace BasisPermissions
             finally { _lock.ExitUpgradeableReadLock(); }
         }
 
-        // Mutators (invalidate cache)
+        // mutator (cache を invalidate する)。
         public void AddUserNode(string uuid, string node)
         {
             if (string.IsNullOrWhiteSpace(uuid) || string.IsNullOrWhiteSpace(node))
@@ -532,11 +533,11 @@ namespace BasisPermissions
                 if (!_store.Groups.Remove(groupName))
                     return false;
 
-                // Remove this group from all users that reference it
+                // この group を参照している全 user から削除する。
                 foreach (var u in _store.Users.Values)
                     u.Groups.Remove(groupName);
 
-                // Remove this group as a parent from other groups
+                // 他 group の parent からこの group を削除する。
                 foreach (var g in _store.Groups.Values)
                     g.Parents.Remove(groupName);
 
@@ -549,7 +550,7 @@ namespace BasisPermissions
             return true;
         }
 
-        // Snapshot store for saving or admin viewing
+        // save または admin viewing 用に store を snapshot する。
         public PermissionStore Snapshot()
         {
             _lock.EnterReadLock();
@@ -640,11 +641,11 @@ namespace BasisPermissions
 
         public EffectivePermissions BuildEffective_NoLock(string uuid)
         {
-            // deny-wins decision table
+            // deny-wins decision table。
             var decisions = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
-            // If the user doesn't exist in the store, treat them as part of the implicit "default" group.
-            // This makes <Group name="default"> behave like an actual default.
+            // user が store に存在しない場合、implicit "default" group の一員として扱う。
+            // これにより <Group name="default"> が実際の default のように振る舞う。
             PermissionUser user;
             if (!_store.Users.TryGetValue(uuid, out user))
             {
@@ -652,12 +653,12 @@ namespace BasisPermissions
                 user.Groups.Add("default"); // ✅ implicit default group
             }
 
-            // 1) Apply groups w/ inheritance (parents first)
+            // 1) inheritance 付きで group を適用する (parents first)。
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var g in user.Groups)
                 ApplyGroupRecursive_NoLock(g, visited, decisions);
 
-            // 2) Apply user nodes last (user overrides groups; deny still wins)
+            // 2) user node を最後に適用する (user は group を override するが、deny は常に勝つ)。
             ApplyRawNodes(user.Nodes, decisions);
 
             return new EffectivePermissions(decisions);
@@ -676,15 +677,15 @@ namespace BasisPermissions
             if (!_store.Groups.TryGetValue(groupName, out var group))
                 return;
 
-            // Parents first, then this group
+            // parent が先、その後にこの group。
             foreach (var p in group.Parents)
                 ApplyGroupRecursive_NoLock(p, visited, decisions);
 
             ApplyRawNodes(group.Nodes, decisions);
         }
 
-        // Raw nodes may include "-node" denies.
-        // Deny always wins over allow.
+        // raw node は "-node" deny を含められる。
+        // deny は常に allow に勝つ。
         private static void ApplyRawNodes(HashSet<string> rawNodes, Dictionary<string, bool> decisions)
         {
             foreach (var raw in rawNodes)
@@ -706,11 +707,11 @@ namespace BasisPermissions
                 {
                     if (!existing)
                     {
-                        // already denied, never overwrite
+                        // すでに denied の場合、絶対に overwrite しない。
                         continue;
                     }
 
-                    // existing allow can be overridden by deny
+                    // existing allow は deny で override できる。
                     if (!allow)
                         decisions[node] = false;
                     else
@@ -745,7 +746,7 @@ namespace BasisPermissions
         }
 
         // -----------------------
-        // Convenience: default setup
+        // convenience: default setup
         // -----------------------
         public void EnsureDefaults()
         {
@@ -755,9 +756,9 @@ namespace BasisPermissions
                 if (!_store.Groups.ContainsKey("default"))
                 {
                     PermissionGroup def = new PermissionGroup { Name = "default" };
-                    // existing example
+                    // 既存 example。
                     def.Nodes.Add(PermNodes.help);
-                    // ✅ default users should have these
+                    // default user はこれらを持つべき。
                     def.Nodes.Add(PermNodes.ResourceLoadProp);
                     def.Nodes.Add(PermNodes.ResourceUnloadProp);
 
@@ -819,11 +820,11 @@ namespace BasisPermissions
         }
 
         // =========================================
-        // XML Persistence (fast XmlReader/XmlWriter)
+        // XML 永続化 (高速な XmlReader/XmlWriter)
         // =========================================
         public static class PermissionXml
         {
-            // XML format:
+            // XML 形式:
             // <Permissions>
             //   <Groups>
             //     <Group name="default">
@@ -859,7 +860,7 @@ namespace BasisPermissions
                 PermissionGroup? currentGroupDef = null;
                 PermissionUser? currentUser = null;
 
-                // Context flags
+                // context flag。
                 bool inGroups = false;
                 bool inUsers = false;
 
@@ -879,9 +880,9 @@ namespace BasisPermissions
 
                             case "Group":
                                 {
-                                    // "Group" can mean:
-                                    // - group definition when in <Groups>
-                                    // - group membership when inside <User> and in <Users>
+                                    // "Group" は次の意味を持ちうる:
+                                    // - <Groups> 内では group definition。
+                                    // - <Users> 内の <User> 配下では group membership。
                                     string name = xr.GetAttribute("name") ?? "";
 
                                     if (inGroups)
@@ -938,7 +939,7 @@ namespace BasisPermissions
                         switch (xr.Name)
                         {
                             case "Group":
-                                // only clear group definition context (not user group membership)
+                                // group definition context だけを clear する (user group membership ではない)。
                                 if (inGroups)
                                     currentGroupDef = null;
                                 break;
@@ -982,7 +983,7 @@ namespace BasisPermissions
                 xw.WriteStartDocument();
                 xw.WriteStartElement("Permissions");
 
-                // Groups
+                // groups。
                 xw.WriteStartElement("Groups");
                 foreach (var g in store.Groups.Values)
                 {
@@ -1007,7 +1008,7 @@ namespace BasisPermissions
                 }
                 xw.WriteEndElement(); // Groups
 
-                // Users
+                // users。
                 xw.WriteStartElement("Users");
                 foreach (var u in store.Users.Values)
                 {
@@ -1038,39 +1039,39 @@ namespace BasisPermissions
         }
         public static class PermissionIntegration
         {
-            // Global singleton-style instance
+            // global singleton-style instance。
             public static readonly PermissionManager Manager = new PermissionManager();
 
-            // Per-player metadata stored at connect, used to rebuild ServerMetaDataMessage on permission changes
+            // connect 時に保存する player ごとの metadata。permission change 時に ServerMetaDataMessage を rebuild するために使う。
             private static readonly ConcurrentDictionary<string, ClientMetaDataMessage> _playerMeta =
                 new ConcurrentDictionary<string, ClientMetaDataMessage>(StringComparer.OrdinalIgnoreCase);
 
-            // Call at server startup
+            // server startup 時に呼ぶ。
             public static void Init(string xmlPath)
             {
                 Manager.SetXmlPath(xmlPath);
 
-                // Load existing
+                // existing を load する。
                 Manager.LoadFromXml();
 
-                // Optional defaults if file was empty/nonexistent
+                // file が empty / nonexistent の場合、optional default を適用する。
                 Manager.EnsureDefaults();
 
-                // Ensure saved
+                // save されていることを保証する。
                 Manager.SaveToXmlDebounced();
 
                 Manager.OnPermissionsChanged += HandlePermissionsChanged;
             }
             public static void InitWithoutDisc()
             {
-                // Optional defaults if file was empty/nonexistent
+                // file が empty / nonexistent の場合、optional default を適用する。
                 Manager.EnsureDefaults();
 
                 Manager.OnPermissionsChanged += HandlePermissionsChanged;
             }
 
             /// <summary>
-            /// Store player metadata when they connect so we can rebuild ServerMetaDataMessage later.
+            /// 後で ServerMetaDataMessage を rebuild できるよう、player 接続時に metadata を保存する。
             /// </summary>
             public static void StorePlayerMeta(string uuid, ClientMetaDataMessage meta)
             {
@@ -1078,7 +1079,7 @@ namespace BasisPermissions
             }
 
             /// <summary>
-            /// Remove stored metadata when a player disconnects.
+            /// player disconnect 時に保存済み metadata を削除する。
             /// </summary>
             public static void RemovePlayerMeta(string uuid)
             {
@@ -1133,7 +1134,7 @@ namespace BasisPermissions
                 }
                 else
                 {
-                    // Group-level change: resend to all connected players
+                    // group-level change: connected player 全員へ resend する。
                     foreach (var kvp in _playerMeta)
                     {
                         SendPermissionUpdate(kvp.Key);
@@ -1142,7 +1143,7 @@ namespace BasisPermissions
             }
 
             /// <summary>
-            /// Rebuild and resend ServerMetaDataMessage to a connected player with their current permissions.
+            /// connected player に対し、現在の permission を含む ServerMetaDataMessage を rebuild して resend する。
             /// </summary>
             public static void SendPermissionUpdate(string uuid)
             {

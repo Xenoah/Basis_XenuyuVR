@@ -10,50 +10,50 @@ namespace Basis.Scripts.Vehicles.Main
         private const float InertiaDampenerRateLinear = 1.0f;
 
         /// <summary>
-        /// The node to use as the pilot seat / driver seat. A player sitting in this seat will control the vehicle.
+        /// pilot seat / driver seat として使う node。この seat に座った player が vehicle を制御する。
         /// </summary>
         [Tooltip("Can be null to set automatically.")]
         public BasisVehiclePilotSeat PilotSeat = null;
 
         /// <summary>
-        /// The input value controlling the ratio of the vehicle's angular forces.
-        /// Each axis is on a range of -1.0 to 1.0, the input may be longer than 1.0 overall.
+        /// vehicle の angular force 比率を制御する input value。
+        /// 各 axis は -1.0 から 1.0 の範囲で、input 全体の長さは 1.0 を超える場合がある。
         /// </summary>
         [Tooltip("Each axis is on a range of -1.0 to 1.0.")]
         public Vector3 AngularActivation = Vector3.zero;
         /// <summary>
-        /// The input value controlling the ratio of the vehicle's linear forces.
-        /// Each axis is on a range of -1.0 to 1.0, the input may be longer than 1.0 overall.
+        /// vehicle の linear force 比率を制御する input value。
+        /// 各 axis は -1.0 から 1.0 の範囲で、input 全体の長さは 1.0 を超える場合がある。
         /// </summary>
         [Tooltip("Each axis is on a range of -1.0 to 1.0.")]
         public Vector3 LinearActivation = Vector3.zero;
 
         /// <summary>
-        /// The gyroscope torque intrinsic to the vehicle, excluding torque from parts, measured in Newton-meters per radian (kg⋅m²/s²/rad).
+        /// part 由来の torque を除いた vehicle 固有の gyroscope torque。単位は Newton-meters/radian (kg*m^2/s^2/rad)。
         /// </summary>
         [Tooltip("N\u22C5m/rad (kg\u22C5m\u00B2/s\u00B2/rad)")]
         public Vector3 GyroscopeTorque = Vector3.zero;
 
         /// <summary>
-        /// If non-negative, the speed in meters per second at which the vehicle should stop driving acceleration further.
-        /// If throttle is used, activation is a ratio of this speed if positive, or a ratio of thrust power if negative.
+        /// 非負の場合、vehicle がそれ以上加速しない目標 speed (meters/sec)。
+        /// throttle 使用時、正なら activation はこの speed の比率、負なら thrust power の比率になる。
         /// </summary>
         [Tooltip("Negative means no speed limit.")]
         public float MaxSpeed = -1.0f;
 
         /// <summary>
-        /// If true, the vehicle should slow its rotation down when not given angular activation input for a specific rotation.
+        /// true の場合、特定 rotation の angular activation input がないとき vehicle は rotation を減速する。
         /// </summary>
         [Tooltip("Should the vehicle slow its rotation automatically?")]
         public bool AngularDampeners = true;
         /// <summary>
-        /// If true, the vehicle should slow itself down when not given linear activation input for a specific direction.
+        /// true の場合、特定 direction の linear activation input がないとき vehicle は自身を減速する。
         /// </summary>
         [Tooltip("Should the vehicle slow itself down automatically?")]
         public bool LinearDampeners = true;
         /// <summary>
-        /// If true, the vehicle should use a throttle for linear movement. Pilot seat input "sticks around" when let go.
-        /// If MaxSpeed is non-negative, the throttle is a ratio of that speed, otherwise it is a ratio of thrust power.
+        /// true の場合、vehicle は linear movement に throttle を使う。pilot seat input は離しても「残る」。
+        /// MaxSpeed が非負なら throttle はその speed の比率、それ以外は thrust power の比率になる。
         /// </summary>
         [Tooltip("Persist linear input and use as a ratio of MaxSpeed or thrust power.")]
         public bool UseThrottle = false;
@@ -63,8 +63,9 @@ namespace Basis.Scripts.Vehicles.Main
         private List<Parts.BasisVehiclePart> _otherParts = new List<Parts.BasisVehiclePart>();
         public Rigidbody rb;
         /// <summary>
-        /// Server-authoritative "locked" state, set by <see cref="Basis.Network.Vehicles.BasisNetworkedVehicle"/>
-        /// when the library Static toggle is on. While true, FixedUpdate applies no forces.
+        /// server-authoritative な "locked" state。library の Static toggle が on のとき
+        /// <see cref="Basis.Network.Vehicles.BasisNetworkedVehicle"/> により設定される。
+        /// true の間、FixedUpdate は force を適用しない。
         /// </summary>
         public bool IsLocked = false;
         private void Awake()
@@ -111,7 +112,7 @@ namespace Basis.Scripts.Vehicles.Main
                 BasisDebug.LogError("BasisVehicleBody: No Rigidbody found on the vehicle body.");
                 return;
             }
-            // A locked (static) vehicle applies no forces — it's frozen for everyone.
+            // locked (static) vehicle は force を適用しない。全員に対して frozen になる。
             if (IsLocked)
             {
                 return;
@@ -121,11 +122,11 @@ namespace Basis.Scripts.Vehicles.Main
             Vector3 localLinearVel = transform.InverseTransformDirection(rb.linearVelocity);
             Vector3 localAngularVel = transform.InverseTransformDirection(rb.angularVelocity);
             Vector3 localUpDirection = -GetLocalGravityDirection();
-            // Determine the actual linear values to use based on activation, throttle, and dampeners.
+            // activation、throttle、dampener に基づき、実際に使う linear value を決定する。
             if (MaxSpeed >= 0.0f)
             {
-                // In this case, the throttle should be a ratio of the maximum speed,
-                // with the thrust adjusting so that the vehicle meets the target speed.
+                // この場合、throttle は maximum speed の比率であり、
+                // vehicle が target speed に合うよう thrust を調整する。
                 Vector3 targetVelocity = MaxSpeed * Vector3.ClampMagnitude(LinearActivation, 1.0f);
                 actualLinear = (targetVelocity - localLinearVel) / MaxSpeed;
             }
@@ -148,13 +149,13 @@ namespace Basis.Scripts.Vehicles.Main
                     actualLinear += (LinearActivation != Vector3.zero) ? localUpDirection : localUpDirection * 0.75f;
                 }
             }
-            // Vehicle wheels should never rotate due to dampeners, because for wheels,
-            // pointing straight is a vehicle's best attempt to stop rotating.
+            // vehicle wheel は dampener によって回転させない。wheel にとっては、
+            // まっすぐ向くことが vehicle の回転停止に最も近い動きだから。
             for (int i = 0; i < _wheels.Count; i++)
             {
                 _wheels[i].SetFromVehicleInput(actualAngular, actualLinear);
             }
-            // Determine the actual angular values to use based on activation and dampeners.
+            // activation と dampener に基づき、実際に使う angular value を決定する。
             if (AngularDampeners)
             {
                 if (Mathf.Approximately(AngularActivation.x, 0.0f))
@@ -169,12 +170,12 @@ namespace Basis.Scripts.Vehicles.Main
                 {
                     actualAngular.z = localAngularVel.z * -InertiaDampenerRateAngular;
                 }
-                // Hovercraft, cars, etc should attempt to keep themselves upright.
+                // hovercraft や car などは自身を upright に保とうとする。
                 if (PilotSeat != null && PilotSeat.DoesPilotSeatWantToKeepUpright())
                 {
                     Quaternion toUp = GetRotationToUpright(localUpDirection);
                     Vector3 v = Vector3.ClampMagnitude(new Vector3(toUp.x, 0.0f, toUp.z), 1.0f);
-                    // Only apply the upright correction if there's no input for that axis.
+                    // その axis に input がない場合だけ upright correction を適用する。
                     if (Mathf.Approximately(AngularActivation.x, 0.0f))
                     {
                         actualAngular.x += v.x;
@@ -185,8 +186,8 @@ namespace Basis.Scripts.Vehicles.Main
                     }
                 }
             }
-            // Clamp the actual inputs to the range of -1.0 to 1.0 per each axis (can be longer than 1.0 overall).
-            // The individual parts (thrusters etc) may clamp these further as needed (such as to a length of 1.0).
+            // 実際の input を axis ごとに -1.0 から 1.0 へ clamp する (全体の長さは 1.0 を超え得る)。
+            // 個々の part (thruster など) は必要に応じてさらに clamp できる (例: 長さ 1.0)。
             actualAngular = new Vector3(
                 Mathf.Clamp(actualAngular.x, -1.0f, 1.0f),
                 Mathf.Clamp(actualAngular.y, -1.0f, 1.0f),
@@ -197,8 +198,8 @@ namespace Basis.Scripts.Vehicles.Main
                 Mathf.Clamp(actualLinear.y, -1.0f, 1.0f),
                 Mathf.Clamp(actualLinear.z, -1.0f, 1.0f)
             );
-            // Now that we've calculated the actual angular/linear inputs including
-            // throttle and dampeners, apply them to everything (except wheels).
+            // throttle と dampener を含む実際の angular/linear input を計算したので、
+            // wheel 以外のすべてへ適用する。
             rb.AddTorque(transform.TransformDirection(Vector3.Scale(GyroscopeTorque, actualAngular)), ForceMode.Force);
             for (int i = 0; i < _hoverThrusters.Count; i++)
             {
@@ -249,7 +250,7 @@ namespace Basis.Scripts.Vehicles.Main
 
         private Vector3 GetLocalGravityDirection()
         {
-            // TODO: This assumes that gravity is always global, which may change in a future version of Basis.
+            // TODO: ここでは gravity が常に global であると仮定しているが、将来の Basis では変わる可能性がある。
             return Quaternion.Inverse(transform.rotation) * Physics.gravity.normalized;
         }
     }

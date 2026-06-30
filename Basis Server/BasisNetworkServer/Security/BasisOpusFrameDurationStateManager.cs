@@ -5,10 +5,11 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Runtime-only server toggle for the Opus frame duration. An admin pushes either
-    /// 20 or 40 (milliseconds); the server stores it and broadcasts to every connected
-    /// client, which switches its encoder packing accordingly. Other valid Opus frame
-    /// sizes (2.5, 5, 10, 60) are rejected — only 20/40 are useful in this codebase.
+    /// Opus frame duration 用の runtime-only server toggle。
+    /// admin は 20 または 40 (milliseconds) を push し、server がそれを保存して connected client 全員へ broadcast する。
+    /// client はそれに応じて encoder packing を切り替える。
+    /// Opus として有効な他の frame size (2.5, 5, 10, 60) は拒否する。
+    /// この codebase で有用なのは 20/40 のみ。
     /// </summary>
     public static class BasisOpusFrameDurationStateManager
     {
@@ -19,7 +20,7 @@ namespace BasisNetworkServer.Security
 
         public static bool IsAcceptedDuration(int ms) => ms == 20 || ms == 40;
 
-        /// <summary>Set the frame duration (20 or 40 ms only). Returns true if it changed.</summary>
+        /// <summary>frame duration を set する (20 または 40 ms のみ)。変更された場合 true を返す。</summary>
         public static bool SetFrameDurationMs(int ms)
         {
             if (!IsAcceptedDuration(ms)) ms = DefaultMs;

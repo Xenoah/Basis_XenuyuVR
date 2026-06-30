@@ -61,7 +61,7 @@ namespace BasisNetworkClient
             BytesMessage ChallengeBytes = new BytesMessage();
 
             ChallengeBytes.Deserialize(Reader, out byte[] PayloadBytes);
-            // Client
+            // client 側で challenge payload に署名する。
             Payload payloadToSign = new Payload(PayloadBytes);
             if (Ed25519.Sign(Key.Item2, payloadToSign, out Signature sig) == false)
             {
@@ -73,7 +73,7 @@ namespace BasisNetworkClient
                 BNL.LogError("Unable to Very Key");
                 return false;
             }
-            // for simplicity, use an empty fragment since the client only has one pubkey
+            // client は pubkey を 1 つだけ持つため、単純化のため空 fragment を使う。
             Response response = new Response(sig, DidUrlFragment);
             BytesMessage SignatureBytes = new BytesMessage();
             BytesMessage FragmentBytes = new BytesMessage();
@@ -96,7 +96,7 @@ namespace BasisNetworkClient
         }
         public static void ClientKeyCreation(out (PubKey, PrivKey) Keys, out Did Did)
         {
-            // Client
+            // client 用 key pair と DID を生成する。
             CryptoRng rng = CryptoRng.Create();
             Keys = RandomKeyPair(rng);
             Did = DidKeyResolver.EncodePubkeyAsDid(Keys.Item1);

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Basis.Integration.AudioLink
 {
     /// <summary>
-    /// Drives a Light's intensity and color from a CPU-readback AudioLink band.
+    /// CPU-readback AudioLink band から Light の intensity と color を駆動する。
     /// </summary>
     [RequireComponent(typeof(Light))]
     [AddComponentMenu("Basis/AudioLink/Reactive Light")]

@@ -31,15 +31,15 @@ namespace Basis
 
             MovementSender.Initialize(clientManager.ClientCount);
 
-            // Drive all clients from one worker per CPU core
+            // CPU core ごとに 1 worker で全 client を駆動する
             StartClientDriverLoops(clientManager.FinalClients, clientManager.FinalPeers);
 
             await clientManager.StartClientsAsync();
 
-            // Start random reconnects
+            // random reconnect を開始する
             _ = StartRandomReconnectLoop(clientManager);
 
-            await Task.Delay(-1); // keep main alive
+            await Task.Delay(-1); // main を生かし続ける
         }
 
         public static void StopClient(ClientManager manager, int index)

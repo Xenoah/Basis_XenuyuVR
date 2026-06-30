@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Basis.MediaPipe
 {
-    /// <summary>Owns a WebCamTexture: device selection, start/stop and readiness. No inference.</summary>
+    /// <summary>WebCamTexture を所有し、device 選択、開始/停止、準備状態を管理する。推論は行わない。</summary>
     public sealed class BasisMediaPipeCamera
     {
         public WebCamTexture Texture { get; private set; }

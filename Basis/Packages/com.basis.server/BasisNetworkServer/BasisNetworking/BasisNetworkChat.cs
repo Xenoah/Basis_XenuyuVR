@@ -8,8 +8,8 @@ using static SerializableBasis;
 namespace BasisNetworkServer.BasisNetworking
 {
     /// <summary>
-    /// Server-side handler for chat messages. Deserializes incoming chat,
-    /// applies word filtering, and broadcasts to all other authenticated peers.
+    /// chat message 用の server-side handler。
+    /// 受信した chat を deserialize し、word filter を適用してから、認証済みの他 peer 全員へ broadcast する。
     /// </summary>
     public static class BasisNetworkChat
     {
@@ -18,8 +18,8 @@ namespace BasisNetworkServer.BasisNetworking
         private static readonly string WordFilterFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Configuration.ConfigFolderName, "chat_word_filter.txt");
 
         /// <summary>
-        /// Loads the word filter list from disk. Each line in the file is a blocked word/phrase.
-        /// Creates an empty file if none exists.
+        /// word filter list を disk から読み込む。file の各行は blocked word / phrase として扱う。
+        /// 存在しない場合は空の file を作成する。
         /// </summary>
         public static void LoadWordFilter(Configuration Configuration)
         {
@@ -29,7 +29,7 @@ namespace BasisNetworkServer.BasisNetworking
                 {
                     if (!File.Exists(WordFilterFilePath))
                     {
-                        // Create empty filter file with instructions
+                        // 説明付きの空 filter file を作成する。
                         string configDir = Path.GetDirectoryName(WordFilterFilePath);
                         if (!Directory.Exists(configDir))
                         {
@@ -95,7 +95,7 @@ namespace BasisNetworkServer.BasisNetworking
                             "raping\n" +
                             "rapist\n");
                         BNL.Log("Created default chat word filter file: " + WordFilterFilePath);
-                        // Reload so the defaults are active immediately
+                        // default をすぐ有効にするため、読み込み直す。
                         LoadWordFilter(Configuration);
                         return;
                     }
@@ -122,10 +122,9 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// Applies the word filter to a message, replacing blocked words with asterisks.
-        /// Uses homoglyph detection (Unicode lookalike characters) and trigram-based
-        /// false positive prevention to catch evasion attempts while avoiding
-        /// incorrect matches (e.g. won't match "ass" in "assignment").
+        /// message に word filter を適用し、blocked word を asterisk に置き換える。
+        /// homoglyph detection (Unicode の見た目が似た文字) と trigram-based な false positive 防止を使い、
+        /// 誤検出 (例: "assignment" 内の "ass" は一致させない) を避けながら回避を検出する。
         /// </summary>
         public static string FilterMessage(string message)
         {
@@ -138,8 +137,8 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// Handles an incoming chat message from a client peer.
-        /// Deserializes, filters, re-serializes, and broadcasts to all other peers.
+        /// client peer から届いた chat message を処理する。
+        /// deserialize、filter、再 serialize して、他の peer 全員へ broadcast する。
         /// </summary>
         public static void HandleChatMessage(NetPacketReader reader, NetPeer sender)
         {
@@ -147,12 +146,12 @@ namespace BasisNetworkServer.BasisNetworking
             chatMessage.Deserialize(reader);
             reader.Recycle();
 
-            // Decode, filter, re-encode
+            // decode、filter、再 encode する。
             if (chatMessage.payload != null && chatMessage.payloadSize > 0)
             {
                 string text = Encoding.UTF8.GetString(chatMessage.payload, 0, chatMessage.payloadSize);
 
-                // Apply word filter
+                // word filter を適用する。
                 text = FilterMessage(text);
                 text = BasisChatSanitizer.Sanitize(text);
 
@@ -161,7 +160,7 @@ namespace BasisNetworkServer.BasisNetworking
                 chatMessage.payloadSize = (ushort)filtered.Length;
             }
 
-            // Wrap with sender ID
+            // sender ID で包む。
             ServerChatMessage serverChatMessage = new ServerChatMessage
             {
                 playerIdMessage = new PlayerIdMessage
@@ -171,7 +170,7 @@ namespace BasisNetworkServer.BasisNetworking
                 chatMessage = chatMessage
             };
 
-            // Serialize and broadcast to all except sender
+            // serialize し、sender 以外の全員へ broadcast する。
             NetDataWriter writer = NetworkServer.RentWriter();
             serverChatMessage.Serialize(writer);
             NetworkServer.BroadcastMessageToClients(writer, BasisNetworkCommons.ChatChannel, sender, NetworkServer.PeerSnapshot, DeliveryMethod.ReliableOrdered);

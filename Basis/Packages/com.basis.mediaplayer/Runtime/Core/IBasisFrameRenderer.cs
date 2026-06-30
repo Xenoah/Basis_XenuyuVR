@@ -1,28 +1,26 @@
 using System;
 using UnityEngine;
 
-// Uploads a decoded frame to a Unity texture exposed as OutputTexture.
-// Renderers own the texture they produce and are responsible for rebuilding it
-// when frame dimensions or pixel format change. Consumers bind OutputTexture
-// to materials, UI elements, etc. by subscribing to OnOutputTextureChanged.
+// decode 済み frame を OutputTexture として公開される Unity texture へ upload する。
+// Renderer は生成する texture を所有し、frame dimension や pixel format が変わったときの
+// 再構築責任を持つ。consumer は OnOutputTextureChanged を購読し、
+// OutputTexture を material や UI element などへ bind する。
 //
-// Split out from the player so YUV/RGBA paths can be swapped without touching
-// the scheduling logic.
+// scheduling logic に触れず YUV/RGBA path を差し替えられるよう、player から分離している。
 public interface IBasisFrameRenderer : IDisposable
 {
     bool SupportsFormat(BasisVideoFrameFormat format);
 
-    // The current output texture. Null until the first frame has been
-    // presented or until SupportsFormat would have rejected every prior frame.
+    // 現在の output texture。最初の frame が present されるまで、または
+    // これまでの frame が全て SupportsFormat に拒否されている間は null。
     Texture OutputTexture { get; }
 
-    // Fired whenever OutputTexture is rebuilt (initial creation, dimension
-    // change, format change). The new texture is passed in the argument; it
-    // may be null if the renderer transitioned to a not-yet-ready state.
+    // OutputTexture が再構築されるたびに発火する (初回作成、dimension 変更、format 変更)。
+    // 新しい texture が引数で渡される。renderer が未準備状態へ遷移した場合は null の可能性がある。
     event Action<Texture> OnOutputTextureChanged;
 
-    // Uploads the frame's pixel data into OutputTexture. Returns true on success.
-    // Renderers must not bind OutputTexture to materials themselves; that's a
-    // consumer responsibility (BasisVideoMaterialOutput / BasisVideoDisplay).
+    // frame の pixel data を OutputTexture へ upload する。成功時 true。
+    // renderer 自身は OutputTexture を material へ bind しない。それは consumer
+    // (BasisVideoMaterialOutput / BasisVideoDisplay) の責務。
     bool Present(BasisVideoFrame frame);
 }

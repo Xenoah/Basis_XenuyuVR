@@ -11,12 +11,12 @@ namespace BasisNetworkCore
     public static class BasisNetworkIDDatabase
     {
         public static ConcurrentDictionary<string, ushort> UshortNetworkDatabase = new ConcurrentDictionary<string, ushort>();
-        private static int counter = -1; // Start at -1 so the first increment becomes 0
+        private static int counter = -1; // 最初の increment が 0 になるよう -1 から始める。
         public static void AddOrFindNetworkID(NetPeer NetPeer, string UniqueStringID)
         {
-            if (UshortNetworkDatabase.TryGetValue(UniqueStringID, out ushort Value)) // This should basically never happen!
+            if (UshortNetworkDatabase.TryGetValue(UniqueStringID, out ushort Value)) // 基本的には起こらない想定。
             {
-                // We already know about it, let's just give it back to that player
+                // 既知の ID なので、その player に返すだけでよい。
                 ServerNetIDMessage SNIM = new ServerNetIDMessage
                 {
                     NetIDMessage = new NetIDMessage() { playerID = UniqueStringID },
@@ -30,16 +30,16 @@ namespace BasisNetworkCore
             }
             else
             {
-                // Log that we are assigning a new ID
+                // 新しい ID を割り当てることを記録する。
                 BNL.Log($"No existing ID found for {UniqueStringID}. Assigning a new ID.");
 
-                // Generate a new unique ushort ID (thread-safe increment)
+                // thread-safe increment で新しい unique ushort ID を生成する。
                 int newCounter = Interlocked.Increment(ref counter);
 
-                // Check if we exceeded the ushort range
+                // ushort range を超えていないか確認する。
                 if (newCounter > ushort.MaxValue)
                 {
-                    Interlocked.Decrement(ref counter); // Roll back
+                    Interlocked.Decrement(ref counter); // roll back する。
                     string errorMessage = $"Error: Cannot assign a new NetID for {UniqueStringID}. Maximum ID limit of {ushort.MaxValue} reached.";
                     BNL.Log(errorMessage);
                     throw new InvalidOperationException(errorMessage);
@@ -47,11 +47,11 @@ namespace BasisNetworkCore
 
                 ushort newID = (ushort)newCounter;
 
-                // Add to the database
+                // database に追加する。
                 UshortNetworkDatabase[UniqueStringID] = newID;
                 BNL.Log($"New ID {newID} assigned to {UniqueStringID}");
 
-                // Notify the requesting peer and broadcast to others
+                // request 元 peer に通知し、他 peer へ broadcast する。
                 ServerNetIDMessage SUIMA = new ServerNetIDMessage
                 {
                     NetIDMessage = new NetIDMessage() { playerID = UniqueStringID },
@@ -84,7 +84,7 @@ namespace BasisNetworkCore
         public static void RemoveUshortNetworkID(ushort netID)
         {
             BNL.Log($"Attempting to remove NetID: {netID}");
-            // Remove based on value (ushort ID)
+            // value (ushort ID) に基づいて削除する。
             var itemToRemove = UshortNetworkDatabase.FirstOrDefault(kvp => kvp.Value == netID);
             if (!string.IsNullOrEmpty(itemToRemove.Key))
             {

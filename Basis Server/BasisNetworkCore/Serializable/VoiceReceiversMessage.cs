@@ -6,15 +6,15 @@ public static partial class SerializableBasis
 {
     public struct VoiceReceiversMessage
     {
-        // Hard cap to avoid giant allocations if data is corrupted
+        // data が壊れている場合に巨大 allocation を避けるための hard cap。
         private const int MaxUsers = ushort.MaxValue;
 
         public ushort[] Users;
-        public int UsersLength; // actual count (rented array may be larger)
+        public int UsersLength; // 実際の count。rented array はより大きい場合がある。
 
         /// <param name="largeCount">
-        /// false = byte count (AudioRecipientsChannel, ≤255 recipients).
-        /// true  = ushort count (AudioRecipientsLargeChannel, >255 recipients).
+        /// false = byte count (AudioRecipientsChannel, 255 recipients 以下)。
+        /// true  = ushort count (AudioRecipientsLargeChannel, 255 recipients 超)。
         /// </param>
         public void Deserialize(NetDataReader reader, bool largeCount)
         {
@@ -41,10 +41,10 @@ public static partial class SerializableBasis
 
             if (count == 0)
             {
-                // Explicit "no recipients": use a non-null empty array so the consumer
-                // (BasisSavedState.AddLastData) treats this as a real clear. A null Users
-                // means "couldn't parse / corrupt" and is deliberately left for the consumer
-                // to ignore (keep the last-known recipients).
+                // 明示的な "no recipients": consumer (BasisSavedState.AddLastData) が
+                // 実際の clear として扱えるよう、non-null の empty array を使う。
+                // null Users は "parse 不能 / corrupted" を意味し、consumer が意図的に無視して
+                // last-known recipients を保持できるようにする。
                 ReturnPool();
                 Users = Array.Empty<ushort>();
                 UsersLength = 0;
@@ -73,7 +73,7 @@ public static partial class SerializableBasis
                 return;
             }
 
-            // Return previous rented array before renting a new one
+            // 新しい array を rent する前に、以前の rented array を返却する。
             ReturnPool();
             Users = ArrayPool<ushort>.Shared.Rent(count);
             UsersLength = count;
@@ -84,12 +84,10 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Equivalent to <c>Serialize(writer, largeCount: true)</c> — always writes
-        /// a 2-byte (ushort) count. Use only when sending on
-        /// <see cref="BasisNetworkCommons.AudioRecipientsLargeChannel"/> (channel 39).
-        /// For <see cref="BasisNetworkCommons.AudioRecipientsChannel"/> (channel 5),
-        /// call the largeCount overload with <c>false</c> so the length field width
-        /// matches what the server expects.
+        /// <c>Serialize(writer, largeCount: true)</c> と同等で、常に 2-byte (ushort) count を書く。
+        /// <see cref="BasisNetworkCommons.AudioRecipientsLargeChannel"/> (channel 39) で送る場合のみ使う。
+        /// <see cref="BasisNetworkCommons.AudioRecipientsChannel"/> (channel 5) では、
+        /// server が期待する length field width と一致させるため、largeCount overload を <c>false</c> で呼ぶ。
         /// </summary>
         public void Serialize(NetDataWriter writer)
         {
@@ -97,10 +95,10 @@ public static partial class SerializableBasis
         }
 
         /// <param name="largeCount">
-        /// Must match the channel the packet will be sent on:
-        /// false = byte count (AudioRecipientsChannel, ≤255 recipients);
-        /// true  = ushort count (AudioRecipientsLargeChannel, up to 65535 recipients).
-        /// Mismatch desyncs the wire format and the server will log "Protocol mismatch?".
+        /// packet を送る channel と一致させる必要がある。
+        /// false = byte count (AudioRecipientsChannel, 255 recipients 以下)。
+        /// true  = ushort count (AudioRecipientsLargeChannel, 最大 65535 recipients)。
+        /// 不一致だと wire format が desync し、server は "Protocol mismatch?" を log する。
         /// </param>
         public void Serialize(NetDataWriter writer, bool largeCount)
         {
@@ -109,7 +107,7 @@ public static partial class SerializableBasis
 
             if (usersLength == 0)
             {
-                // Still write a 0-length so read side stays in sync
+                // read side との同期を保つため、0-length は必ず書く。
                 if (largeCount) writer.Put((ushort)0);
                 else writer.Put((byte)0);
                 return;
@@ -133,12 +131,12 @@ public static partial class SerializableBasis
         }
 
         /// <summary>
-        /// Returns the rented array to the pool. Call after resolving to peers.
+        /// rented array を pool へ返却する。peer へ解決した後に呼ぶ。
         /// </summary>
         public void ReturnPool()
         {
-            // Only pool-rented arrays (length > 0) go back to the pool — never the
-            // Array.Empty<ushort>() "explicit empty" sentinel, and never null.
+            // pool に返すのは pool から rent された array (length > 0) のみ。
+            // Array.Empty<ushort>() の "explicit empty" sentinel や null は返さない。
             if (Users != null && Users.Length != 0)
             {
                 ArrayPool<ushort>.Shared.Return(Users);

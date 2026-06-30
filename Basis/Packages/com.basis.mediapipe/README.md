@@ -1,38 +1,27 @@
 # Basis MediaPipe Tracking
 
-Webcam-driven avatar tracking for desktop Basis. It turns a normal webcam into "fake VR"
-input: head/neck/upper-body **trackers**, **finger** curl/splay, **eye** gaze + blink, and
-**face** blendshapes/visemes — so a desktop user can emote and move like a tracked VR user.
+desktop Basis 向けの webcam 駆動 avatar tracking です。通常の webcam を "fake VR" input に変換し、head / neck / upper-body **tracker**、**finger** curl / splay、**eye** gaze + blink、**face** blendshape / viseme を動かします。これにより desktop user も、tracked VR user のように感情表現や動きができます。
 
-Inference uses the [MediaPipe Unity Plugin (homuler)](https://github.com/homuler/MediaPipeUnityPlugin)
-(Apache-2.0). That plugin is an **optional dependency**: this package compiles and ships
-**inert** without it, and lights up automatically once it is installed.
+inference には [MediaPipe Unity Plugin (homuler)](https://github.com/homuler/MediaPipeUnityPlugin) (Apache-2.0) を使います。この plugin は**任意 dependency**です。plugin なしでもこの package は compile / 配布されますが、**inert** な状態になります。install されると自動的に有効化されます。
 
-## Status
+## 状態
 
-| Milestone | Scope | State |
+| Milestone | Scope | 状態 |
 |-----------|-------|-------|
-| **M0** | Package, asmdefs, webcam capture, device-source lifecycle, backend seam | **done** |
-| **M1** | FaceLandmarker → eye gaze/blink + 52 ARKit face blendshapes (via Basis.Comms) | **done** |
-| **M2** | HandLandmarker → finger curl/splay (via BasisLocalHandDriver) | **done** |
+| **M0** | package、asmdef、webcam capture、device-source lifecycle、backend seam | **done** |
+| **M1** | FaceLandmarker → eye gaze / blink + 52 ARKit face blendshape (Basis.Comms 経由) | **done** |
+| **M2** | HandLandmarker → finger curl / splay (BasisLocalHandDriver 経由) | **done** |
 | **M4 (partial)** | Settings tab: enable + camera select + feature toggles | **done** |
-| M3 | Head/neck pose + upper-body trackers + calibration + desktop head hand-off | planned |
-| M4 | en.json localization, debug overlay, per-platform packaging, perf | planned |
+| M3 | Head / neck pose + upper-body tracker + calibration + desktop head hand-off | planned |
+| M4 | en.json localization、debug overlay、platform ごとの packaging、perf | planned |
 
-The homuler backend runs FaceLandmarker + HandLandmarker in **VIDEO mode** (synchronous, on the
-main thread); M4 will move inference off-thread (LIVE_STREAM + TextureFrame).
+homuler backend は FaceLandmarker + HandLandmarker を **VIDEO mode** で実行します。これは main thread 上の synchronous 実行です。M4 では inference を off-thread に移します (LIVE_STREAM + TextureFrame)。
 
-## How it fits Basis
+## Basis との関係
 
-- `BasisMediaPipeManagement : BasisBaseTypeManagement` is a **device source**. Add it to the
-  `BasisDeviceManagement` GameObject and include it in that object's **`BaseTypes`** list.
-  Its per-frame work runs from `BasisDeviceManagement.Simulate()` — the central tick — so it
-  adds no new `Update()` loop.
-- Body poses are published as `BasisInputXRSimulate` trackers (the framework's existing fake
-  device), assigned fixed roles (`Head`, `LeftHand`, `Hips`, …) via `InitalizeTracking(..., ForceAssignTrackedRole: true, role)`.
-  Everything downstream (FBIK, the muscle/finger bitstream, bone networking) is reused as-is.
-- Fingers will drive `BasisLocalHandDriver.LeftHand/RightHand`; eyes + face blendshapes will go
-  through `HVR.Basis.Comms` `AcquisitionService` (already networked to remotes).
+- `BasisMediaPipeManagement : BasisBaseTypeManagement` は **device source** です。`BasisDeviceManagement` GameObject に追加し、その object の **`BaseTypes`** list に含めます。frame ごとの処理は central tick である `BasisDeviceManagement.Simulate()` から実行されるため、新しい `Update()` loop は追加しません。
+- body pose は、framework 既存の fake device である `BasisInputXRSimulate` tracker として publish されます。`InitalizeTracking(..., ForceAssignTrackedRole: true, role)` により、`Head`、`LeftHand`、`Hips` などの固定 role が割り当てられます。下流の FBIK、muscle / finger bitstream、bone networking はそのまま再利用されます。
+- finger は `BasisLocalHandDriver.LeftHand/RightHand` を駆動します。eye + face blendshape は `HVR.Basis.Comms` の `AcquisitionService` を通ります。これはすでに remote へ network されています。
 
 ```
 WebCamTexture ─► BasisMediaPipeCamera ─► IBasisMediaPipeBackend (homuler) ─► BasisMediaPipeResult
@@ -43,53 +32,38 @@ WebCamTexture ─► BasisMediaPipeCamera ─► IBasisMediaPipeBackend (homuler
                                        └─ AcquisitionService (gaze/blink/blendshapes)
 ```
 
-## Setup (already wired in this project)
+## セットアップ (この project では設定済み)
 
-These steps are **done** in this repo — listed so it's reproducible:
+以下の手順はこの repo では**完了済み**です。再現できるように記載しています。
 
-1. **Plugin** `com.github.homuler.mediapipe` **0.16.3** is installed via `Packages/manifest.json`
-   (`"file:com.github.homuler.mediapipe-0.16.3.tgz"`, tarball alongside the other `*.tgz` deps).
-   Unity auto-defines `BASIS_MEDIAPIPE` (via `versionDefines` on `BasisMediaPipe.Homuler.asmdef`),
-   activating the homuler backend assembly. If it ever doesn't, add `BASIS_MEDIAPIPE` to
-   **Project Settings → Player → Scripting Define Symbols**.
-2. **Models** ship as Addressable `TextAsset`s (`.bytes`) in `Packages/com.basis.mediapipe/Models/`:
-   `face_landmarker.task.bytes`, `hand_landmarker.task.bytes`, `pose_landmarker_lite.task.bytes`,
-   organized into the dedicated **Basis MediaPipe Models** group (PackSeparately) by
-   *Basis ▸ Addressables ▸ Organize Model Groups* and an importer on that folder. The loader reads
-   them via `Addressables.LoadAssetAsync<TextAsset>(...).WaitForCompletion()` and hands the raw bytes
-   to MediaPipe's `modelAssetBuffer`. See
-   `com.basis.framework.editor/Editor/ADDRESSABLES.md` for the full group layout and tooling.
-3. **Manager**: `BasisMediaPipeManagement` lives on the `BasisDeviceManagement` object and is in
-   its `BaseTypes` list. The Settings tab also self-wires it if missing.
-4. **For face/eyes to drive your avatar** the avatar needs HVR Basis Comms `AutomaticFaceTracking`
-   plus ARKit- or Unified-Expressions-named blendshapes and eye bones (same requirement as
-   VRCFaceTracking-over-OSC). **Fingers don't need this** — they drive `BasisLocalHandDriver` directly.
+1. **Plugin** `com.github.homuler.mediapipe` **0.16.3** は `Packages/manifest.json` から install されています。`"file:com.github.homuler.mediapipe-0.16.3.tgz"` として、他の `*.tgz` dependency と並ぶ tarball を参照します。Unity は `BasisMediaPipe.Homuler.asmdef` の `versionDefines` により `BASIS_MEDIAPIPE` を自動定義し、homuler backend assembly を有効化します。もし自動定義されない場合は、**Project Settings → Player → Scripting Define Symbols** に `BASIS_MEDIAPIPE` を追加してください。
+2. **Models** は `Packages/com.basis.mediapipe/Models/` 内の Addressable `TextAsset` (`.bytes`) として同梱されます。`face_landmarker.task.bytes`、`hand_landmarker.task.bytes`、`pose_landmarker_lite.task.bytes` が対象です。*Basis ▸ Addressables ▸ Organize Model Groups* と、その folder 上の importer により、専用の **Basis MediaPipe Models** group (PackSeparately) に整理されます。loader は `Addressables.LoadAssetAsync<TextAsset>(...).WaitForCompletion()` で読み込み、raw bytes を MediaPipe の `modelAssetBuffer` に渡します。group layout と tooling 全体は `com.basis.framework.editor/Editor/ADDRESSABLES.md` を参照してください。
+3. **Manager**: `BasisMediaPipeManagement` は `BasisDeviceManagement` object 上にあり、その `BaseTypes` list に入っています。Settings tab も、見つからない場合は自己接続します。
+4. **face / eyes で avatar を動かすには**、avatar 側に HVR Basis Comms `AutomaticFaceTracking`、ARKit または Unified Expressions 名の blendshape、eye bone が必要です。これは VRCFaceTracking-over-OSC と同じ要件です。**finger には不要**です。finger は `BasisLocalHandDriver` を直接駆動します。
 
-## Using it
+## 使い方
 
-Open **Settings → Webcam Tracking**:
-- **Enable Webcam Tracking** — turn it on/off.
-- **Camera** — pick which webcam to use (live device list).
-- **Face & Eyes**, **Hands & Fingers**, **Mirror Camera** — per-feature toggles.
+**Settings → Webcam Tracking** を開きます。
 
-Tuning knobs if something looks reversed (no avatar rebuild needed):
-- Blink inverted → flip `MediaPipeFaceConverter.EyeLidIsOpenness`.
-- Hands swapped → `HomulerMediaPipeBackend.SwapHands`.
-- Finger splay direction/strength → `MediaPipeHandConverter.SplayGain` / `MaxSplayDegrees`.
+- **Enable Webcam Tracking**: on / off を切り替えます。
+- **Camera**: 使用する webcam を選びます。live device list です。
+- **Face & Eyes**、**Hands & Fingers**、**Mirror Camera**: feature ごとの toggle です。
 
-> Inference runs on the main thread (VIDEO mode), so expect a frame-time cost while enabled until
-> the M4 off-thread pass. Cap the camera FPS via `BasisMediaPipeConfig.TargetFps` if needed.
+何かが反転して見える場合の tuning knob です。avatar rebuild は不要です。
 
-## Platform notes
+- blink が反転している → `MediaPipeFaceConverter.EyeLidIsOpenness` を切り替えます。
+- hand が入れ替わっている → `HomulerMediaPipeBackend.SwapHands`。
+- finger splay の方向 / 強さ → `MediaPipeHandConverter.SplayGain` / `MaxSplayDegrees`。
 
-- **Windows / Linux / macOS desktop:** primary targets; `WebCamTexture` is the capture path.
-- **Android phone:** works with the selfie camera (one more native-lib target to package).
-- **Quest / standalone HMD:** **not practical** — there is no user-facing camera and passthrough
-  cameras are locked down for apps. Use an external/USB camera or a phone as the source instead.
+> inference は main thread 上で実行されます (VIDEO mode)。M4 の off-thread pass までは、有効化中に frame-time cost がある前提で見てください。必要に応じて `BasisMediaPipeConfig.TargetFps` で camera FPS を制限してください。
 
-## Notes
+## platform notes
 
-- `.meta` files are generated by Unity on first import.
-- Monocular webcam tracking estimates depth rather than measuring it: rotation and expression are
-  strong, absolute position is approximate (M3 calibration mitigates this). Legs/lower body are
-  intentionally out of scope for a seated webcam.
+- **Windows / Linux / macOS desktop:** primary target です。capture path は `WebCamTexture` です。
+- **Android phone:** selfie camera で動作します。package 対象として native-lib target がもう 1 つ必要です。
+- **Quest / standalone HMD:** **実用的ではありません**。user-facing camera がなく、passthrough camera は app から利用できないよう制限されています。代わりに external / USB camera、または phone を source として使ってください。
+
+## notes
+
+- `.meta` file は初回 import 時に Unity が生成します。
+- 単眼 webcam tracking は depth を測定するのではなく推定します。rotation と expression は強く出ますが、absolute position は近似です。M3 calibration で緩和します。seated webcam を対象とするため、leg / lower body は意図的に scope 外です。

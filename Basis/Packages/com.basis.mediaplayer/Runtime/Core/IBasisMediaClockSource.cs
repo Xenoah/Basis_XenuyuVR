@@ -1,10 +1,9 @@
-// Provides a media-time clock that something else (typically an audio sink) is
-// driving. BasisAVSyncClock falls back to wall-clock pacing when no source is
-// wired, but prefers this source when one is present and reports HasMediaTime.
+// 別の何か (通常は audio sink) が駆動する media-time clock を提供する。
+// source が未接続なら BasisAVSyncClock は wall-clock pacing へ fallback するが、
+// source が存在し HasMediaTime を報告している場合はこちらを優先する。
 //
-// This is the audio-master sync pattern: video presentation tracks the time of
-// the audio samples that have actually been demanded by the audio system, so
-// video stays aligned with audio regardless of source/network/loop drift.
+// これは audio-master sync pattern。video presentation は audio system が実際に要求した
+// audio sample の時刻へ追従するため、source/network/loop drift に関係なく audio と揃いやすい。
 public interface IBasisMediaClockSource
 {
     bool HasMediaTime { get; }

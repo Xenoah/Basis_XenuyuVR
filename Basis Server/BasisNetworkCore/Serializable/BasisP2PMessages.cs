@@ -10,8 +10,8 @@ public static partial class SerializableBasis
         public ushort otherPlayerId;
         public string sessionToken;
         /// <summary>
-        /// X25519 ephemeral public key of the sender, relayed by the server so the two
-        /// peers can derive a per-pair key and always encrypt the direct (P2P) link.
+        /// sender の X25519 ephemeral public key。
+        /// server が relay し、2 peer が per-pair key を derive して direct (P2P) link を常に encrypt できるようにする。
         /// </summary>
         public byte[] ephemeralPublicKey;
 

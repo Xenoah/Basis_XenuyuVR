@@ -4,20 +4,19 @@ using BasisNetworkServer.BasisNetworking;
 namespace BasisNetworkServer
 {
     /// <summary>
-    /// Server-side router for session-scoped "temp block" notifications sent on
-    /// <see cref="BasisNetworkCommons.EventsChannel"/> with sub-byte
-    /// <see cref="BasisNetworkCommons.EventType_PlayerTempBlock"/>.
+    /// <see cref="BasisNetworkCommons.EventsChannel"/> 上で
+    /// <see cref="BasisNetworkCommons.EventType_PlayerTempBlock"/> sub-byte として送られる、
+    /// session-scoped な "temp block" notification の server-side router。
     ///
-    /// Clients emit a temp-block message when a user toggles their local block on
-    /// another player; the server rewrites the payload with the sender's peer id and
-    /// forwards it to the target peer only, so the target can mirror the block on
-    /// their client without the state being persisted on either end.
+    /// user が別 player に対する local block を切り替えると、client は temp-block message を送る。
+    /// server は payload を sender の peer id で書き換え、target peer のみに転送する。
+    /// これにより、どちらの端にも state を永続化せず、target 側 client で block を mirror できる。
     /// </summary>
     public static class BasisNetworkHandleTempBlock
     {
         /// <summary>
-        /// Wire format (in): [byte eventType][ushort targetID][bool isBlocked]
-        /// Wire format (out to target): [byte eventType][ushort senderID][bool isBlocked]
+        /// wire format (in): [byte eventType][ushort targetID][bool isBlocked]
+        /// wire format (out to target): [byte eventType][ushort senderID][bool isBlocked]
         /// </summary>
         public static void HandleEvent(NetPacketReader reader, NetPeer peer, byte eventType)
         {

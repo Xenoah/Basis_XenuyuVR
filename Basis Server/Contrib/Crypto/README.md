@@ -1,5 +1,3 @@
-# Cryptography
+# 暗号
 
-Cryptography (NOT Cryptocurrency) primitives for Basis. All security sensitive
-lower level cryptographic operations should be implemented here, and expose a higher
-level api to the rest of the framework.
+Basis 向けの cryptography、つまり暗号処理の primitive です。cryptocurrency ではありません。security sensitive な低レベル暗号処理はここに実装し、framework の残り部分にはより高レベルの API として公開します。

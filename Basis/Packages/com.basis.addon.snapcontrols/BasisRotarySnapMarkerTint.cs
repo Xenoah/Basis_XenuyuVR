@@ -5,16 +5,16 @@ using UnityEngine.Events;
 namespace Basis.Scripts.BasisSdk.Interactions
 {
     /// <summary>
-    /// Per-marker material highlight driven by one or more snap-path interactables. Place this
-    /// on a marker GameObject (a transform listed in some BasisRotarySnapInteractable's
-    /// snapPoints array). Configure each source as an (interactable, highlight material) pair;
-    /// while that source's CurrentIndex selects this marker, the highlight is applied to the
-    /// target renderer's element-0 slot. When no source is highlighting, the element-0 material
-    /// captured at Awake is restored.
+    /// 1 つ以上の snap-path interactable で駆動する marker ごとの material highlight。
+    /// marker GameObject (いずれかの BasisRotarySnapInteractable の snapPoints array に入る
+    /// transform) に付ける。各 source は (interactable, highlight material) pair として設定する。
+    /// source の CurrentIndex がこの marker を選んでいる間、highlight を target renderer の
+    /// element-0 slot に適用する。highlight 中の source がなければ、Awake で取得した
+    /// element-0 material を復元する。
     ///
-    /// Multiple sources may select the same marker simultaneously (e.g. clock hour and minute
-    /// hands both pointing at "12"). The most-recently-activated source's material wins; as
-    /// sources move off, the previous winner takes over until the stack is empty.
+    /// 複数 source が同じ marker を同時に選ぶ場合がある (例: clock の hour hand と minute hand が
+    /// どちらも "12" を指す)。最も最近 activate された source の material が勝ち、
+    /// source が外れると stack が空になるまで前の勝者が引き継ぐ。
     /// </summary>
     public class BasisRotarySnapMarkerTint : MonoBehaviour
     {

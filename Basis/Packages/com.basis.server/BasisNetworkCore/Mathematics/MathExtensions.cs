@@ -34,7 +34,7 @@ namespace Basis.Scripts.Networking.Compression
             this.y = y;
             this.z = z;
         }
-        // Subtraction operator for convenience
+        // 利便性のための減算 operator
         public static Vector3 operator -(Vector3 a, Vector3 b)
         {
             return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
@@ -44,7 +44,7 @@ namespace Basis.Scripts.Networking.Compression
             return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
         }
 
-        // Squared magnitude (squared length of a vector)
+        // 二乗 magnitude (vector の長さの二乗)
         public float SquaredMagnitude()
         {
             return x * x + y * y + z * z;

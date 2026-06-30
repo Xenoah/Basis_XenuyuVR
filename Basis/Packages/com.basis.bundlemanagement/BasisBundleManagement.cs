@@ -7,7 +7,7 @@ using static BasisIOManagement;
 public static class BasisBundleManagement
 {
     /// <summary>
-    /// Downloads remote BEE, stores it, and returns the platform-matching generated metadata + bundle bytes.
+    /// remote BEE を download して保存し、platform に一致する generated metadata と bundle bytes を返す。
     /// </summary>
     public static async Task<(BasisBundleGenerated Generated, byte[] BundleBytes, string ErrorMessage)> DownloadLoadBundleConnector(BasisTrackedBundleWrapper bundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken, long MaxDownloadSizeInMB = 4L * 1024 * 1024 * 1024)
     {
@@ -45,7 +45,7 @@ public static class BasisBundleManagement
             return (null, null, "Section data is missing after download.");
         }
 
-        // persist references to wrapper
+        // wrapper への reference を保持する
         bundleWrapper.LoadableBundle.BasisBundleConnector = bee.Connector;
         bundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.DownloadedBeeFileLocation = bee.LocalPath;
 
@@ -59,7 +59,7 @@ public static class BasisBundleManagement
     }
 
     /// <summary>
-    /// Reads connector and section bytes from an already-downloaded .BEE file.
+    /// download 済み .BEE file から connector と section bytes を読む。
     /// </summary>
     public static async Task<(BasisBundleGenerated Generated, byte[] BundleBytes, string ErrorMessage)> LocalLoadBundleConnector(BasisTrackedBundleWrapper bundleWrapper, BasisStoredEncryptedBundle storedBundle, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {
@@ -115,7 +115,7 @@ public static class BasisBundleManagement
     }
 
     /// <summary>
-    /// Reads only the connector from an already-downloaded .BEE file.
+    /// download 済み .BEE file から connector だけを読む。
     /// </summary>
     public static async Task<(BasisBundleConnector Connector, string ErrorMessage)> ReadConnectorFile(BasisTrackedBundleWrapper bundleWrapper, BasisStoredEncryptedBundle storedBundle, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {
@@ -170,7 +170,7 @@ public static class BasisBundleManagement
     }
 
     /// <summary>
-    /// Downloads connector only and returns it.
+    /// connector だけを download して返す。
     /// </summary>
     public static async Task<(BasisBundleConnector Connector, string ErrorMessage)> DownloadConnectorFile(BasisTrackedBundleWrapper bundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken, long MaxDownloadSizeInMB = 4L * 1024 * 1024 * 1024)
     {
@@ -204,9 +204,9 @@ public static class BasisBundleManagement
     }
 
     /// <summary>
-    /// Reads connector + platform section directly from a local BEE file. Tries the remote-format
-    /// layout (8-byte header, all platform sections — the SDK export) first, then falls back to the
-    /// full-file cache layout (4-byte header, single section), so either on-disk format loads.
+    /// local BEE file から connector と platform section を直接読む。まず remote-format layout
+    /// (8-byte header、全 platform section。SDK export) を試し、次に full-file cache layout
+    /// (4-byte header、単一 section) へ fallback するため、どちらの on-disk format でも読み込める。
     /// </summary>
     public static async Task<(BasisBundleGenerated Generated, byte[] BundleBytes, string ErrorMessage)> LocalDirectLoadBundleConnector(BasisTrackedBundleWrapper bundleWrapper, string localPath, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {
@@ -268,8 +268,8 @@ public static class BasisBundleManagement
     }
 
     /// <summary>
-    /// Reads only the connector from a local BEE file, trying the remote-format layout first and
-    /// falling back to the full-file cache layout. Used by meta-only loads (library cards).
+    /// local BEE file から connector だけを読む。remote-format layout を先に試し、
+    /// full-file cache layout へ fallback する。meta-only load (library card) で使う。
     /// </summary>
     public static async Task<(BasisBundleConnector Connector, string ErrorMessage)> LocalDirectConnectorFile(BasisTrackedBundleWrapper bundleWrapper, string localPath, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {

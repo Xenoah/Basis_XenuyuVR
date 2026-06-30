@@ -4,30 +4,30 @@ using System.Runtime.CompilerServices;
 namespace Basis.Network.Core.Compression
 {
     /// <summary>
-    /// Bone rotation compression using "smallest three" quaternion encoding.
-    /// Pure C# — no Unity dependencies. Can run on the server.
+    /// "smallest three" クォータニオンエンコードを使うボーン回転圧縮。
+    /// Pure C# で Unity 依存なし。サーバー上で動作できる。
     ///
-    /// Each bone is assigned a bits-per-component (BPC) value based on its DOF:
-    ///   3-DOF body joints: 10 BPC (32 bits total)
-    ///   2-DOF limb joints: 8 BPC (26 bits total)
-    ///   2-DOF extremities: 7 BPC (23 bits total)
-    ///   1-2 DOF toes/eyes/jaw: 5 BPC (17 bits total)
-    ///   2-DOF finger proximal: 6 BPC (20 bits total)
-    ///   1-DOF finger mid/distal: 4 BPC (14 bits total)
+    /// 各ボーンには自由度 (DOF) に応じた bits-per-component (BPC) を割り当てる:
+    ///   3-DOF body joints: 10 BPC (合計 32 bits)
+    ///   2-DOF limb joints: 8 BPC (合計 26 bits)
+    ///   2-DOF extremities: 7 BPC (合計 23 bits)
+    ///   1-2 DOF toes/eyes/jaw: 5 BPC (合計 17 bits)
+    ///   2-DOF finger proximal: 6 BPC (合計 20 bits)
+    ///   1-DOF finger mid/distal: 4 BPC (合計 14 bits)
     /// </summary>
     public static class BasisBoneRotationCompression
     {
         /// <summary>
-        /// Number of bones synced. Excludes:
-        ///   Hips (0) — sent as body rotation in the packet tail
-        ///   LeftEye (21), RightEye (22), Jaw (23) — driven locally by BasisRemoteFaceManagement
+        /// 同期するボーン数。以下は除外する:
+        ///   Hips (0) はパケット末尾の body rotation として送信する
+        ///   LeftEye (21), RightEye (22), Jaw (23) は BasisRemoteFaceManagement がローカル駆動する
         /// </summary>
         public const int SyncBoneCount = 51;
 
-        /// <summary>Inverse of sqrt(2), the max magnitude of any non-dropped smallest-three component.</summary>
+        /// <summary>sqrt(2) の逆数。smallest-three で破棄されなかった成分が取り得る最大の大きさ。</summary>
         public const float InvSqrt2 = 0.70710678118f;
 
-        // Reuse position/scale/rotation sizes from BasisAvatarBitPacking
+        // 位置/スケール/回転サイズは BasisAvatarBitPacking の定義を再利用する
         public const int WritePosition = BasisAvatarBitPacking.WritePosition;   // 12
         public const int WriteScale    = BasisAvatarBitPacking.WriteScale;      // 2
         public const int WriteRotation = BasisAvatarBitPacking.WriteRotation;   // 7
@@ -36,13 +36,13 @@ namespace Basis.Network.Core.Compression
         public const int TailBytes     = BasisAvatarBitPacking.TailBytes;       // 22
 
         // ────────────────────────────────────────────────────────────
-        //  Bone write order: HumanBodyBones enum values (excluding Hips=0)
+        //  ボーン書き込み順: HumanBodyBones enum 値 (Hips=0 は除外)
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Maps slot index (0..50) to HumanBodyBones enum value.
-        /// Excludes Hips(0), LeftEye(21), RightEye(22), Jaw(23).
-        /// Grouped: 3-DOF body → 2-DOF limbs → 2-DOF extremities → toes → finger proximal → finger mid/distal.
+        /// slot index (0..50) を HumanBodyBones enum 値へ対応付ける。
+        /// Hips(0), LeftEye(21), RightEye(22), Jaw(23) は除外する。
+        /// グループ順: 3-DOF body → 2-DOF limbs → 2-DOF extremities → toes → finger proximal → finger mid/distal。
         /// </summary>
         public static readonly int[] BONE_WRITE_ORDER = new int[]
         {
@@ -52,7 +52,7 @@ namespace Basis.Network.Core.Compression
             15, 16, 3, 4,
             // 2-DOF extremities (6 bones): Shoulders, Hands, Feet
             11, 12, 17, 18, 5, 6,
-            // toes (2 bones) — eyes/jaw excluded (driven by face system)
+            // toes (2 bones): eyes/jaw は除外 (face system が駆動)
             19, 20,
             // 2-DOF finger proximal (10 bones)
             24, 27, 30, 33, 36, 39, 42, 45, 48, 51,
@@ -63,8 +63,8 @@ namespace Basis.Network.Core.Compression
         };
 
         /// <summary>
-        /// Reverse lookup: HumanBodyBones enum value → slot index.
-        /// Index 0 (Hips) = -1. Bones 1..54 map to slots 0..53.
+        /// 逆引き: HumanBodyBones enum 値 → slot index。
+        /// Index 0 (Hips) = -1。Bones 1..54 は slots 0..53 へ対応する。
         /// </summary>
         public static readonly int[] BONE_TO_SLOT;
 
@@ -77,13 +77,13 @@ namespace Basis.Network.Core.Compression
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Bits-per-component tables (per quality level)
-        //  Total bits per bone = 2 (index) + 3 * BPC
+        //  Bits-per-component テーブル (品質レベルごと)
+        //  ボーンごとの合計 bits = 2 (index) + 3 * BPC
         // ────────────────────────────────────────────────────────────
 
-        /// <summary>HIGH quality. 1182 bits = 148 rotation bytes. Packet = 169 bytes.
-        /// Per-finger priority: thumb/index get more bits (most expressive).
-        /// Proximal gets more than intermediate/distal (carries spread motion).</summary>
+        /// <summary>HIGH 品質。1182 bits = 回転 148 bytes。Packet = 169 bytes。
+        /// 指ごとの優先度: thumb/index は表現力が高いため多めに割り当てる。
+        /// Proximal は spread motion を担うため intermediate/distal より多めにする。</summary>
         public static readonly byte[] BPC_HIGH = new byte[]
         {
             // 3-DOF body (9): spine, chest, upperchest, neck, head, upper arms, upper legs
@@ -102,7 +102,7 @@ namespace Basis.Network.Core.Compression
             5,5,5,5,5,  5,5,5,5,5,
         };
 
-        /// <summary>MEDIUM quality. 972 bits = 122 rotation bytes. Packet = 143 bytes.</summary>
+        /// <summary>MEDIUM 品質。972 bits = 回転 122 bytes。Packet = 143 bytes。</summary>
         public static readonly byte[] BPC_MEDIUM = new byte[]
         {
             8,8,8,8,8,8,8,8,8,
@@ -114,7 +114,7 @@ namespace Basis.Network.Core.Compression
             4,4,4,4,4,  4,4,4,4,4,
         };
 
-        /// <summary>LOW quality. 774 bits = 97 rotation bytes. Packet = 118 bytes.</summary>
+        /// <summary>LOW 品質。774 bits = 回転 97 bytes。Packet = 118 bytes。</summary>
         public static readonly byte[] BPC_LOW = new byte[]
         {
             6,6,6,6,6,6,6,6,6,
@@ -126,7 +126,7 @@ namespace Basis.Network.Core.Compression
             3,3,3,3,3,  3,3,3,3,3,
         };
 
-        /// <summary>VERY LOW quality. 621 bits = 78 rotation bytes. Packet = 99 bytes.</summary>
+        /// <summary>VERY LOW 品質。621 bits = 回転 78 bytes。Packet = 99 bytes。</summary>
         public static readonly byte[] BPC_VERY_LOW = new byte[]
         {
             5,5,5,5,5,5,5,5,5,
@@ -139,72 +139,73 @@ namespace Basis.Network.Core.Compression
         };
 
         // ────────────────────────────────────────────────────────────
-        //  Per-bone max component range (joint limits)
-        //  maxComp = sin(maxAngle/2) with ~15% safety margin, capped at InvSqrt2.
-        //  Tighter range → more precision at the same bit count.
-        //  Precision multiplier = InvSqrt2 / maxComp.
+        //  ボーンごとの最大成分範囲 (関節制限)
+        //  maxComp = sin(maxAngle/2) に約 15% の安全余裕を加え、InvSqrt2 で上限を切る。
+        //  範囲が狭いほど、同じ bit 数で精度が上がる。
+        //  精度倍率 = InvSqrt2 / maxComp。
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Maximum quaternion component magnitude per bone slot.
-        /// Components are quantized within [-maxComp, maxComp] instead of full [-0.707, 0.707].
+        /// ボーンスロットごとのクォータニオン成分の最大値。
+        /// 成分は完全な [-0.707, 0.707] ではなく [-maxComp, maxComp] の範囲で量子化する。
         ///
-        /// DESIGN: most joints use full InvSqrt2 range to support ALL human poses
-        /// (dancing, gymnastics, sleeping, backbends, splits, etc.).
-        /// Only joints that are physically incapable of large rotation get tighter ranges:
-        ///   - Eyes: ~35° max look direction (anatomical limit of extraocular muscles)
-        ///   - Jaw: ~40° max open + sideways (TMJ limit)
-        ///   - Toes: ~55° max curl (metatarsal limit)
-        ///   - UpperChest: ~50° max (thoracic vertebrae are fused/limited)
+        /// 設計: ダンス、体操、睡眠姿勢、反り、開脚などを含む人間の姿勢全般を支えるため、
+        /// ほとんどの関節は InvSqrt2 の全範囲を使う。
+        /// 大きく回転できない関節だけ範囲を狭める:
+        ///   - Eyes: 最大視線方向は約 35 度 (外眼筋の解剖学的制限)
+        ///   - Jaw: 最大開口 + 左右は約 40 度 (TMJ 制限)
+        ///   - Toes: 最大 curl は約 55 度 (中足骨の制限)
+        ///   - UpperChest: 最大約 50 度 (胸椎は癒合/制限される)
         ///
-        /// Hips orientation is sent separately as a full-precision compressed quaternion,
-        /// so upside-down, sideways, etc. are unaffected by these limits.
+        /// Hips orientation は別途フル精度の圧縮クォータニオンとして送るため、
+        /// upside-down や sideways などはこの制限の影響を受けない。
         /// </summary>
         /// <summary>
-        /// Maximum quaternion component magnitude per bone slot.
-        /// After dropping the largest component in smallest-three, the remaining 3
-        /// are quantized within [-maxComp, maxComp].
-        /// Tighter range = better precision at the same BPC.
+        /// ボーンスロットごとのクォータニオン成分の最大値。
+        /// smallest-three で最大成分を破棄したあと、残り 3 成分を
+        /// [-maxComp, maxComp] の範囲で量子化する。
+        /// 範囲が狭いほど、同じ BPC で精度が上がる。
         ///
-        /// Values derived from max anatomical rotation, computing sin(maxAngle/2)
-        /// for the largest possible remaining component, plus safety margin.
-        /// Full InvSqrt2 used for any joint that can approach or exceed 90° from T-pose.
+        /// 値は解剖学的な最大回転から導出し、残り成分の最大候補として
+        /// sin(maxAngle/2) を計算したうえで安全余裕を加える。
+        /// T-pose から 90 度に近づく、または超える可能性がある関節には
+        /// 完全な InvSqrt2 を使う。
         /// </summary>
         public static readonly float[] MAX_COMPONENT = new float[]
         {
             // 3-DOF body (9): Spine, Chest, UpperChest, Neck, Head, UpperArms, UpperLegs
-            InvSqrt2,               // Spine         full (deep backbend/fold can exceed 90° combined)
+            InvSqrt2,               // Spine         full (深い反り/折り畳みで合計 90 度を超え得る)
             InvSqrt2,               // Chest         full
-            0.50f,                  // UpperChest    thoracic limit ~58° → 1.41x
-            InvSqrt2,               // Neck          full (extreme head tilt)
+            0.50f,                  // UpperChest    胸郭の制限は約 58 度 -> 1.41x
+            InvSqrt2,               // Neck          full (極端な頭部傾き)
             InvSqrt2,               // Head          full
-            InvSqrt2, InvSqrt2,     // UpperArms     full (shoulder has ~180° ROM)
-            InvSqrt2, InvSqrt2,     // UpperLegs     full (splits, deep squat)
+            InvSqrt2, InvSqrt2,     // UpperArms     full (肩の可動域は約 180 度)
+            InvSqrt2, InvSqrt2,     // UpperLegs     full (開脚、深いしゃがみ)
 
             // 2-DOF limbs (4): LowerArms, LowerLegs
-            InvSqrt2, InvSqrt2,     // LowerArms     full (elbow 150° + pronation 90°)
-            InvSqrt2, InvSqrt2,     // LowerLegs     full (knee 150°)
+            InvSqrt2, InvSqrt2,     // LowerArms     full (肘 150 度 + 回内 90 度)
+            InvSqrt2, InvSqrt2,     // LowerLegs     full (膝 150 度)
 
             // 2-DOF extremities (6): Shoulders, Hands, Feet
-            0.50f, 0.50f,           // Shoulders     clavicle max ~58° (shrug+protract) → 1.41x
-            InvSqrt2, InvSqrt2,     // Hands         full (wrist can circle ~90°)
-            0.60f, 0.60f,           // Feet          ankle max ~70° combined → 1.18x
+            0.50f, 0.50f,           // Shoulders     鎖骨最大約 58 度 (shrug+protract) -> 1.41x
+            InvSqrt2, InvSqrt2,     // Hands         full (手首は約 90 度回せる)
+            0.60f, 0.60f,           // Feet          足首は合成で最大約 70 度 -> 1.18x
 
-            // toes (2) — eyes/jaw excluded (driven by face system)
-            0.50f, 0.50f,           // Toes          ~58° curl → 1.41x
+            // toes (2): eyes/jaw は除外 (face system が駆動)
+            0.50f, 0.50f,           // Toes          約 58 度 curl -> 1.41x
 
-            // finger proximal (10): curl ~90° + spread ~25° → combined ~95°
-            // At 95°: axis=0.74, w=0.68. After dropping axis, remaining max=0.68
+            // finger proximal (10): curl 約 90 度 + spread 約 25 度 -> 合成約 95 度
+            // 95 度時: axis=0.74, w=0.68。axis 破棄後の残り最大値は 0.68
             0.68f, 0.68f, 0.68f, 0.68f, 0.68f,
             0.68f, 0.68f, 0.68f, 0.68f, 0.68f,
 
-            // finger intermediate (10): curl only, max ~110°
-            // At 110°: axis=0.82, w=0.57. After dropping axis, remaining max=0.57
+            // finger intermediate (10): curl のみ、最大約 110 度
+            // 110 度時: axis=0.82, w=0.57。axis 破棄後の残り最大値は 0.57
             0.58f, 0.58f, 0.58f, 0.58f, 0.58f,
             0.58f, 0.58f, 0.58f, 0.58f, 0.58f,
 
-            // finger distal (10): curl only, max ~80°
-            // At 80°: w=0.77, axis=0.64. After dropping w, remaining max=0.64
+            // finger distal (10): curl のみ、最大約 80 度
+            // 80 度時: w=0.77, axis=0.64。w 破棄後の残り最大値は 0.64
             0.65f, 0.65f, 0.65f, 0.65f, 0.65f,
             0.65f, 0.65f, 0.65f, 0.65f, 0.65f,
         };
@@ -219,7 +220,7 @@ namespace Basis.Network.Core.Compression
         };
 
         // ────────────────────────────────────────────────────────────
-        //  Size calculations
+        //  サイズ計算
         // ────────────────────────────────────────────────────────────
 
         public static int RotationBytes(BasisAvatarBitPacking.BitQuality q)
@@ -248,27 +249,27 @@ namespace Basis.Network.Core.Compression
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Smallest-Three Encode / Decode (pure floats, no Unity types)
+        //  Smallest-Three Encode / Decode (pure floats、Unity 型なし)
         // ────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Encodes a unit quaternion (x,y,z,w) using "smallest three" compression.
-        /// Components are quantized within [-maxRange, maxRange] for better precision
-        /// on joints with limited rotation. Use InvSqrt2 for full-range joints.
+        /// 単位クォータニオン (x,y,z,w) を "smallest three" 圧縮でエンコードする。
+        /// 回転範囲が限られる関節では精度を上げるため、成分を
+        /// [-maxRange, maxRange] に量子化する。全範囲の関節では InvSqrt2 を使う。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong EncodeSmallestThree(float qx, float qy, float qz, float qw, int bpc, float maxRange = InvSqrt2)
         {
             float ax = Math.Abs(qx), ay = Math.Abs(qy), az = Math.Abs(qz), aw = Math.Abs(qw);
 
-            // Find largest absolute component
+            // 絶対値が最大の成分を探す
             int maxIdx = 0;
             float maxVal = ax;
             if (ay > maxVal) { maxIdx = 1; maxVal = ay; }
             if (az > maxVal) { maxIdx = 2; maxVal = az; }
             if (aw > maxVal) { maxIdx = 3; }
 
-            // Negate quaternion if largest is negative
+            // 最大成分が負ならクォータニオンを反転する
             float sign = 1f;
             switch (maxIdx)
             {
@@ -279,7 +280,7 @@ namespace Basis.Network.Core.Compression
             }
             qx *= sign; qy *= sign; qz *= sign; qw *= sign;
 
-            // Extract the 3 remaining components
+            // 残り 3 成分を取り出す
             float a, b, c;
             switch (maxIdx)
             {
@@ -289,7 +290,7 @@ namespace Basis.Network.Core.Compression
                 default: a = qx; b = qy; c = qz; break;
             }
 
-            // Quantize within [-maxRange, maxRange] (clamped for edge cases)
+            // [-maxRange, maxRange] 内で量子化する (端のケースは clamp)
             float invRange = 1f / maxRange;
             uint maxQ = (uint)((1 << bpc) - 1);
             uint qa = Clamp((uint)Math.Round((ClampF(a * invRange, -1f, 1f) * 0.5f + 0.5f) * maxQ), 0, maxQ);
@@ -300,8 +301,8 @@ namespace Basis.Network.Core.Compression
         }
 
         /// <summary>
-        /// Decodes a "smallest three" compressed quaternion into (x,y,z,w).
-        /// maxRange must match the value used during encoding.
+        /// "smallest three" 圧縮クォータニオンを (x,y,z,w) にデコードする。
+        /// maxRange はエンコード時に使った値と一致している必要がある。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DecodeSmallestThree(ulong packed, int bpc, out float qx, out float qy, out float qz, out float qw, float maxRange = InvSqrt2)
@@ -328,7 +329,7 @@ namespace Basis.Network.Core.Compression
                 default: qx = a; qy = b; qz = c; qw = d; break;
             }
 
-            // Normalize
+            // 正規化
             float len = (float)Math.Sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
             if (len > 1e-8f)
             {
@@ -342,7 +343,7 @@ namespace Basis.Network.Core.Compression
         }
 
         // ────────────────────────────────────────────────────────────
-        //  Bitstream read/write (pure C#)
+        //  ビットストリーム読み書き (pure C#)
         // ────────────────────────────────────────────────────────────
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

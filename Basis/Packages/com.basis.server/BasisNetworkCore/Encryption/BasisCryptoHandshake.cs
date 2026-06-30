@@ -6,11 +6,10 @@ using Basis.Contrib.Crypto;
 
 namespace Basis.Network.Core
 {
-	/// X25519 + HKDF-SHA256 key agreement for the encrypted peer-to-peer (direct) link.
-	/// The two peers exchange ephemeral public keys through the server's signalling
-	/// channel and each derives the same two directional keys, because ECDH(myPriv,
-	/// peerPub) is symmetric; the transcript (both public keys) is folded into the HKDF
-	/// salt for channel binding.
+	/// 暗号化された peer-to-peer (direct) link のための X25519 + HKDF-SHA256 鍵合意。
+	/// 2 つの peer はサーバーの signalling channel 経由で一時公開鍵を交換し、
+	/// 同じ 2 本の方向別鍵を導出する。ECDH(myPriv, peerPub) は対称であり、
+	/// transcript (両方の公開鍵) は channel binding のため HKDF salt に混ぜ込む。
 	public static class BasisCryptoHandshake
 	{
 		public const int PublicKeySize = BasisX25519.KeySize;
@@ -23,8 +22,8 @@ namespace Basis.Network.Core
 		public static void GenerateKeyPair(out byte[] privateKey, out byte[] publicKey)
 			=> BasisX25519.GenerateKeyPair(out privateKey, out publicKey);
 
-		/// Derives the directional keys for a peer-to-peer link. Role is decided by
-		/// public-key ordering so both ends agree without extra signalling.
+		/// peer-to-peer link の方向別鍵を導出する。役割は公開鍵の並び順で決めるため、
+		/// 追加 signalling なしに両端で同じ結果になる。
 		public static bool DerivePeerKeys(
 			ReadOnlySpan<byte> myPrivate,
 			ReadOnlySpan<byte> myPublic,

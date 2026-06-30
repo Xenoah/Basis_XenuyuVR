@@ -12,8 +12,8 @@ namespace Basis.Integration.AudioLink
     }
 
     /// <summary>
-    /// Shared base for Basis components that read CPU-side AudioLink band amplitudes and drive a visual target.
-    /// Auto-resolves the scene's AudioLink instance and stays inert until its CPU readback data is available.
+    /// CPU 側 AudioLink band amplitude を読み、visual target を駆動する Basis component の共有 base。
+    /// scene の AudioLink instance を自動解決し、CPU readback data が利用可能になるまでは inert のままにする。
     /// </summary>
     public abstract class BasisAudioLinkReactiveBase : MonoBehaviour
     {

@@ -1,7 +1,7 @@
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// The 52 ARKit blendshape categories output by MediaPipe FaceLandmarker, in their
+    /// MediaPipe FaceLandmarker が出力する 52 個の ARKit BlendShape category。
     /// fixed output order. Index into <see cref="BasisMediaPipeResult.FaceBlendshapes"/>.
     /// </summary>
     public enum MediaPipeArkitBlendshape

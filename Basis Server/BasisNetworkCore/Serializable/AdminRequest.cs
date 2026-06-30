@@ -39,12 +39,12 @@ namespace BasisNetworkCore.Serializable
             MessageAll,// sends a message to all users
             UnBanIP,// unbans a user and unbans a associated ip
             UnBan,// unbans a user
-          //  RequestBannedPlayers,// gets a list of banned players
-           // TeleportTo,// teleport to a player
+          //  RequestBannedPlayers,// banned player の list を取得する。
+           // TeleportTo,// player へ teleport する。
             TeleportAll,// teleports everyone
             TeleportPlayer,
 
-            // Permission management (any user can request, only admins can modify)
+            // permission management (request は任意 user、modify は admin のみ)。
             GetPermissions,     // request full permission snapshot (read-only for non-admins)
             SetUserGroup,       // admin: add/remove user from a group
             SetUserNode,        // admin: add/remove permission node from a user
@@ -72,7 +72,7 @@ namespace BasisNetworkCore.Serializable
             SetGlobalOpusFrameDuration,   // admin: set the Opus frame duration in milliseconds (20 or 40)
             GlobalGetOpusFrameDurationState, // server→client: current Opus frame duration in milliseconds
 
-            // ── Server config / allowlist (persisted to disk) ─────────────────
+            // ── server config / allowlist (disk に persist) ─────────────────
             SetServerName,    // admin: set Configuration.ServerName + persist to config.xml. Payload: [string name]
             SetServerMotd,    // admin: set Configuration.ServerMotd + persist to config.xml. Payload: [string motd]
             SetAllowlistMode, // admin: set Configuration.BasisUserRestrictionMode + persist. Payload: [byte BasisUserRestrictionMode]
@@ -83,25 +83,25 @@ namespace BasisNetworkCore.Serializable
 
             GlobalToggleThirdPerson, // admin: toggle the global third-person camera disable (BasisGlobalLockManager.ThirdPersonDisabled). State is appended as the 5th bool in GlobalGetLockState.
 
-            // ── Default library (server-pushed library items, persisted to disk) ──
-            // Payload: [byte mode (0=Avatar,1=World,2=Prop)][string url][string password]
-            // Gated by PermNodes.ConfigurationEditor. Writes a new XML file under the
-            // server's defaultlibrary/ folder and rebroadcasts the updated list.
+            // ── default library (server-pushed library items、disk に persist) ──
+            // payload: [byte mode (0=Avatar,1=World,2=Prop)][string url][string password]
+            // PermNodes.ConfigurationEditor で gate される。server の defaultlibrary/ folder 下に
+            // 新しい XML file を書き、updated list を rebroadcast する。
             AddDefaultLibraryItem,
 
-            // Payload: [string url]
-            // Removes every defaultlibrary/ XML whose URL matches and rebroadcasts.
+            // payload: [string url]
+            // URL が一致する defaultlibrary/ XML をすべて削除し、rebroadcast する。
             RemoveDefaultLibraryItem,
 
-            // admin: toggle the global strip of AdditionalAvatarDatas (blendshapes,
-            // custom-behaviour params) on inbound avatar sync messages. Muscle/position/
-            // rotation still propagate normally. State is appended as the 6th bool in
-            // GlobalGetLockState.
+            // admin: inbound avatar sync message 上の AdditionalAvatarDatas
+            // (blendshape、custom-behaviour param) global strip を toggle する。
+            // muscle/position/rotation は通常どおり propagate される。
+            // state は GlobalGetLockState の 6 番目の bool として append される。
             GlobalToggleAdditionalAvatarDataLock,
 
-            // admin: set the per-category camera photo-metadata disallow mask (1 byte).
-            // Each set bit disallows one embedding category for all clients; 0 = all allowed.
-            // The current mask is appended as a trailing byte in GlobalGetLockState.
+            // admin: per-category camera photo-metadata disallow mask (1 byte) を set する。
+            // set bit は全 client に対して 1 つの embedding category を disallow する。0 = すべて許可。
+            // current mask は GlobalGetLockState の trailing byte として append される。
             SetGlobalCameraPolicy,
 
             GlobalGetCrashReportState, // server→client: whether client error/exception reporting is enabled
@@ -110,22 +110,22 @@ namespace BasisNetworkCore.Serializable
             GlobalGetAudioRangeLimits, // server→client: current max microphone + hearing range in metres. Payload: [float micMeters][float hearingMeters]
             SetGlobalAudioRangeLimits, // admin: set max microphone + hearing range in metres (persisted). Payload: [float micMeters][float hearingMeters]
 
-            // ── Server log bundle (admin pulls logs/ + CrashReports/ as one compressed bundle) ──
-            // The admin asks; the server packs its logs/ and CrashReports/ folders into one
-            // container, LZ4-compresses it, and streams the result back in order over the
-            // admin channel, split into chunks so a large bundle never relies on one datagram.
+            // ── server log bundle (admin が logs/ + CrashReports/ を 1 compressed bundle として pull) ──
+            // admin が request すると、server は logs/ と CrashReports/ folder を 1 container に pack し、
+            // LZ4-compress して、admin channel 上で order どおりに stream して返す。
+            // large bundle が 1 datagram に依存しないよう chunk に分割する。
             RequestAllLogs,   // client→server (admin): build and stream the full log bundle. Gated by basis.admin.logs. No payload.
             LogBundleBegin,   // server→client: start of a transfer. Payload: [string serverNameSafe][string fileName][bool isCompressed][int payloadBytes][int rawBytes][int totalChunks]
             LogBundleChunk,   // server→client: one ordered chunk. Payload: [int chunkIndex][lenPrefixed bytes]
             LogBundleEnd,     // server→client: end of transfer. Payload: [bool ok][string message]
 
-            // server→client: clear all locally loaded scenes regardless of netId.
-            // No payload. Handles orphaned scenes the server doesn't know about.
+            // server->client: netId に関係なく、locally loaded scene をすべて clear する。
+            // payload なし。server が知らない orphaned scene を処理する。
             ClearAllScenes,
 
             DeleteAllLogs,    // client→server (admin): delete every file under logs/ + CrashReports/. Gated by basis.admin.logs. No payload. Server replies with a status Message.
 
-            // ── Instance restriction policies (persisted; gated by basis.moderation.globallock) ──
+            // ── instance restriction policy (persisted。basis.moderation.globallock で gate) ──
             GlobalTogglePlayspaceMover, // admin: toggle the global playspace-mover lockout. State appended to GlobalGetLockState. Non-admins cannot grab/drag their play space while set.
             GlobalToggleDirectConnect,  // admin: toggle the global direct-connect (P2P) lockout. State appended to GlobalGetLockState. The server also refuses to broker P2P requests from non-admins while set.
 

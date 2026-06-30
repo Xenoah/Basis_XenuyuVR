@@ -1,17 +1,16 @@
-// A pull-based source of interleaved float PCM, read on the Unity audio thread.
+// Unity audio thread から読まれる、pull-based の interleaved float PCM source。
 //
-// The OS-codec engine (BasisNativeVideoSource) decodes audio natively and exposes
-// it as a ring. BasisMediaPlayerAudio sets this as its NativePcmSource and pulls
-// from here on the audio thread, splitting/downmixing the interleaved samples
-// across its output AudioSources.
+// OS-codec engine (BasisNativeVideoSource) は audio を native decode し、ring として公開する。
+// BasisMediaPlayerAudio はこれを NativePcmSource として設定し、audio thread 上で pull し、
+// interleaved sample を output AudioSource 群へ分割/downmix する。
 public interface IBasisPcmSource
 {
-    // Stream audio format, once known. Returns false until the first audio frame
-    // has been decoded; the sink stays silent until then.
+    // 判明済みの stream audio format。最初の audio frame が decode されるまでは false を返す。
+    // それまで sink は無音のまま。
     bool TryGetPcmFormat(out int sampleRate, out int channels);
 
-    // Fill `buffer` with up to buffer.Length interleaved float samples and return
-    // how many floats were written. The caller zero-fills the remainder. Must not
-    // block and must be safe to call from the audio thread.
+    // 最大 buffer.Length 個の interleaved float sample で `buffer` を埋め、
+    // 書き込んだ float 数を返す。残りは caller が zero-fill する。
+    // block してはならず、audio thread から呼び出して安全である必要がある。
     int ReadPcm(float[] buffer);
 }

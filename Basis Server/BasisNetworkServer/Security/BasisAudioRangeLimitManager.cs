@@ -5,10 +5,10 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Server-defined ceilings (in metres) for how far clients may set their microphone (voice
-    /// transmit) and hearing (audio receive) range. Seeded from Configuration at boot and pushed to
-    /// clients via GlobalGetAudioRangeLimits so they clamp their sliders and effective range to it.
-    /// Admins can change it live; the new values are persisted to config.xml and broadcast.
+    /// client が設定できる microphone (voice transmit) range と hearing (audio receive) range の
+    /// server-defined ceiling (metres)。boot 時に Configuration から seed され、
+    /// GlobalGetAudioRangeLimits 経由で client へ push されるため、client は slider と effective range をこの値へ clamp する。
+    /// admin は live 変更でき、新しい値は config.xml へ persist されて broadcast される。
     /// </summary>
     public static class BasisAudioRangeLimitManager
     {
@@ -26,7 +26,7 @@ namespace BasisNetworkServer.Security
             Interlocked.Exchange(ref _maxHearingRangeMeters, Sanitize(config.MaxHearingRangeMeters));
         }
 
-        /// <summary>Clamp, set, and report whether either value actually changed.</summary>
+        /// <summary>clamp して set し、どちらかの値が実際に変わったかを返す。</summary>
         public static bool SetLimits(float microphoneMeters, float hearingMeters)
         {
             float mic = Sanitize(microphoneMeters);

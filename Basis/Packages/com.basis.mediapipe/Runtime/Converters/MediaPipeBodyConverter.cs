@@ -3,10 +3,10 @@ using UnityEngine;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// EXPERIMENTAL torso lean/twist from PoseLandmarker world landmarks. Rotation only (no
-    /// noisy monocular translation): builds a chest orientation from the shoulder line + spine
-    /// direction, relative to a calibrated neutral. Expect to flip Invert* and tune gains on a
-    /// real body.
+    /// PoseLandmarker の world landmark から胴体の lean/twist を推定する実験的 converter。
+    /// ノイズの多い単眼 translation は使わず rotation のみを扱う。肩の線と spine 方向から
+    /// chest 向きを作り、calibration 済み neutral からの相対値として出す。
+    /// 実際の身体では Invert* と gain の調整が必要になる。
     /// </summary>
     public sealed class MediaPipeBodyConverter
     {
@@ -77,7 +77,7 @@ namespace Basis.MediaPipe
             return true;
         }
 
-        // MediaPipe world landmarks are y-down; flip to Unity y-up.
+        // MediaPipe の world landmark は y-down なので、Unity の y-up へ反転する。
         private static Vector3 Flip(Vector3 v) => new Vector3(v.x, -v.y, v.z);
 
         private static float NormalizeAngle(float angle) => angle > 180f ? angle - 360f : angle;

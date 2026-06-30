@@ -1,27 +1,29 @@
-# CI Setup
+# CI セットアップ
 
 ## Secrets
 
-In order to build the client automatically, you need to setup a unity license for Github Actions to use. This can be done by following the instructions at <https://game.ci/docs/github/activation>.
+クライアントを自動ビルドするには、GitHub Actions で使用する Unity ライセンスを設定する必要があります。手順は <https://game.ci/docs/github/activation> に従ってください。
 
-Additionally, to build the Android client in CI, you will need to make the following secrets available to Github Actions:
- - ANDROID_KEYSTORE_BASE64 : Base64 of your keystore
- - ANDROID_KEYSTORE_PASS: Password for your keystore
- - ANDROID_KEYALIAS_NAME: Name of the alias in your keystore
- - ANDROID_KEYALIAS_PASS: Password for the alias in your keystore
+さらに、CI で Android クライアントをビルドする場合は、次の secrets を GitHub Actions から利用できるようにする必要があります。
 
-If you do not already have a keystore, you can follow the steps at <https://game.ci/docs/github/deployment/android/#3-generate-an-upload-key-and-keystore> to generate one.
+- ANDROID_KEYSTORE_BASE64: keystore を Base64 化した値
+- ANDROID_KEYSTORE_PASS: keystore のパスワード
+- ANDROID_KEYALIAS_NAME: keystore 内の alias 名
+- ANDROID_KEYALIAS_PASS: alias のパスワード
 
-## Caching Strategy
+まだ keystore がない場合は、<https://game.ci/docs/github/deployment/android/#3-generate-an-upload-key-and-keystore> の手順に従って生成できます。
 
-Cache management strategy is as follows:
- - Always attempt to restore cache, but only for the current platform.
-   - This prevent's duplicating a platform's cache across multiple entries
- - Save cache whether the build succeeds or not, but only on the branch named `developer`.
-   - Since the `developer` branch is the default branch, this maximizes what can *use* the cache.
- - Automatically delete any cache entries that are not the latest for this platform.
-   - When you have gone above 10GB of cache, Github will automatically delete based on last access date.
-   - Managing this ourselves allows us to retain the *latest* cache, rather than the *previous* cache.
+## キャッシュ戦略
 
-Unfortunately, I'm not aware of any way to tell unity to remove entries from the Library folder that are not currently being used.
-As-is, the cache is likely to grow over time and end up needing to be reset occasionally, resulting in a long build.
+キャッシュ管理方針は次のとおりです。
+
+- 常にキャッシュの復元を試みます。ただし対象は現在のプラットフォームのみです。
+  - 同じプラットフォームのキャッシュが複数エントリに重複することを防ぎます。
+- ビルドの成否にかかわらずキャッシュを保存します。ただし `developer` ブランチ上の場合のみです。
+  - `developer` ブランチがデフォルトブランチなので、キャッシュを*利用*できる範囲が最大になります。
+- このプラットフォームで最新ではないキャッシュエントリを自動的に削除します。
+  - キャッシュが 10GB を超えると、GitHub は最終アクセス日時に基づいて自動削除します。
+  - こちらで管理することで、*直前*のキャッシュではなく*最新*のキャッシュを残せます。
+
+残念ながら、現在使用されていないエントリを Unity に Library フォルダーから削除させる方法は把握していません。
+このままだとキャッシュは時間とともに大きくなり、定期的なリセットが必要になる可能性があります。その場合、ビルド時間が長くなります。

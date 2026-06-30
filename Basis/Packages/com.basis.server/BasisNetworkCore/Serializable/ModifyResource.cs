@@ -2,20 +2,20 @@ using Basis.Network.Core;
 public static partial class SerializableBasis
 {
     /// <summary>
-    /// Client→server request to change a flag on an already-spawned resource, and the
-    /// server→client broadcast that applies the change on every client. Carries the static-lock
-    /// state: <see cref="Static"/> freezes the item for everyone; <see cref="StaticAdminLocked"/>
-    /// marks it as the admin tier (only a moderator, not the creator, may change or clear it).
+    /// すでに spawn 済みの resource 上の flag を変える client→server request であり、
+    /// 全 client に変更を適用する server→client broadcast でもある。static-lock state を運ぶ。
+    /// <see cref="Static"/> は item を全員に対して固定し、<see cref="StaticAdminLocked"/> は
+    /// admin tier を示す。creator ではなく moderator のみが変更または解除できる。
     /// </summary>
     public struct ModifyResource
     {
-        /// <summary>Unique network id of the spawned resource to modify.</summary>
+        /// <summary>変更対象となる spawned resource の unique network id。</summary>
         public string LoadedNetID;
-        /// <summary>0 = GameObject, 1 = Scene (matches <see cref="LocalLoadResource.Mode"/>).</summary>
+        /// <summary>0 = GameObject、1 = Scene。<see cref="LocalLoadResource.Mode"/> と一致する。</summary>
         public byte Mode;
-        /// <summary>Desired frozen state (pickup disabled + frozen for props, locked out for vehicles).</summary>
+        /// <summary>希望する frozen state。prop は pickup disabled + frozen、vehicle は locked out。</summary>
         public bool Static;
-        /// <summary>Desired admin tier: when true only a moderator may change it, and it implies Static.</summary>
+        /// <summary>希望する admin tier。true の場合は moderator のみ変更可能で、Static を含意する。</summary>
         public bool StaticAdminLocked;
 
         public void Serialize(NetDataWriter writer)

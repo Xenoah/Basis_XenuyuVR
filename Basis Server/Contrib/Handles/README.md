@@ -1,26 +1,15 @@
-# User Handles (aka usernames/display names)
+# User Handles (username / display name)
 
-An extensible system for representing handles/usernames in Basis.
+Basis で handle / username を表現するための、拡張可能な system です。
 
-Users report handles to their peers and/or server. They advertise 1 or more handles,
-each from a different source:
+user は peer や server に handle を報告します。1 つ以上の handle を公開でき、それぞれ異なる source を持ちます。
 
-* *Local* - Users choose their own handles, and negotiate any potential collisions with
-  the server. Uniqueness guarantees can only be per-instance and are "first come first
-  serve". Lowest security guarantees. Cannot prove custody over the handle, but the
-  benefit is that local handles don't require any other service/account.
-* *DNS* - custody is proven via a DNS TXT record that links to the player's DID.
-  Identical or nearly identical to how bluesky's [ATProto][atproto handle] does it.
-  Guaranteed to be globally unique and secure against impersonation.
-* *HTTPS Well-Known* - custody is proven via GET request to a `.well-known` endpoint under
-  a (sub)domain that links to the player's DID. Identical or nearly identical to to how
-  bluesky's [ATProto][atproto handle] does it. Guaranteed to be globally unique and
-  secure against impersonation.
-* *Steam (TODO)* - custody is proven via your steam id
-* *Oculus (TODO)* - custody is proven via your meta account
+* *Local*: user が自分の handle を選び、潜在的な衝突は server と調整します。一意性の保証は instance ごとに限られ、"先着順" です。security の保証は最も低く、handle の custody は証明できません。ただし、local handle は他の service / account を必要としない利点があります。
+* *DNS*: player の DID へ link する DNS TXT record によって custody を証明します。bluesky の [ATProto][atproto handle] と同一、またはほぼ同一の方式です。global に一意であることと、なりすましへの安全性が保証されます。
+* *HTTPS Well-Known*: player の DID へ link する (sub)domain 配下の `.well-known` endpoint への GET request によって custody を証明します。bluesky の [ATProto][atproto handle] と同一、またはほぼ同一の方式です。global に一意であることと、なりすましへの安全性が保証されます。
+* *Steam (TODO)*: steam id によって custody を証明します。
+* *Oculus (TODO)*: meta account によって custody を証明します。
 
-These APIs intentionally do not manage decisions about the UX around handles or how to
-choose one handle system over the other. Those decisions are intentionally left up to
-the application developer to give them maximum flexibility and be minimally opinionated.
+これらの API は、handle 周辺の UX や、どの handle system を選ぶかに関する判断を意図的に管理しません。その判断は application developer に委ね、最大限の柔軟性を確保しつつ、意見を最小限にするためです。
 
 [atproto handle]: https://atproto.com/specs/handle

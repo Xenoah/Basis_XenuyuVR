@@ -7,13 +7,14 @@ using UnityEngine.Events;
 namespace Basis.Scripts.BasisSdk.Interactions
 {
     /// <summary>
-    /// Abstract interactable that constrains motion to a finite list of discrete snap points
-    /// along an arbitrary path (arc, line, spline, etc.). While being grabbed by a hand or
-    /// pointed at by a laser-trigger, the object tracks the active input's world position,
-    /// finds the nearest snap point each frame, and tweens to that pose when the index changes.
+    /// 任意の path (arc、line、spline など) 上にある有限個の離散 snap point へ
+    /// 動きを制約する abstract interactable。手で掴まれている間、または laser-trigger で
+    /// 指されている間、object は active input の world position を追跡し、frame ごとに
+    /// 最寄りの snap point を探し、index が変わったらその pose へ tween する。
     ///
-    /// Concrete subclasses implement <see cref="FindNearestIndex"/> (path-specific projection)
-    /// and optionally override <see cref="EvaluateAtIndex"/> (default: the snap point's own pose).
+    /// concrete subclass は <see cref="FindNearestIndex"/> (path 固有の projection) を実装し、
+    /// 必要に応じて <see cref="EvaluateAtIndex"/> を override する
+    /// (default: snap point 自身の pose)。
     /// </summary>
     public abstract class BasisSnapPathInteractable : BasisInteractableObject
     {
@@ -61,18 +62,18 @@ namespace Basis.Scripts.BasisSdk.Interactions
         }
 
         /// <summary>
-        /// Project the active interacting input onto the path representation and return the
-        /// nearest snap-point index. The wrapper exposes both the bone position
-        /// (<c>BoneControl.OutgoingWorldData.position</c>) and the input source's
-        /// <c>RaycastCoord</c>; subclasses choose which is appropriate for their geometry.
-        /// Implementations should clamp the result to [0, snapPoints.Length - 1].
+        /// active interacting input を path representation に project し、最寄りの
+        /// snap-point index を返す。wrapper は bone position
+        /// (<c>BoneControl.OutgoingWorldData.position</c>) と input source の
+        /// <c>RaycastCoord</c> の両方を公開する。subclass は geometry に合う方を選ぶ。
+        /// implementation は結果を [0, snapPoints.Length - 1] に clamp すること。
         /// </summary>
         protected abstract int FindNearestIndex(BasisInputWrapper interacting);
 
         /// <summary>
-        /// Returns the world-space pose the interactable should adopt when settled at the given
-        /// snap index. Default behavior is the snap point's own world pose; override to add a
-        /// resting offset (e.g. "in front of" the marker).
+        /// 指定 snap index に落ち着いたとき interactable が採用すべき world-space pose を返す。
+        /// default behavior は snap point 自身の world pose。resting offset
+        /// (例: marker の「手前」) を加える場合は override する。
         /// </summary>
         protected virtual void EvaluateAtIndex(int index, out Vector3 position, out Quaternion rotation)
         {
@@ -82,9 +83,9 @@ namespace Basis.Scripts.BasisSdk.Interactions
         }
 
         /// <summary>
-        /// Accept either the grip button or a near-fully-pressed trigger as the activation
-        /// gate. Lets the same interactable be grabbed at close range with the grip and
-        /// pulled at distance with the laser-pointer trigger.
+        /// grip button またはほぼ押し切った trigger のどちらかを activation gate として受け入れる。
+        /// 同じ interactable を、近距離では grip で掴み、遠距離では laser-pointer trigger で
+        /// 引けるようにする。
         /// </summary>
         public override bool IsInteractTriggered(BasisInput input)
         {

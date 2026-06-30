@@ -7,14 +7,15 @@ using System.Threading;
 namespace BasisNetworkServer
 {
     /// <summary>
-    /// Linux-only background sampler that polls /proc/net/snmp and warns when the kernel
-    /// drops inbound UDP datagrams. Two failure modes show up here:
-    ///   1) RcvbufErrors increasing  =>  receive thread can't drain the socket buffer fast
-    ///      enough. Fix: raise MultiSocketCount (more recv threads sharing the port via
-    ///      SO_REUSEPORT) or grow the kernel buffer (sysctl net.core.rmem_max).
-    ///   2) InErrors > RcvbufErrors  =>  checksum/decode-level corruption, unrelated to
-    ///      saturation. Indicates link/NIC issues.
-    /// On non-Linux platforms Start() is a no-op.
+    /// Linux-only の background sampler。/proc/net/snmp を poll し、
+    /// kernel が inbound UDP datagram を drop したとき warn する。
+    /// ここでは 2 つの failure mode が見える:
+    ///   1) RcvbufErrors increasing  =>  receive thread が socket buffer を十分速く drain できていない。
+    ///      対処: MultiSocketCount を上げる (SO_REUSEPORT 経由で port を共有する recv thread を増やす)、
+    ///      または kernel buffer を大きくする (sysctl net.core.rmem_max)。
+    ///   2) InErrors > RcvbufErrors  =>  saturation とは無関係の checksum/decode-level corruption。
+    ///      link/NIC issue を示す。
+    /// non-Linux platform では Start() は no-op。
     /// </summary>
     public static class BasisNetworkUdpDropMonitor
     {
@@ -69,7 +70,7 @@ namespace BasisNetworkServer
         {
             if (!TryReadSnmpUdp(out long rcvbufErrors, out long inErrors, out long inCsumErrors)) return;
 
-            // First sample establishes the baseline; only deltas after that mean anything.
+            // first sample は baseline を確立するだけ。その後の delta だけが意味を持つ。
             if (_lastRcvbufErrors >= 0)
             {
                 long droppedBuf = rcvbufErrors - _lastRcvbufErrors;
@@ -84,8 +85,8 @@ namespace BasisNetworkServer
                         $"or grow sysctl net.core.rmem_max.");
                 }
 
-                // InErrors - RcvbufErrors isolates non-buffer drops (checksum, length, etc.) so a
-                // bad NIC/cable shows up distinctly from a saturated app.
+                // InErrors - RcvbufErrors により buffer 以外の drop (checksum、length など) を分離する。
+                // これで bad NIC/cable と saturated app を明確に区別できる。
                 long otherDrops = deltaIn - droppedBuf;
                 if (otherDrops > 0)
                 {
@@ -101,9 +102,9 @@ namespace BasisNetworkServer
             _lastInCsumErrors = inCsumErrors;
         }
 
-        // /proc/net/snmp emits two consecutive lines starting with "Udp:" — the first names the
-        // columns, the second has the values. Column set is kernel-version-dependent so we look
-        // up by name rather than by fixed index.
+        // /proc/net/snmp は "Udp:" で始まる 2 行を連続して出力する。
+        // 1 行目は column 名、2 行目は値。column set は kernel version に依存するため、
+        // fixed index ではなく名前で lookup する。
         private static bool TryReadSnmpUdp(out long rcvbufErrors, out long inErrors, out long inCsumErrors)
         {
             rcvbufErrors = 0;

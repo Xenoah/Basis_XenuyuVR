@@ -52,7 +52,7 @@ namespace Basis.Network.Core
 
             if (left.Length > 0 && left[0] == '[')
             {
-                // Bracketed IPv6 literal: [addr]:port or [addr]
+                // bracketed IPv6 literal: [addr]:port または [addr]。
                 int closeBracket = left.IndexOf(']');
                 if (closeBracket > 0)
                 {
@@ -81,10 +81,10 @@ namespace Basis.Network.Core
                     && parsedPort > 0)
                 {
                     string candidateAddress = left.Substring(0, colonIdx).Trim();
-                    // If the candidate address still contains a colon it is a bare IPv6
-                    // literal (e.g. "::1", "2001:db8::1") being misread as host:port.
-                    // Leave it unsplit; the user must use [addr]:port notation for
-                    // an IPv6 address with an explicit port.
+                    // candidate address にまだ colon が含まれる場合、bare IPv6 literal
+                    // (例: "::1", "2001:db8::1") が host:port と誤読されている。
+                    // split せずに残す。明示的な port 付き IPv6 address には
+                    // [addr]:port notation を使う必要がある。
                     if (candidateAddress.IndexOf(':') < 0)
                     {
                         address = candidateAddress;

@@ -7,33 +7,33 @@ public static partial class SerializableBasis
     public enum BasisMessageFlags : byte
     {
         None = 0,
-        /// <summary>Rides a shared plugin channel (61-63) with a leading [messageId:2] prefix; core messages clear this and own a dedicated channel.</summary>
+        /// <summary>leading [messageId:2] prefix 付きで shared plugin channel (61-63) に乗る。core message はこれを clear し、dedicated channel を持つ。</summary>
         Multiplexed = 1 << 0,
-        /// <summary>The client must bind a handler for this id or the server disconnects it.</summary>
+        /// <summary>client はこの id の handler を bind する必要があり、できない場合 server は disconnect する。</summary>
         Required = 1 << 1,
-        /// <summary>The server is allowed to send this message to clients.</summary>
+        /// <summary>server はこの message を client へ送信できる。</summary>
         ServerToClient = 1 << 2,
-        /// <summary>Clients are allowed to send this message to the server.</summary>
+        /// <summary>client はこの message を server へ送信できる。</summary>
         ClientToServer = 1 << 3,
     }
 
     /// <summary>
-    /// One row of the message registry the server supplies to a client on connect.
-    /// Binds a stable Name to a wire Id/Channel so handlers can be added or removed
-    /// without recompiling a shared constant table.
+    /// connect 時に server が client へ供給する message registry の 1 row。
+    /// stable Name を wire Id/Channel に bind し、shared constant table を recompile せずに
+    /// handler を追加/削除できるようにする。
     /// </summary>
     [System.Serializable]
     public struct BasisMessageDescriptor
     {
-        /// <summary>Flat message id. For a core message this equals its dedicated Channel (0-59); for a multiplexed plugin message it is a dense ushort used as the [messageId:2] payload prefix.</summary>
+        /// <summary>flat message id。core message では dedicated Channel (0-59) と同じ。multiplexed plugin message では [messageId:2] payload prefix として使う dense ushort。</summary>
         public ushort Id;
-        /// <summary>Payload schema version; a client compares it against its local handler and ignores or refuses the id on mismatch.</summary>
+        /// <summary>payload schema version。client は local handler と比較し、不一致なら id を ignore または refuse する。</summary>
         public byte Version;
-        /// <summary>LiteNetLib channel this message travels on (its own for core, one of 61-63 for a multiplexed plugin).</summary>
+        /// <summary>この message が通る LiteNetLib channel (core は専用、multiplexed plugin は 61-63 のいずれか)。</summary>
         public byte Channel;
-        /// <summary>BasisMessageFlags bitfield.</summary>
+        /// <summary>BasisMessageFlags bitfield。</summary>
         public byte Flags;
-        /// <summary>Stable string identity, e.g. "basis.core.voice" or "com.acme.plugin.foo".</summary>
+        /// <summary>stable string identity。例: "basis.core.voice" または "com.acme.plugin.foo"。</summary>
         public string Name;
 
         public readonly void Serialize(NetDataWriter writer)
@@ -57,9 +57,10 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Server to client on RegistryControlChannel (sub-type RegistrySub_Supply): the full
-    /// set of message types this server understands this session. The client binds each
-    /// descriptor to a local handler by Name; anything it cannot bind it will not decode.
+    /// RegistryControlChannel 上で server から client へ送る (sub-type RegistrySub_Supply)。
+    /// この session で server が理解する message type の full set。
+    /// client は各 descriptor を Name によって local handler へ bind し、
+    /// bind できないものは decode しない。
     /// </summary>
     [System.Serializable]
     public struct BasisMessageSupply
@@ -98,9 +99,10 @@ public static partial class SerializableBasis
     }
 
     /// <summary>
-    /// Client to server on RegistryControlChannel (sub-type RegistrySub_Subscribe): the
-    /// message ids the client has a handler for. The server records this per-peer so it can
-    /// skip payloads a client cannot decode and enforce Required ids.
+    /// RegistryControlChannel 上で client から server へ送る (sub-type RegistrySub_Subscribe)。
+    /// client が handler を持つ message id の list。
+    /// server はこれを peer ごとに記録し、client が decode できない payload を skip し、
+    /// Required id を enforce できるようにする。
     /// </summary>
     [System.Serializable]
     public struct BasisMessageSubscribe

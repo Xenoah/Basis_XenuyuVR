@@ -10,16 +10,16 @@ using LiteNetLib.Layers;
 
 namespace Basis.Network.Core
 {
-	/// Per-endpoint AEAD encryption applied at the LiteNetLib socket boundary.
-	/// Each connection has its own pair of ChaCha20-Poly1305 keys (one per
-	/// direction) established by an X25519 handshake; see <see cref="BasisCryptoHandshake"/>.
+	/// LiteNetLib のソケット境界で適用するエンドポイント単位の AEAD 暗号化。
+	/// 各接続は X25519 ハンドシェイクで確立した ChaCha20-Poly1305 鍵ペアを
+	/// 方向ごとに 1 本ずつ持つ。<see cref="BasisCryptoHandshake"/> を参照。
 	///
-	/// Only the user-data-bearing packet properties are encrypted (Unreliable,
-	/// Channeled, Merged). Connection setup, NAT, MTU and out-of-band probe packets
-	/// stay cleartext so the handshake itself never depends on a key being present.
+	/// ユーザーデータを運ぶ packet property だけを暗号化する (Unreliable,
+	/// Channeled, Merged)。接続確立、NAT、MTU、out-of-band probe packet は
+	/// 平文のままにし、ハンドシェイク自体が鍵の存在に依存しないようにする。
 	///
-	/// Wire layout of an encrypted datagram:
-	///   [byte 0 : LiteNetLib header (cleartext, authenticated as AAD)]
+	/// 暗号化データグラムの wire layout:
+	///   [byte 0 : LiteNetLib header (平文、AAD として認証)]
 	///   [bytes 1..n : ciphertext]
 	///   [16 bytes : Poly1305 tag]
 	///   [8 bytes  : little-endian nonce counter]
@@ -29,7 +29,7 @@ namespace Basis.Network.Core
 		public const int Overhead = BasisAeadCipher.TagSize + CounterSize;
 
 		private const byte PropertyMask = 0x1F;
-		// Mirrors LiteNetLib.PacketProperty: Unreliable = 0, Channeled = 1, Merged = 12.
+		// LiteNetLib.PacketProperty と同じ値: Unreliable = 0, Channeled = 1, Merged = 12。
 		private const byte PropUnreliable = 0;
 		private const byte PropChanneled = 1;
 		private const byte PropMerged = 12;
@@ -41,9 +41,9 @@ namespace Basis.Network.Core
 			public long SendCounter;
 		}
 
-		// Keyed by address+port only. NetPeer (seen outbound) and the plain IPEndPoint seen
-		// inbound / at install hash differently under non-native sockets; this comparer makes
-		// all three resolve to the same session without allocating per packet.
+		// address+port のみをキーにする。非 native socket では outbound で見える NetPeer、
+		// inbound/install 時に見える素の IPEndPoint が異なる hash になり得るため、
+		// この comparer で 3 者を同じ session に解決し、packet ごとの割り当てを避ける。
 		private readonly ConcurrentDictionary<IPEndPoint, Session> _sessions
 			= new ConcurrentDictionary<IPEndPoint, Session>(EndpointComparer.Instance);
 
@@ -70,9 +70,9 @@ namespace Basis.Network.Core
 		public int SessionCount => _sessions.Count;
 
 		/// <param name="initialSendCounter">
-		/// First nonce counter to use. Pass a value strictly greater than any counter
-		/// previously used with these keys when re-installing the same keys for a
-		/// reconnect, so a (key, nonce) pair is never reused.
+		/// 最初に使う nonce counter。同じ鍵を reconnect 用に再インストールする場合は、
+		/// その鍵で過去に使った counter より必ず大きい値を渡し、
+		/// (key, nonce) の組を再利用しないようにする。
 		/// </param>
 		public void SetEndpointKeys(IPEndPoint endpoint, byte[] sendKey, byte[] recvKey, long initialSendCounter = 0)
 		{

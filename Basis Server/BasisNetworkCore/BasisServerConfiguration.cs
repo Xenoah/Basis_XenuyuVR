@@ -15,19 +15,19 @@ public class Configuration
     public const string DefaultLibraryFolderName = "defaultlibrary";
 
     /// <summary>
-    /// Bump when config changes should force existing files to be rewritten (e.g. to refresh
-    /// doc comments). Newly-added settings are healed automatically regardless: on load a
-    /// config missing any current field is re-saved with the new settings added.
+    /// config change により既存 file を強制的に rewrite したい場合に上げる
+    /// (例: doc comment の refresh)。新しく追加された setting はどちらにせよ自動で heal される。
+    /// load 時に current field が欠けている config は、新しい setting を追加した状態で re-save される。
     /// </summary>
     public const int CurrentConfigVersion = 3;
-    /// <summary>Schema version stamped into config.xml; 0 = a pre-versioning file that is upgraded on load.</summary>
+    /// <summary>config.xml に stamp される schema version。0 = versioning 前の file で、load 時に upgrade される。</summary>
     public int ConfigVersion = 0;
 
     public int PeerLimit = ushort.MaxValue;
     public ushort SetPort = 4296;
-    /// <summary>Display name returned by the unconnected server-info query — what shows up as the row title in a client server-list UI.</summary>
+    /// <summary>unconnected server-info query が返す display name。client server-list UI の row title に表示される。</summary>
     public string ServerName = "Basis Server";
-    /// <summary>Short MOTD returned alongside the server name in the info query response. Two short lines render cleanly in the list UI.</summary>
+    /// <summary>info query response で server name と一緒に返す短い MOTD。list UI では短い 2 行がきれいに表示される。</summary>
     public string ServerMotd = "";
     public bool EnableStatistics = true;
     public bool HasFileSupport = true;
@@ -55,50 +55,48 @@ public class Configuration
     public bool DisableWriteUnlessAdminPersistentFlag = true;
     public bool DisableReadUnlessAdminPersistentFlag = false;
     /// <summary>
-    /// When true, the avatar reduction system bundles per-receiver avatar messages
-    /// and emits them deflated on CompressedAvatarBundleChannel. Falls back to
-    /// per-message uncompressed sends when a receiver has too few queued messages
-    /// for compression to be worthwhile, or when the compressed result would
-    /// exceed peer MTU. Clients must implement the matching decoder.
+    /// true の場合、avatar reduction system は receiver ごとの avatar message を bundle し、
+    /// CompressedAvatarBundleChannel で deflated として emit する。
+    /// receiver の queued message が少なすぎて compression の価値がない場合、
+    /// または compressed result が peer MTU を超える場合は、message ごとの uncompressed send に fallback する。
+    /// client は対応する decoder を実装している必要がある。
     /// </summary>
     public bool EnableAvatarBundleCompression = true;
-    /// <summary>Minimum queued avatar messages to a single receiver before a bundle is even attempted.</summary>
+    /// <summary>single receiver に対して bundle を試みる前に必要な queued avatar message の最小数。</summary>
     public int AvatarBundleMinMessages = 4;
-    /// <summary>Minimum uncompressed bundle bytes before LZ4 compression is attempted. With LZ4 having near-zero per-call setup, 128 just guards the very smallest cases where LZ4 can't find any redundancy.</summary>
+    /// <summary>LZ4 compression を試みる前に必要な uncompressed bundle bytes の最小値。LZ4 は per-call setup がほぼ 0 のため、128 は LZ4 が redundancy を見つけられない極小 case を guard するだけ。</summary>
     public int AvatarBundleMinBytes = 128;
     public bool EnableBSRProfiling = false;
     public bool DisallowHeadless = false;
 
-    // Global lockout defaults applied at server boot. Users need the matching
-    // basis.resource.lockbypass.{avatar,prop,world} permission to load while locked.
+    // server boot 時に適用する global lockout default。
+    // lock 中に load するには、対応する basis.resource.lockbypass.{avatar,prop,world} permission が必要。
     public bool AvatarsLocked = false;
     public bool PropsLocked = false;
     public bool WorldsLocked = true;
     /// <summary>
-    /// When true, peers may not share saved-server entries through the content
-    /// share system. Toggled live via the admin panel and persisted to config.xml
-    /// alongside the other content lockouts. Default off so existing deployments
-    /// behave as before.
+    /// true の場合、peer は content share system 経由で saved-server entry を share できない。
+    /// admin panel から live toggle でき、他の content lockout と一緒に config.xml へ persist される。
+    /// 既存 deployment が従来どおり動くよう、default は off。
     /// </summary>
     public bool ServersLocked = false;
     /// <summary>
-    /// When true, the server tells every client to hard-disable the desktop third-person
-    /// camera. Toggled live via the admin panel and persisted to config.xml alongside the
-    /// other content lockouts. Default off so existing deployments behave as before.
+    /// true の場合、server はすべての client に desktop third-person camera を hard-disable するよう伝える。
+    /// admin panel から live toggle でき、他の content lockout と一緒に config.xml へ persist される。
+    /// 既存 deployment が従来どおり動くよう、default は off。
     /// </summary>
     public bool ThirdPersonDisabled = false;
     /// <summary>
-    /// When true, the server strips AdditionalAvatarDatas (blendshapes, custom-behaviour
-    /// params) from every inbound avatar sync message before propagating to other peers.
-    /// Muscle/position/rotation still sync normally; only the additional-data payload is
-    /// dropped. Toggled live via the admin panel and persisted alongside the other
-    /// content lockouts. Default off.
+    /// true の場合、server は inbound avatar sync message を他 peer へ propagate する前に
+    /// AdditionalAvatarDatas (blendshape、custom-behaviour param) を strip する。
+    /// muscle/position/rotation は通常どおり sync し、additional-data payload だけが drop される。
+    /// admin panel から live toggle でき、他の content lockout と一緒に persist される。default は off。
     /// </summary>
     public bool AdditionalAvatarDataLock = false;
     /// <summary>
-    /// Per-category bitmask of camera photo-metadata embedding categories disallowed for all
-    /// clients. 0 = everything allowed (default). Seeds BasisGlobalLockManager at boot and is
-    /// broadcast to clients in GlobalGetLockState.
+    /// 全 client に対して disallow する camera photo-metadata embedding category の per-category bitmask。
+    /// 0 = すべて許可 (default)。boot 時に BasisGlobalLockManager へ seed され、
+    /// GlobalGetLockState で client へ broadcast される。
     /// </summary>
     public byte CameraMetadataDisallowMask = 0;
     public bool CrashReportingEnabled = true;
@@ -114,15 +112,15 @@ public class Configuration
     public bool DirectConnectLocked = false;
 
     // ── REST API ──────────────────────────────────────────────────────────────
-    /// <summary>Set to true to enable the REST management API.</summary>
+    /// <summary>REST management API を有効にするには true にする。</summary>
     public bool ApiEnabled = false;
     public string ApiHost = "localhost";
     public ushort ApiPort = 10667;
-    /// <summary>Bearer token required on every API request. Empty string disables the API even if ApiEnabled is true.</summary>
+    /// <summary>すべての API request で必要な bearer token。空文字列なら ApiEnabled が true でも API は無効。</summary>
     public string ApiKey = "";
     /// <summary>
-    /// Read config from file. If no file is found create a default config file at filePath.
-    /// Also loads per-transport config sidecars from <c>{configDir}/transports/{stackId}.xml</c>.
+    /// file から config を読む。file が見つからない場合は filePath に default config file を作成する。
+    /// <c>{configDir}/transports/{stackId}.xml</c> から transport ごとの config sidecar も load する。
     /// </summary>
     public static Configuration LoadFromXml(string filePath)
     {
@@ -137,9 +135,8 @@ public class Configuration
                 result = (Configuration)serializer.Deserialize(fileReader);
             }
 
-            // Heal an older config: if it predates the current schema version or is missing
-            // any setting we now write, re-save it so the new settings (with defaults and
-            // doc comments) are added without disturbing the values already present.
+            // 古い config を heal する。current schema version より古いか、現在書き出す setting が欠けている場合、
+            // 既存値を崩さず、新しい setting (default と doc comment 付き) を追加するため re-save する。
             if (BasisConfigXmlDocs.NeedsUpgrade(filePath, typeof(Configuration), result))
             {
                 BNL.Log($"{filePath} is from an older version; adding missing settings.");
@@ -159,10 +156,9 @@ public class Configuration
     }
 
     /// <summary>
-    /// Persist this configuration back to <paramref name="filePath"/>. Used by the
-    /// admin panel to make in-game changes (server name, MOTD, allowlist mode)
-    /// survive a restart. Writes via a sibling temp file + atomic move so a crash
-    /// mid-write doesn't corrupt the live config.
+    /// この configuration を <paramref name="filePath"/> へ persist する。
+    /// admin panel による in-game change (server name、MOTD、allowlist mode) を restart 後も残すために使う。
+    /// sibling temp file + atomic move で書き込み、write 中の crash で live config が壊れないようにする。
     /// </summary>
     public void SaveToXml(string filePath)
     {
@@ -171,8 +167,8 @@ public class Configuration
     }
 
     /// <summary>
-    /// Atomically write just this config.xml (temp file + replace), stamping the current
-    /// schema version and injecting doc comments. Does not touch the transport sidecars.
+    /// この config.xml だけを atomic に write する (temp file + replace)。
+    /// current schema version を stamp し、doc comment を inject する。transport sidecar には触れない。
     /// </summary>
     private void WriteXml(string filePath)
     {
@@ -191,8 +187,8 @@ public class Configuration
     }
 
     /// <summary>
-    /// Resolve the canonical config.xml path under <c>{BaseDirectory}/{ConfigFolderName}/config.xml</c>
-    /// — same path the bootstrappers (BasisServerConsole.Program / Unity host runner) read on startup.
+    /// <c>{BaseDirectory}/{ConfigFolderName}/config.xml</c> 配下の canonical config.xml path を解決する。
+    /// startup 時に bootstrapper (BasisServerConsole.Program / Unity host runner) が読む path と同じ。
     /// </summary>
     public static string GetDefaultPath()
     {
@@ -200,13 +196,13 @@ public class Configuration
     }
 
     /// <summary>
-    /// This code will override what is written in the config.xml if it finds
-    /// an Environmental Variable with the same name as a public config field.
+    /// public config field と同じ名前の environment variable が見つかった場合、
+    /// config.xml に書かれている値をこの code が override する。
     ///
-    /// On windows you can test this in the console:
+    /// Windows では console で次のように test できる:
     ///    $env:PeerLimit = "256"
     ///   .\BasisNetworkConsole.exe
-    /// But it is intended to allow Linux admins to override defaults during launch.
+    /// ただし本来は、Linux admin が launch 時に default を override できるようにするためのもの。
     /// </summary>
     public void ProcessEnvironmentalOverrides()
     {

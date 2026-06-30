@@ -9,15 +9,15 @@ namespace Basis.Network.Server.Generic
 {
     public static class BasisSavedState
     {
-        // Thread-safe dictionaries for each type of data
+        // data type ごとの thread-safe dictionary。
         private static readonly ConcurrentDictionary<int, ClientAvatarChangeMessage> avatarChangeStates = new();
         private static readonly ConcurrentDictionary<int, ClientMetaDataMessage> playerMetaDataMessages = new();
         private static readonly ConcurrentDictionary<int, List<NetPeer>> resolvedVoicePeers = new();
         private static readonly ConcurrentDictionary<int, bool> shoutModeStates = new();
 
         /// <summary>
-        /// Removes all state data for a specific player and purges them
-        /// from every other player's cached voice-peer list.
+        /// specific player の state data をすべて削除し、
+        /// 他 player 全員の cached voice-peer list からも purge する。
         /// </summary>
         public static void RemovePlayer(int id)
         {
@@ -26,8 +26,8 @@ namespace Basis.Network.Server.Generic
             resolvedVoicePeers.TryRemove(id, out _);
             shoutModeStates.TryRemove(id, out _);
 
-            // Purge the disconnected peer from all other players' cached lists
-            // so voice packets aren't sent to a dead peer until the next recipient update.
+            // disconnected peer を他 player 全員の cached list から purge する。
+            // これにより、次の recipient update まで dead peer へ voice packet が送られないようにする。
             foreach (var kvp in resolvedVoicePeers)
             {
                 List<NetPeer> peers = kvp.Value;
@@ -48,7 +48,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Adds or updates the ReadyMessage for a player.
+        /// player の ReadyMessage を add / update する。
         /// </summary>
         public static void AddLastData(NetPeer client, ReadyMessage readyMessage)
         {
@@ -60,7 +60,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Resolves a VoiceReceiversMessage into cached NetPeer list.
+        /// VoiceReceiversMessage を cached NetPeer list へ resolve する。
         /// </summary>
         public static void AddLastData(NetPeer client, VoiceReceiversMessage voiceReceiversMessage)
         {
@@ -84,7 +84,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Adds or updates the ClientAvatarChangeMessage for a player.
+        /// player の ClientAvatarChangeMessage を add / update する。
         /// </summary>
         public static void AddLastData(NetPeer client, ClientAvatarChangeMessage avatarChangeMessage)
         {
@@ -92,7 +92,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Retrieves the last ClientAvatarChangeMessage for a player.
+        /// player の last ClientAvatarChangeMessage を取得する。
         /// </summary>
         public static bool GetLastAvatarChangeState(NetPeer client, out ClientAvatarChangeMessage message)
         {
@@ -100,7 +100,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Retrieves the last PlayerMetaDataMessage for a player.
+        /// player の last PlayerMetaDataMessage を取得する。
         /// </summary>
         public static bool GetLastPlayerMetaData(NetPeer client, out ClientMetaDataMessage message)
         {
@@ -108,8 +108,8 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Retrieves the cached resolved peer list for a player's voice receivers.
-        /// This list is rebuilt each time the voice receivers message is updated, not per voice packet.
+        /// player の voice receiver に対する cached resolved peer list を取得する。
+        /// この list は voice packet ごとではなく、voice receivers message が update されるたびに rebuild される。
         /// </summary>
         public static bool GetResolvedVoicePeers(NetPeer client, out List<NetPeer> peers)
         {
@@ -117,9 +117,9 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Directly sets the resolved voice peer list for a player.
-        /// Used by inverted-list and bitfield modes which resolve peers during deserialization
-        /// rather than storing a ushort[] first.
+        /// player の resolved voice peer list を直接 set する。
+        /// ushort[] を先に保存するのではなく deserialize 中に peer を resolve する、
+        /// inverted-list mode と bitfield mode で使う。
         /// </summary>
         public static List<NetPeer> GetOrCreateResolvedList(int clientId)
         {
@@ -127,7 +127,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Sets shout mode state for a player.
+        /// player の shout mode state を set する。
         /// </summary>
         public static void SetShoutMode(int peerId, bool enabled)
         {
@@ -142,7 +142,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Returns true if the player is currently in shout mode.
+        /// player が現在 shout mode の場合 true を返す。
         /// </summary>
         public static bool IsInShoutMode(int peerId)
         {
@@ -150,7 +150,7 @@ namespace Basis.Network.Server.Generic
         }
 
         /// <summary>
-        /// Returns all player IDs currently in shout mode.
+        /// 現在 shout mode の player ID をすべて返す。
         /// </summary>
         public static int[] GetAllShoutModePlayers()
         {

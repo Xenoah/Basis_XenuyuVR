@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Basis.MediaPipe
 {
-    /// <summary>Fallback backend used when the MediaPipe Unity Plugin is not installed.</summary>
+    /// <summary>MediaPipe Unity Plugin が未導入のときに使う fallback backend。</summary>
     public sealed class BasisMediaPipeNullBackend : IBasisMediaPipeBackend
     {
         public bool IsAvailable => false;

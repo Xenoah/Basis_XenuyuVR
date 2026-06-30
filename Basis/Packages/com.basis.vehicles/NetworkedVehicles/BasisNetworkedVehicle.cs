@@ -6,16 +6,16 @@ using UnityEngine;
 namespace Basis.Network.Vehicles
 {
     /// <summary>
-    /// Networked vehicle built on <see cref="BasisSyncedTransform"/>: the body transform plus per-wheel
-    /// spin, per-steer angle, engine revs and steer ratio are synced as typed fields and interpolated by
-    /// the central sync engine. The local pilot (seat occupant) takes ownership and drives the physics;
-    /// every other client interpolates the body + visuals.
+    /// <see cref="BasisSyncedTransform"/> 上に構築された networked vehicle。body transform に加えて、
+    /// wheel ごとの spin、steer angle、engine revs、steer ratio を typed field として同期し、
+    /// central sync engine が補間する。local pilot (seat occupant) が ownership を取得して physics を駆動し、
+    /// 他の client は body と visual を補間する。
     /// </summary>
     public class BasisNetworkedVehicle : BasisSyncedTransform, IBasisStaticLockable
     {
         /// <summary>
-        /// Server-authoritative "locked" state from the library Static toggle. When true the vehicle
-        /// is frozen (kinematic, wheels disabled) and ignores input on every client, so it can't move.
+        /// library Static toggle 由来の server-authoritative な "locked" state。
+        /// true の場合、vehicle は frozen (kinematic、wheel disabled) になり、全 client で input を無視するため動かない。
         /// </summary>
         public bool IsLocked { get; private set; }
         public BasisVehicleBody BasisVehicleBody;
@@ -53,7 +53,7 @@ namespace Basis.Network.Vehicles
 
         protected override void Awake()
         {
-            // The body is a world-space rigidbody; sync full position/rotation/scale.
+            // body は world-space rigidbody なので、position/rotation/scale をすべて同期する。
             Target = transform;
             WorldSpace = true;
             SyncPosition = true;
@@ -118,7 +118,7 @@ namespace Basis.Network.Vehicles
         {
             Player = player;
             bool isLocal = player != null && player.IsLocal;
-            // A locked vehicle stays frozen even when someone sits in it.
+            // locked vehicle は誰かが座っても frozen のままにする。
             ToggleItems(isLocal && !IsLocked);
             BasisDebug.Log($"Player Entered Seat {player.DisplayName}");
             if (isLocal)
@@ -126,7 +126,7 @@ namespace Basis.Network.Vehicles
                 for (int Index = 0; Index < _ownerSpinAbsDeg.Length; Index++) _ownerSpinAbsDeg[Index] = 0f;
                 if (EngineAudio != null) EngineAudio.UseNetworkRevs = false;
                 if (SteeringWheel != null) SteeringWheel.UseNetworkSteerRatio = false;
-                // Become the network owner so the sync engine streams our state.
+                // sync engine がこちらの state を stream できるよう network owner になる。
                 TakeOwnership();
             }
             else
@@ -138,7 +138,7 @@ namespace Basis.Network.Vehicles
         public override void OnServerOwnershipDestroyed()
         {
             base.OnServerOwnershipDestroyed();
-            // Ownership returned to no one (e.g. driver disconnected): leave the vehicle idle, don't destroy it.
+            // ownership が誰にも戻らない場合 (例: driver disconnect) は vehicle を idle のまま残し、破棄しない。
             if (SeatSync != null && SeatSync.IsLocallyEntered())
             {
                 BasisLocalPlayer.Instance?.LocalSeatDriver?.Stand();
@@ -148,7 +148,7 @@ namespace Basis.Network.Vehicles
             ApplyRemoteExtrasToParts(0f, 0f);
         }
 
-        // Per-frame on the driving client: accumulate absolute wheel spin from the live colliders.
+        // driving client 上で frame ごとに live collider から absolute wheel spin を蓄積する。
         private void OwnerTick()
         {
             if (IsLocked) return;
@@ -303,9 +303,9 @@ namespace Basis.Network.Vehicles
         }
 
         /// <summary>
-        /// Apply or release the server-authoritative static / locked state (<see cref="IBasisStaticLockable"/>).
-        /// Locking freezes the rigidbody and disables wheels on every client; unlocking restores the normal
-        /// owner/remote state. Sync transmit + apply are short-circuited while locked.
+        /// server-authoritative な static / locked state (<see cref="IBasisStaticLockable"/>) を適用または解除する。
+        /// lock 中は全 client で rigidbody を freeze し wheel を無効化する。unlock すると通常の owner/remote state を復元する。
+        /// locked の間、sync transmit と apply は short-circuit される。
         /// </summary>
         public void SetStatic(bool isStatic)
         {

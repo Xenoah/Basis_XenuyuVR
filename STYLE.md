@@ -1,69 +1,69 @@
-# Basis style and review guide
+# Basis スタイル・レビューガイド
 
-This is the deeper companion to [CONTRIBUTING.md](./CONTRIBUTING.md). CONTRIBUTING covers the contributor flow — how to file issues, open PRs, get builds running. This file covers what reviewers actually push back on once a PR is open: the checklist explained, the recurring review themes, and the formatting baseline.
+これは [CONTRIBUTING.md](./CONTRIBUTING.md) を補足する、より踏み込んだガイドです。CONTRIBUTING では、issue の作成、PR の作成、ビルドの実行といったコントリビューターの流れを扱います。このファイルでは、PR が開かれたあとにレビュアーが実際に指摘しやすい点を扱います。具体的には、チェックリストの意味、レビューで繰り返し出る観点、フォーマットの基準です。
 
-If you're new, skim [CONTRIBUTING.md](./CONTRIBUTING.md) first and come back here when you're about to open a PR.
+初めて参加する場合は、先に [CONTRIBUTING.md](./CONTRIBUTING.md) をざっと読み、PR を開く直前にこちらへ戻ってきてください。
 
-## Formatting
+## フォーマット
 
-- **`.editorconfig`** sets the formatting baseline. Most IDEs pick it up automatically.
-- **CSharpier** is configured via `.csharpierignore`. Run it before committing if your editor doesn't already.
-- **C# nullable annotations** aren't enforced project-wide; follow the surrounding file.
-- **Comments are lean by default.** Comment when the *why* is non-obvious — workarounds, hidden invariants, performance reasons. Don't restate what the code already says.
-- **Use the framework's own conventions** for new code: `BasisDebug`, `BasisLocalCameraDriver`, `BasisEventDriver`, `Try*` patterns, Addressables.
+- **`.editorconfig`** がフォーマットの基準です。多くの IDE は自動的に読み込みます。
+- **CSharpier** は `.csharpierignore` で設定されています。エディター側で自動実行されない場合は、コミット前に実行してください。
+- **C# の nullable annotation** はプロジェクト全体では強制していません。周囲のファイルに合わせてください。
+- **コメントは基本的に薄く保ちます。** 回避策、隠れた不変条件、性能上の理由など、*なぜ*そうしているのかが自明ではない場合にコメントしてください。コードがすでに語っている内容を繰り返さないでください。
+- **新しいコードではフレームワーク側の慣例を使います。** 例: `BasisDebug`、`BasisLocalCameraDriver`、`BasisEventDriver`、`Try*` パターン、Addressables。
 
-## The PR checklist, explained
+## PR チェックリストの意味
 
-The [pull request template](../.github/PULL_REQUEST_TEMPLATE.md) has a checklist that **must** be ticked before merge. Read it once before you start the work, not after — most of the items are easier to do as you go than to retrofit. Here's what each headline rule means in practice:
+[pull request template](../.github/PULL_REQUEST_TEMPLATE.md) には、マージ前に**必ず**チェックする項目があります。作業後ではなく、作業を始める前に一度読んでください。多くの項目は、あとから直すより作業中に守る方が簡単です。各見出しの意味は次のとおりです。
 
-- **Tested locally** in the editor and (where it matters) a built player.
-- **Transform reads/writes batched** — `TransformAccessArray`, or `Get/SetPositionAndRotation` so you do one matrix traversal instead of two.
-- **Addressables for asset loading** — no new `Resources.Load`.
-- **`TryGetComponent` not `GetComponent`**, results cached on a field, never on a per-frame path.
-- **Per-frame work goes through `BasisEventDriver`**, not standalone `Update` / `LateUpdate` / `FixedUpdate`.
-- **Camera access via `BasisLocalCameraDriver`** — don't roll your own discovery.
-- **Logging via `BasisDebug`** with an appropriate `LogTag`. No bare `Debug.Log`. No logging at all on per-frame paths.
-- **No scene-wide discovery** — `FindObjectOfType`, `GameObject.Find`, and `transform.Find` are denied. Wire dependencies in instead.
-- **No allocations on hot paths** — no `new`, no LINQ, no string interpolation, no boxing, no `foreach` over interface-typed collections.
-- **Hot loops are tight** — cache `.Count` / `.Length` into a local before the loop; prefer `T[]` over `List<T>` where the data is hot.
-- **Jobs considered.** If the work can move to a Burst-compiled job, it should. If not, say why under **Notes**.
+- **ローカルでテスト済み**: Editor と、必要な場合はビルド済み Player で確認します。
+- **Transform の読み書きはまとめる**: `TransformAccessArray`、または `Get/SetPositionAndRotation` を使い、行列走査を 2 回ではなく 1 回にします。
+- **アセット読み込みは Addressables を使う**: 新しい `Resources.Load` は追加しません。
+- **`GetComponent` ではなく `TryGetComponent`**: 結果はフィールドにキャッシュし、フレームごとの経路では実行しません。
+- **フレームごとの処理は `BasisEventDriver` 経由**: 単独の `Update` / `LateUpdate` / `FixedUpdate` は追加しません。
+- **カメラアクセスは `BasisLocalCameraDriver` 経由**: 独自の探索処理を作らないでください。
+- **ログは適切な `LogTag` 付きで `BasisDebug` を使う**: 素の `Debug.Log` は使いません。フレームごとの経路ではログ自体を出しません。
+- **シーン全体探索をしない**: `FindObjectOfType`、`GameObject.Find`、`transform.Find` は禁止です。依存関係は明示的につなぎます。
+- **ホットパスでアロケーションしない**: `new`、LINQ、文字列補間、boxing、インターフェース型コレクションに対する `foreach` は使いません。
+- **ホットループは詰める**: ループ前に `.Count` / `.Length` をローカルへキャッシュします。熱いデータでは `List<T>` より `T[]` を優先します。
+- **Job 化を検討する**: Burst コンパイル可能な Job に移せる処理なら移します。移せない場合は **Notes** に理由を書きます。
 
-If a box is genuinely N/A, tick it and explain why under **Notes**. "I forgot" isn't an explanation; "this is a one-shot init path, no per-frame impact" is.
+本当に N/A の項目はチェックを入れ、**Notes** に理由を書いてください。"忘れていました" は理由になりません。"一度だけの初期化経路で、フレームごとの影響はありません" は理由になります。
 
-## What reviewers look for
+## レビュアーが見る点
 
-The checklist catches the mechanical stuff. These are the recurring themes that come up in review beyond the checklist:
+チェックリストは機械的な部分を拾います。それ以外でレビュー中によく出る観点は次のとおりです。
 
-**Reuse existing surface before adding new.** The framework already has a lot of callbacks, events, drivers, and registries. Before introducing a new event or hook, check whether something existing fires at the right moment — `StartDevice` / `StopDevice`, `StaticCurrentMode` callbacks, `BasisEventDriver`, the network `Try*` helpers, etc. Reviewers will (rightly) push back on "I added a new callback for X" when an existing one would have served. If the existing one doesn't quite fit, name it in the PR description and explain the gap; that turns a rejection into a design discussion.
+**新しい仕組みを足す前に既存の面を再利用する。** フレームワークにはすでに多くの callback、event、driver、registry があります。新しい event や hook を導入する前に、ちょうどよいタイミングで発火する既存のものがないか確認してください。たとえば `StartDevice` / `StopDevice`、`StaticCurrentMode` callback、`BasisEventDriver`、ネットワークの `Try*` helper などです。既存のもので足りるのに "X 用の callback を追加しました" となると、レビュアーは妥当に差し戻します。既存のものが少し合わない場合は、PR 説明にその名前と不足点を書いてください。却下ではなく設計相談にできます。
 
-**Validate at the boundary, not at every call site.** If you're adding null checks throughout a hot path because data might be malformed, fix it where the data enters the system instead. "Could we validate this code another way leading to always having valid data?" comes up a lot.
+**各呼び出し地点ではなく境界で検証する。** データが壊れているかもしれないからとホットパスのあちこちに null チェックを足しているなら、そのデータがシステムに入る地点で直してください。"常に有効なデータになるよう、別の方法で検証できないか" はよく出る問いです。
 
-**Put functionality on the natural owner.** A microphone-related helper belongs on the microphone driver, not floating in a UI script. Reviewers will ask you to move it.
+**機能は自然な所有者に置く。** マイク関連の helper は UI スクリプトに浮かせるのではなく、マイク driver に置くべきです。レビュアーは移動を求めます。
 
-**Use the Try-pattern when failure is expected.** `TryGetOwnershipId(out var id)` over `GetOwnershipId()` returning a sentinel; `TryGetComponent<T>(out var x)` over `GetComponent<T>()` plus a null check. The Try variants are clearer at the call site and avoid Unity's `null`-wrapper allocation on missing components.
+**失敗が想定される場合は Try パターンを使う。** sentinel を返す `GetOwnershipId()` より `TryGetOwnershipId(out var id)`、`GetComponent<T>()` と null チェックより `TryGetComponent<T>(out var x)` を使います。Try 版は呼び出し地点で意図が明確で、コンポーネント欠落時に Unity の `null` wrapper アロケーションも避けられます。
 
-**Hash strings once.** If you're looking up animator parameters, shader properties, or anything else by name in a loop, use `Animator.StringToHash` (etc.) once and store the int. Don't pay the lookup cost every frame.
+**文字列は一度だけ hash 化する。** ループ内で animator parameter、shader property、その他の名前検索を行う場合は、`Animator.StringToHash` などを一度だけ実行して `int` を保持してください。毎フレーム検索コストを払わないでください。
 
-**Public fields are fine.** Don't wrap a plain field in `{ get; set; }` for the sake of it — the accessors aren't free, and the project's house style is plain fields unless a setter actually needs logic. If you want to lock something down to `private`/`internal`, have a real reason; Basis is meant to be read and modified.
+**public field は問題ありません。** 何もしていない field を形だけ `{ get; set; }` で包まないでください。accessor は無料ではありませんし、setter に実際のロジックがない限り、このプロジェクトのスタイルは plain field です。`private` / `internal` に閉じたい場合は、実際の理由を持ってください。Basis は読まれ、改変されることを前提にしています。
 
-**Don't gate `.Instance` reassignment.** Singletons can be reassigned by callers; if that breaks downstream code, log a warning or throw a clear error — don't try to prevent it.
+**`.Instance` の再代入を塞がない。** Singleton は呼び出し側から再代入される可能性があります。それで下流コードが壊れるなら、警告を出すか明確なエラーを投げてください。再代入そのものを防ごうとしないでください。
 
-**Editor-only code should refuse to run at runtime, loudly.** A clear error message ("only use this at runtime / only use this in the editor") is much better than mysterious null-refs.
+**Editor 専用コードは runtime で大きく拒否する。** "runtime でのみ使用してください / editor でのみ使用してください" のような明確なエラーは、謎の null reference よりずっと良いです。
 
-**Explain what and why.** A PR description that says "fix the thing" without describing what the thing is or why the change works will get bounced. The Summary section of the template exists for this — use it.
+**何を、なぜ変えたのかを説明する。** PR 説明が "あれを修正" だけで、対象や理由が書かれていない場合は差し戻されます。テンプレートの Summary はそのためにあります。使ってください。
 
-**Async is fine; manufactured complexity to avoid async is not.** If a server call is the natural way to get an answer, make people `await` it. Don't build elaborate state-machinery to dodge a synchronous wait.
+**async は問題ありません。async を避けるための作り物の複雑さは問題です。** サーバー呼び出しが答えを得る自然な方法なら、呼び出し側に `await` してもらってください。同期待ちを避けるためだけに複雑な状態機械を作らないでください。
 
-**Be wary of fragile patterns.** Wildcard matches, reflection over Unity types, or anything that could become an "oh shit" the next time Unity adds something to a namespace — flag it and discuss before committing to it.
+**壊れやすいパターンに注意する。** wildcard match、Unity 型への reflection、Unity が名前空間に何か追加した瞬間にまずいことになりそうな処理は、実装前に明示して相談してください。
 
-## Testing in depth
+## テストを深く見る
 
-The PR template has a testing checklist; here's what those rows actually mean.
+PR テンプレートにはテストのチェックリストがあります。各行の実際の意味は次のとおりです。
 
-**Platforms.** Tick the platforms you actually built and ran on. Windows is the baseline; Android (Quest) is the second-most-trafficked target. Linux/iOS/macOS coverage is appreciated but not always required — if you can't test a platform, leave it unticked rather than guessing.
+**プラットフォーム。** 実際にビルドして実行したプラットフォームだけをチェックしてください。Windows が基準で、Android (Quest) は 2 番目に利用の多いターゲットです。Linux / iOS / macOS の確認は歓迎されますが、常に必須ではありません。テストできないプラットフォームは推測でチェックせず、未チェックのままにしてください。
 
-**Input modes.** VR, desktop, and mobile touch all share code paths but stress different ones. Note the headset model under **Notes** if you tested in VR.
+**入力モード。** VR、desktop、mobile touch はコード経路を共有しますが、それぞれ別の部分に負荷をかけます。VR でテストした場合は、**Notes** に headset model を書いてください。
 
-**Critical flows.** Hot-switching desktop ↔ VR at runtime, swapping avatars, joining/leaving servers. These are common regression sources because they exercise teardown and re-init paths. If your change touches XR, avatars, networking, or input, retest these.
+**重要フロー。** 実行中の desktop ↔ VR 切り替え、avatar の差し替え、server への参加/離脱。これらは teardown と再初期化の経路を通るため、よく regression の原因になります。変更が XR、avatar、networking、input に触れる場合は、これらを再テストしてください。
 
-If you genuinely cannot test something — no Quest, no Mac, etc. — say so in the PR. Honesty is faster than a fake green tick.
+本当にテストできないものがある場合、たとえば Quest や Mac がない場合は、PR にそう書いてください。正直に書く方が、見せかけのチェックより早く進みます。

@@ -127,20 +127,20 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Downloads a remote BEE blob (with 8-byte Int64 header), decrypts/parses the connector,
-    /// downloads the platform-matching section, writes a local .bee file (4-byte Int32 header),
-    /// and returns all artifacts.
+    /// remote BEE blob (8-byte Int64 header 付き) を download し、connector を decrypt/parse し、
+    /// platform に一致する section を download し、local .bee file (4-byte Int32 header) を書き込み、
+    /// すべての artifact を返す。
     /// </summary>
     public static async Task<BeeResult<BeeDownloadResult>> DownloadBEEEx(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default, long MaxDownloadSizeInMB = 4L * 1024 * 1024 * 1024)
     {
-        // Validate inputs with actionable messages
+        // actionable な message で input を validate する
         if (!ValidateUrl(url, out url, out var urlErr))
             return BeeResult<BeeDownloadResult>.Fail($"DownloadBEEEx: {urlErr}");
 
         if (string.IsNullOrWhiteSpace(vp))
             return BeeResult<BeeDownloadResult>.Fail("DownloadBEEEx: VP is null or empty.");
 
-        // 1) Read 8-byte remote header (Int64)
+        // 1) 8-byte remote header (Int64) を読む
         var headerRes = await DownloadRangeInternal(url, startByte: 0, endByteInclusive: BasisBeeConstants.RemoteHeaderSize - 1, toFilePath: null, progressCallback, cancellationToken, MaxDownloadSizeInMB);
 
         if (!headerRes.IsSuccess || headerRes.Value?.Data == null)
@@ -156,7 +156,7 @@ public static class BasisIOManagement
         if (connectorLength > BasisBeeConstants.MaxConnectorBytes)
             return BeeResult<BeeDownloadResult>.Fail($"DownloadBEEEx: Connector length {connectorLength} exceeds max allowed {BasisBeeConstants.MaxConnectorBytes}.");
 
-        // 2) Download connector bytes (immediately after header)
+        // 2) connector bytes を download する (header の直後)
         long connectorStart = BasisBeeConstants.RemoteHeaderSize;
         long connectorEndInclusive = BasisBeeConstants.RemoteHeaderSize + connectorLength - 1;
 
@@ -171,7 +171,7 @@ public static class BasisIOManagement
         var connectorBytes = connectorRes.Value.Data;
         BasisDebug.Log("Downloaded Connector block size: " + connectorBytes.Length);
 
-        // 3) Parse connector
+        // 3) connector を parse する
         BasisBundleConnector connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
         BasisDebug.Log("GenerateMetaFromBytes", BasisDebug.LogTag.Event);
 
@@ -181,7 +181,7 @@ public static class BasisIOManagement
         if (connector.BasisBundleGenerated == null || connector.BasisBundleGenerated.Length == 0)
             return BeeResult<BeeDownloadResult>.Fail("DownloadBEEEx: Connector contains no sections.");
 
-        // 4) Walk sections, compute ranges, download only the platform-matching section
+        // 4) section を走査して range を計算し、platform に一致する section だけ download する
         long previousEnd = connectorEndInclusive; // End of connector region in the remote file
         byte[] platformSectionData = null;
 
@@ -231,7 +231,7 @@ public static class BasisIOManagement
 
                 platformSectionData = sectRes.Value.Data;
                 BasisDebug.Log("Platform section length: " + platformSectionData.LongLength);
-                // Do not break; keep walking to ensure previousEnd is advanced correctly regardless of multiple matches
+                // break しない。複数 match の有無に関係なく previousEnd が正しく進むよう最後まで走査する
             }
 
             previousEnd = end;
@@ -242,7 +242,7 @@ public static class BasisIOManagement
             return BeeResult<BeeDownloadResult>.Fail($"DownloadBEEEx: No platform-matching section found in connector. Platform Request was {Application.platform}. {BasisBundleConnector.DebugOfPlatforms(connector)}");
         }
 
-        // 5) Write local .bee (Int32 header + connector + section)
+        // 5) local .bee を書く (Int32 header + connector + section)
         string fileName = Path.GetFileName(GetBeeCacheFilePath(connector.UniqueVersion));
         if (string.IsNullOrWhiteSpace(fileName))
             return BeeResult<BeeDownloadResult>.Fail("DownloadBEEEx: Connector has no UniqueVersion / file extension.");
@@ -264,7 +264,7 @@ public static class BasisIOManagement
         return BeeResult<BeeDownloadResult>.Ok(new BeeDownloadResult(connector, localPath, platformSectionData));
     }
     /// <summary>
-    /// Downloads only the connector bytes from the remote BEE (8-byte Int64 header) and parses them.
+    /// remote BEE (8-byte Int64 header) から connector bytes だけを download して parse する。
     /// </summary>
     public static async Task<BeeResult<(BasisBundleConnector, string)>> DownloadConnectorOnlyEx(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default, long MaxDownloadSizeInMB = 4L * 1024 * 1024 * 1024)
     {
@@ -274,7 +274,7 @@ public static class BasisIOManagement
         if (string.IsNullOrWhiteSpace(vp))
             return BeeResult<(BasisBundleConnector, string)>.Fail("DownloadConnectorOnlyEx: VP is null or empty.");
 
-        // Header
+        // header
         var headerRes = await DownloadRangeInternal(url, 0, BasisBeeConstants.RemoteHeaderSize - 1, null, progressCallback, cancellationToken, MaxDownloadSizeInMB);
         if (!headerRes.IsSuccess || headerRes.Value?.Data == null)
             return BeeResult<(BasisBundleConnector, string)>.Fail($"DownloadConnectorOnlyEx: Failed to read header. {headerRes.Error ?? "No data"}", headerRes.ResponseCode);
@@ -289,7 +289,7 @@ public static class BasisIOManagement
         if (connectorLength > BasisBeeConstants.MaxConnectorBytes)
             return BeeResult<(BasisBundleConnector, string)>.Fail($"DownloadConnectorOnlyEx: Connector length {connectorLength} exceeds max allowed {BasisBeeConstants.MaxConnectorBytes}.");
 
-        // Connector bytes
+        // connector bytes
         long start = BasisBeeConstants.RemoteHeaderSize;
         long end = BasisBeeConstants.RemoteHeaderSize + connectorLength - 1;
 
@@ -313,7 +313,7 @@ public static class BasisIOManagement
             return BeeResult<(BasisBundleConnector, string)>.Fail("DownloadConnectorOnlyEx: Failed to parse connector metadata (null).");
         }
 
-        // 5) Write local .bec (Int32 header + connector only, no section)
+        // 5) local .bec を書く (Int32 header + connector のみ、section なし)
         string fileName = Path.GetFileName(GetConnectorCacheFilePath(connector.UniqueVersion));
         if (string.IsNullOrWhiteSpace(fileName))
         {
@@ -335,7 +335,7 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Reads a local .bee file (4-byte Int32 header), regenerates the connector, and returns the remaining section data.
+    /// local .bee file (4-byte Int32 header) を読み、connector を再生成し、残りの section data を返す。
     /// </summary>
     public static async Task<BeeResult<BeeReadResult>> ReadBEEFileEx(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
@@ -361,7 +361,7 @@ public static class BasisIOManagement
             return BeeResult<BeeReadResult>.Fail($"ReadBEEFileEx: File too small to contain header. Size={fs.Length} bytes.");
         }
 
-        // Read Int32 connector size (little-endian)
+        // Int32 connector size を読む (little-endian)
         byte[] sizeBytes = await ReadExactAsync(fs, BasisBeeConstants.DiskHeaderSize, cancellationToken).ConfigureAwait(false);
         if (sizeBytes.Length != BasisBeeConstants.DiskHeaderSize)
         {
@@ -375,7 +375,7 @@ public static class BasisIOManagement
             return BeeResult<BeeReadResult>.Fail($"ReadBEEFileEx: Invalid connector size {connectorSize}. Remaining file bytes: {remainingPossible}. File may be corrupt.");
         }
 
-        // Read connector bytes
+        // connector bytes を読む
         byte[] connectorBytes = await ReadExactAsync(fs, connectorSize, cancellationToken).ConfigureAwait(false);
         if (connectorBytes.Length != connectorSize)
         {
@@ -388,7 +388,7 @@ public static class BasisIOManagement
         if (connector == null)
             return BeeResult<BeeReadResult>.Fail("ReadBEEFileEx: Failed to regenerate connector metadata (null).");
 
-        // Remaining is section data
+        // 残りは section data
         long remaining = fs.Length - fs.Position;
         if (remaining < 0) remaining = 0;
 
@@ -409,7 +409,7 @@ public static class BasisIOManagement
         return BeeResult<BeeReadResult>.Ok(new BeeReadResult(connector, sectionData));
     }
     /// <summary>
-    /// Reads a local .bee file (4-byte Int32 header), regenerates the connector, and returns the remaining section data.
+    /// local .bee file (4-byte Int32 header) を読み、connector を再生成し、残りの section data を返す。
     /// </summary>
     public static async Task<BeeResult<BeeReadResult>> ReadBEEConnectorFileEx(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
@@ -427,7 +427,7 @@ public static class BasisIOManagement
         if (fs.Length < BasisBeeConstants.DiskHeaderSize)
             return BeeResult<BeeReadResult>.Fail($"ReadBEEFileEx: File too small to contain header. Size={fs.Length} bytes.");
 
-        // Read Int32 connector size (little-endian)
+        // Int32 connector size を読む (little-endian)
         byte[] sizeBytes = await ReadExactAsync(fs, BasisBeeConstants.DiskHeaderSize, cancellationToken).ConfigureAwait(false);
         if (sizeBytes.Length != BasisBeeConstants.DiskHeaderSize)
             return BeeResult<BeeReadResult>.Fail($"ReadBEEFileEx: Failed to read connector size (header). Got {sizeBytes.Length} bytes.");
@@ -437,7 +437,7 @@ public static class BasisIOManagement
         if (connectorSize <= 0 || connectorSize > remainingPossible)
             return BeeResult<BeeReadResult>.Fail($"ReadBEEFileEx: Invalid connector size {connectorSize}. Remaining file bytes: {remainingPossible}. File may be corrupt.");
 
-        // Read connector bytes
+        // connector bytes を読む
         byte[] connectorBytes = await ReadExactAsync(fs, connectorSize, cancellationToken).ConfigureAwait(false);
         if (connectorBytes.Length != connectorSize)
             return BeeResult<BeeReadResult>.Fail($"ReadBEEFileEx: Failed to read full connector block. Expected {connectorSize}, got {connectorBytes.Length}.");
@@ -452,10 +452,10 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Reads a REMOTE-format BEE blob (8-byte Int64 header) from a local file, parses the connector,
-    /// and (when <paramref name="includeSection"/> is true) returns the platform-matching section.
-    /// This is the on-disk equivalent of <see cref="DownloadBEEEx"/> for a BEE the SDK exported
-    /// straight to disk rather than to a HTTP host.
+    /// local file から REMOTE-format BEE blob (8-byte Int64 header) を読み、connector を parse し、
+    /// <paramref name="includeSection"/> が true の場合は platform に一致する section を返す。
+    /// これは SDK が HTTP host ではなく disk へ直接 export した BEE に対する、
+    /// <see cref="DownloadBEEEx"/> の on-disk 相当。
     /// </summary>
     public static async Task<BeeResult<BeeReadResult>> ReadRemoteBeeFromDiskEx(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default, bool includeSection = true)
     {
@@ -589,7 +589,7 @@ public static class BasisIOManagement
         return folderPath;
     }
     /// <summary>
-    /// downloads a range of bytes
+    /// byte range を download する。
     /// </summary>
     /// <param name="url"></param>
     /// <param name="startByte"></param>
@@ -597,7 +597,7 @@ public static class BasisIOManagement
     /// <param name="toFilePath"></param>
     /// <param name="progress"></param>
     /// <param name="ct"></param>
-    /// <param name="MaxDownloadSizeInMB">Defaults to 4GB</param>
+    /// <param name="MaxDownloadSizeInMB">default は 4GB。</param>
     /// <returns></returns>
     private static async Task<BeeResult<DownloadPayload>> DownloadRangeInternal(string url, long startByte, long? endByteInclusive, string toFilePath, BasisProgressReport progress, CancellationToken ct, long MaxDownloadSizeInMB = 4L * 1024 * 1024 * 1024)
     {
@@ -633,7 +633,7 @@ public static class BasisIOManagement
 
         if (string.IsNullOrEmpty(toFilePath) == false)
         {
-            // Ensure parent directory exists if the caller passed a path
+            // caller が path を渡した場合は parent directory が存在するようにする
             string dir = Path.GetDirectoryName(toFilePath);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
@@ -671,7 +671,7 @@ public static class BasisIOManagement
 
         long code = req.responseCode;
 
-        // Normalize network errors first
+        // 先に network error を normalize する
         if (req.result != UnityWebRequest.Result.Success)
         {
             progress?.ReportProgress(requestId, 100, "Downloading Complete");
@@ -679,15 +679,15 @@ public static class BasisIOManagement
             return BeeResult<DownloadPayload>.Fail($"Network error: {req.error}. {errDetail}", code);
         }
 
-        // Enforce partial content semantics and provide actionable reasons
+        // partial content semantics を強制し、actionable な reason を提供する
         switch (code)
         {
             case 206:
-                // Validate Content-Range if present to ensure the server honored our request
+                // Content-Range があれば validate し、server が request に従ったことを確認する
                 string contentRange = req.GetResponseHeader("Content-Range") ?? string.Empty;
                 if (!string.IsNullOrEmpty(contentRange))
                 {
-                    // Basic sanity check; we avoid parsing fully to keep dependencies light
+                    // 基本的な sanity check。dependency を軽く保つため完全 parse は避ける
                     if (!contentRange.StartsWith("bytes ", StringComparison.OrdinalIgnoreCase))
                     {
                         progress?.ReportProgress(requestId, 100, $"Error! {code}");
@@ -717,7 +717,7 @@ public static class BasisIOManagement
             if (data == null)
                 return BeeResult<DownloadPayload>.Fail("No payload returned (buffer was null).", code);
 
-            // Optional: verify Content-Length when present
+            // 任意: Content-Length があれば verify する
             var contentLengthHeader = req.GetResponseHeader("Content-Length");
             if (long.TryParse(contentLengthHeader, out var contentLen) && contentLen >= 0 && data.LongLength != contentLen)
             {
@@ -738,8 +738,8 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Writes local .bee with 4-byte little-endian Int32 header (connector size) + connector [+ optional section].
-    /// If <paramref name="IgnoreSectionBytes"/> is true, the section is not written even if provided.
+    /// 4-byte little-endian Int32 header (connector size) + connector [+ optional section] の local .bee を書く。
+    /// <paramref name="IgnoreSectionBytes"/> が true の場合、section が渡されても書き込まない。
     /// </summary>
     private static async Task<BeeResult<bool>> WriteBeeFileAsync(string path, byte[] connectorBytes, byte[] sectionBytes, bool IgnoreSectionBytes)
     {
@@ -749,29 +749,29 @@ public static class BasisIOManagement
         if (connectorBytes == null || connectorBytes.Length == 0)
             return BeeResult<bool>.Fail("WriteBeeFileAsync: Connector bytes are empty.");
 
-        // If we are not ignoring the section, it must be non-null (zero-length is allowed)
+        // section を無視しない場合、non-null である必要がある (zero-length は許可)
         if (!IgnoreSectionBytes && sectionBytes == null)
             return BeeResult<bool>.Fail("WriteBeeFileAsync: Section bytes are null.");
 
-        // Prepare directory
+        // directory を準備する
         string dir = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             Directory.CreateDirectory(dir);
 
-        // Header: little-endian Int32 of connector size
+        // header: connector size の little-endian Int32
         byte[] sizeLE = GetBytesInt32LE(connectorBytes.Length);
 
-        // Decide whether we'll actually write the section
+        // 実際に section を書くか決める
         bool writeSection = !IgnoreSectionBytes && (sectionBytes?.Length ?? 0) > 0;
 
-        // Compute total size we expect to write
+        // 書き込む予定の total size を計算する
         long totalSize = sizeLE.Length + connectorBytes.Length + (writeSection ? sectionBytes.Length : 0);
 
-        // Auto-tune buffer: min 32KB, max 1MB
+        // buffer を auto-tune する: min 32KB, max 1MB
         int buffer = Clamp((int)(totalSize / 8), 32 * 1024, 1 * 1024 * 1024);
 
-        // Write to a temp file then atomic-rename to avoid sharing violations
-        // when multiple concurrent downloads target the same .BEE path.
+        // 複数の concurrent download が同じ .BEE path を target にする場合の sharing violation を避けるため、
+        // temp file に書いてから atomic rename する。
         string tempPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
@@ -797,9 +797,8 @@ public static class BasisIOManagement
                 return BeeResult<bool>.Fail($"WriteBeeFileAsync: Size mismatch after write. Expected {totalSize}, actual {actual}.");
             }
 
-            // Replace destination if it already exists. On Windows, plain File.Move throws
-            // when the destination is present; deleting first lets re-downloads overwrite a
-            // stale or corrupt cached file instead of silently keeping the old bytes.
+            // destination が既に存在する場合は置き換える。Windows では destination があると通常の File.Move が throw する。
+            // 先に削除すれば、re-download が古い/corrupt な cached file を古い bytes のまま残さず overwrite できる。
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -847,10 +846,10 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Returns true when <paramref name="location"/> is a local BEE location (a <c>file://</c> URI)
-    /// rather than a HTTP/HTTPS download, regardless of whether the file currently exists. Use this
-    /// for the "this content is local and can never be networked" invariant; use
-    /// <see cref="TryResolveLocalBeePath"/> when you actually need to read the file off disk.
+    /// <paramref name="location"/> が HTTP/HTTPS download ではなく local BEE location
+    /// (<c>file://</c> URI) の場合、file の現在の存在有無に関係なく true を返す。
+    /// 「この content は local であり networked になり得ない」という invariant に使う。
+    /// 実際に disk から file を読む必要がある場合は <see cref="TryResolveLocalBeePath"/> を使う。
     /// </summary>
     public static bool IsLocalBeeUrl(string location)
     {
@@ -868,10 +867,10 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Returns true when <paramref name="location"/> points at an existing local BEE file
-    /// (a <c>file://</c> URI or a raw filesystem path) rather than a HTTP/HTTPS download,
-    /// resolving it to an absolute local path. Used to route a dropped-in local BEE through
-    /// the on-disk reader instead of the network download path.
+    /// <paramref name="location"/> が HTTP/HTTPS download ではなく既存の local BEE file
+    /// (<c>file://</c> URI または raw filesystem path) を指している場合に true を返し、
+    /// absolute local path へ解決する。drop-in local BEE を network download path ではなく
+    /// on-disk reader へ通すために使う。
     /// </summary>
     public static bool TryResolveLocalBeePath(string location, out string localPath)
     {
@@ -925,7 +924,7 @@ public static class BasisIOManagement
         if (read == size)
             return buf;
 
-        // Return what we have (caller checks length)
+        // ある分だけ返す (caller が length を確認する)
         if (read == 0)
             return Array.Empty<byte>();
 
@@ -984,9 +983,8 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Sends an HTTP HEAD request to check if the remote file is reachable.
-    /// Returns success if the server responds with a 2xx status code,
-    /// indicating the file exists and is accessible.
+    /// HTTP HEAD request を送り、remote file が reachable か確認する。
+    /// server が 2xx status code を返した場合、file が存在し access 可能であるとして success を返す。
     /// </summary>
     public static async Task<BeeResult<bool>> CheckRemoteFileReachable(string url, CancellationToken cancellationToken = default)
     {
@@ -1030,7 +1028,7 @@ public static class BasisIOManagement
     }
 
     /// <summary>
-    /// Builds a concise, actionable detail string from a UnityWebRequest result without leaking nulls.
+    /// UnityWebRequest result から null を漏らさず、簡潔で actionable な detail string を作る。
     /// </summary>
     private static string BuildNetworkErrorDetail(UnityWebRequest req)
     {

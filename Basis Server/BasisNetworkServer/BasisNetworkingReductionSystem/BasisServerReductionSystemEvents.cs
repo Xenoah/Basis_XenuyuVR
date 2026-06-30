@@ -25,10 +25,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
     }
 
     /// <summary>
-    /// Deferred avatar send recorded once per (sender,receiver) pair in the inner loop.
-    /// We keep a reference to the shared pre-serialized source plus the per-receiver
-    /// interval byte; the flush stage decides whether to compress these into one bundle
-    /// or replay each as an individual SendUnreliableRawMerge.
+    /// inner loop で (sender, receiver) pair ごとに一度記録される deferred avatar send。
+    /// 共有された pre-serialized source への参照と receiver ごとの interval byte を保持し、
+    /// flush stage がこれらを 1 つの bundle に compress するか、
+    /// 個別の SendUnreliableRawMerge として replay するかを決める。
     /// </summary>
     public struct PendingAvatarSend
     {
@@ -40,15 +40,15 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
     }
 
     /// <summary>
-    /// Combined per-peer tracking + cached distance data. 32 bytes = two per cache line.
-    /// The send loop reads all fields sequentially per pair with no float math.
+    /// per-peer tracking と cached distance data をまとめたもの。32 bytes = cache line あたり 2 つ。
+    /// send loop は pair ごとにすべての field を sequential に読み、float math は行わない。
     /// </summary>
     public struct PeerTrackingData
     {
         public long LastSentTime;
         public long LastSeenGeneration;
-        // Cached by the slow distance loop (~2Hz), read by the fast send loop (~250Hz).
-        // Eliminates per-pair distance math from the hot path.
+        // slow distance loop (~2Hz) で cache し、fast send loop (~250Hz) で読む。
+        // hot path から per-pair distance math を取り除く。
         public long CachedIntervalTicks;
         public byte CachedQualityIndex;
         public byte CachedIntervalByte;
@@ -59,82 +59,82 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         public NetPeer Peer;
         public bool IsActive;
 
-        // Used for distance decisions
+        // distance decision に使う。
         public Basis.Scripts.Networking.Compression.Vector3 Position;
 
-        // Base message shell (we swap avatarSerialization before send)
+        // base message shell (send 前に avatarSerialization を差し替える)。
         public ServerSideSyncPlayerMessage SyncMessage;
 
-        // Combined per-peer tracking: last sent tick + last seen generation in one struct
-        // for cache-friendly O(1) access in the send loop. Indexed by player id.
+        // combined per-peer tracking: last sent tick と last seen generation を 1 struct にまとめ、
+        // send loop で cache-friendly な O(1) access を行う。player id で index する。
         public PeerTrackingData[] PeerTracking;
 
-        // Generation counter: incremented each time this player receives new avatar data.
-        // Receivers compare against their LastSeenGeneration to know if there is new data.
-        // Access via Interlocked.Read/Increment for thread safety on 32-bit or cross-core visibility.
+        // generation counter。この player が新しい avatar data を受け取るたびに increment される。
+        // receiver は LastSeenGeneration と比較し、新しい data があるかを判断する。
+        // 32-bit 環境や cross-core visibility の thread safety のため、Interlocked.Read/Increment 経由で access する。
         public long DataGeneration;
 
-        // Cached during ProcessMessage to avoid dereference chain in the inner send loop.
+        // inner send loop で dereference chain を避けるため、ProcessMessage 中に cache する。
         public bool HasAdditionalData;
 
-        // Cached per-quality payloads (payload bytes only, plus DataQualityLevel).
-        // AvatarHigh owns its own byte[] — never shares with the QueuedMessagePool.
-        // This prevents pool reuse from silently corrupting the muscle-change comparison.
+        // quality ごとの cached payload (payload bytes と DataQualityLevel のみ)。
+        // AvatarHigh は自身の byte[] を所有し、QueuedMessagePool と共有しない。
+        // これにより、pool reuse が muscle-change comparison を静かに壊すことを防ぐ。
         public LocalAvatarSyncMessage AvatarHigh;
         public LocalAvatarSyncMessage AvatarMedium;
         public LocalAvatarSyncMessage AvatarLow;
         public LocalAvatarSyncMessage AvatarVeryLow;
 
-        // Inbound sequence tracking for unreliable clientâ†’server packets
+        // unreliable client->server packet 用の inbound sequence tracking。
         public byte LastInboundSequence;
         public bool HasReceivedFirst;
 
-        // Outbound sequence stamped into pre-serialized data (increments per new avatar update)
+        // pre-serialized data に stamp する outbound sequence (新しい avatar update ごとに increment)。
         public byte OutboundSequence;
 
-        // Pre-serialized keyframe bytes per quality.
+        // quality ごとの pre-serialized keyframe bytes。
         // Byte-ID: [PlayerID:1][interval_placeholder:1][sequence:1][array:N][additional...]
         // Ushort-ID: [PlayerID:2][interval_placeholder:1][sequence:1][array:N][additional...]
-        // The interval byte offset depends on SmallId (1 for byte, 2 for ushort).
-        // Quality is derived from the channel number — not stored in the payload.
+        // interval byte offset は SmallId に依存する (byte なら 1、ushort なら 2)。
+        // quality は channel number から derive され、payload には保存しない。
         public byte[][] SerializedKeyframe = new byte[4][];
         public int[] SerializedKeyframeLength = new int[4];
 
-        // True when playerID fits in a byte (≤255). Set once at creation.
+        // playerID が byte に収まる場合 true (<=255)。creation 時に一度だけ設定する。
         public bool SmallId;
 
-        // Lazy pre-serialization: bitmask of which quality levels had receivers last tick.
-        // Updated atomically from the parallel send loop. Read/reset in ProcessMessage.
-        // Bit 0 = VeryLow, Bit 1 = Low, Bit 2 = Medium, Bit 3 = High.
+        // lazy pre-serialization: last tick で receiver がいた quality level の bitmask。
+        // parallel send loop から atomic に更新し、ProcessMessage で read/reset する。
+        // bit 0 = VeryLow、bit 1 = Low、bit 2 = Medium、bit 3 = High。
         public int UsedQualities;
 
-        // Actual payload size stored in AvatarHigh.array (which may be larger if from ArrayPool).
-        // Used for muscle-change comparison instead of .Length to handle pooled arrays correctly.
+        // AvatarHigh.array に保存された actual payload size (ArrayPool 由来なら大きい場合がある)。
+        // pooled array を正しく扱うため、muscle-change comparison では .Length ではなくこれを使う。
         public int HighArrayActualSize;
 
-        // Per-receiver bundle accumulator. Populated in UpdateCommunicationAndDistances
-        // and drained in FlushPendingForReceiver. Allocated lazily on first use.
-        // Only this player's own receive thread (one Parallel.For body) writes here,
-        // so no synchronization is needed.
+        // receiver ごとの bundle accumulator。UpdateCommunicationAndDistances で populate し、
+        // FlushPendingForReceiver で drain する。初回使用時に lazy allocate される。
+        // ここへ write するのはこの player 自身の receive thread (Parallel.For body 1 つ) だけなので、
+        // synchronization は不要。
         public PendingAvatarSend[] PendingSends;
         public int PendingCount;
 
-        // Scratch buffers reused tick-to-tick when emitting compressed bundles to this receiver.
-        // Avoids per-tick allocations in the deflate path. Sized by the flush logic.
+        // この receiver へ compressed bundle を emit するとき tick 間で再利用する scratch buffer。
+        // deflate path の per-tick allocation を避ける。size は flush logic が決める。
         public byte[] BundleRawScratch;
         public byte[] BundleCompressedScratch;
 
-        // EMA of compressed/raw ratio observed for this receiver's bundles. Used by
-        // FlushPendingForReceiver to predict how many messages fit in one MTU-sized chunk
-        // so the first compress attempt usually succeeds with no retry. 0 = unseeded.
+        // この receiver の bundle で観測した compressed/raw ratio の EMA。
+        // FlushPendingForReceiver が 1 MTU-sized chunk に何 message 入るかを予測するために使い、
+        // 初回 compress attempt が retry なしで成功しやすくする。0 = unseeded。
         public float LastBundleRatio;
     }
 
     public partial class BasisServerReductionSystemEvents
     {
         private static readonly CancellationTokenSource cts = new();
-        // Initial capacity for PeerTracking array on PlayerState.
-        // Grows if a player ID exceeds this.
+        // PlayerState の PeerTracking array 初期 capacity。
+        // player ID がこれを超えたら grow する。
         private const int InitialPlayerArrayCapacity = 2048;
 
         private static readonly ParallelOptions parallelOptions = new()
@@ -143,7 +143,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         };
 
         public static ShardedConcurrentDictionary<PlayerState> playerStates = new();
-        // Double-buffered message dictionaries: swap and clear instead of allocating per tick.
+        // double-buffered message dictionary。tick ごとに allocate せず、swap と clear を行う。
         private static ShardedConcurrentDictionary<QueuedMessage> currentMessages = new();
         private static ShardedConcurrentDictionary<QueuedMessage> _backMessages = new();
 
@@ -151,22 +151,21 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         public static float BSRSIncreaseRate = 0.01f;
         public static int BSRSMillisecondDefaultInterval = 50;
 
-        // Compressed avatar bundle settings (written from NetworkServer.InitializePulseSettings).
-        // When enabled, the per-receiver inner loop defers sends into PendingAvatarSend[] and
-        // flushes either as one deflated bundle on CompressedAvatarBundleChannel or as
-        // individual SendUnreliableRawMerge calls on the original quality channels.
+        // compressed avatar bundle settings (NetworkServer.InitializePulseSettings から書かれる)。
+        // 有効な場合、receiver ごとの inner loop は send を PendingAvatarSend[] に defer し、
+        // CompressedAvatarBundleChannel 上の 1 つの deflated bundle または
+        // original quality channel 上の個別 SendUnreliableRawMerge call として flush する。
         public static bool EnableAvatarBundleCompression = true;
         public static int AvatarBundleMinMessages = 4;
         public static int AvatarBundleMinBytes = 300;
-        // Conservative headroom subtracted from peer.Mtu before checking if a compressed
-        // bundle fits in a single UDP datagram. Accounts for LiteNetLib unreliable header,
-        // optional packet-layer header, and merge length prefixes.
+        // compressed bundle が single UDP datagram に収まるか確認する前に peer.Mtu から引く conservative headroom。
+        // LiteNetLib unreliable header、optional packet-layer header、merge length prefix を見込む。
         private const int BundleMtuHeadroom = 32;
-        // Bundle wire header: [count:1][rawLen:2-LE]
+        // bundle wire header: [count:1][rawLen:2-LE]
         private const int BundleHeaderSize = 3;
         private static readonly double MsToTick = Stopwatch.Frequency / 1000.0;
 
-        // Maintained incrementally via ProcessMessage/ProcessPendingRemovals instead of rebuilt every tick.
+        // tick ごとに rebuild せず、ProcessMessage / ProcessPendingRemovals 経由で incremental に維持する。
         private static readonly List<(int id, PlayerState state)> _activePlayers = new();
         private static readonly object _activePlayersLock = new();
         private static (int id, PlayerState state)[] _activePlayersSnapshot = Array.Empty<(int, PlayerState)>();
@@ -174,16 +173,16 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
         private static readonly ConcurrentQueue<int> playersToRemove = new();
 
-        // Lets the tick loop park (~0% CPU) when the server is empty instead of
-        // polling at 250Hz. Set() the moment the first packet arrives so there is
-        // no join latency. Same approach LiteNetLib's logic thread already uses.
+        // server が空のとき 250Hz polling ではなく tick loop を park させる (~0% CPU)。
+        // 最初の packet が届いた瞬間に Set() するため、join latency は増えない。
+        // LiteNetLib の logic thread も同じ approach を使っている。
         private static readonly AutoResetEvent _tickWake = new(false);
         private static int _activePlayerCount;
 
-        // Reusable snapshot list for draining currentMessages each tick  avoids allocation per tick.
+        // currentMessages を毎 tick drain するための reusable snapshot list。per-tick allocation を避ける。
         private static readonly List<QueuedMessage> _messagesSnapshot = new(1024);
 
-        // Static delegate for Parallel.ForEach — avoids closure allocation every tick.
+        // Parallel.ForEach 用の static delegate。毎 tick の closure allocation を避ける。
         private static readonly Action<QueuedMessage> s_processMessageAction = msg =>
         {
             try
@@ -196,43 +195,43 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
         };
 
-        // Distance -> Quality thresholds (squared meters)
+        // distance -> quality threshold (squared meters)
         public static float HighDistanceSq = 100f;      // 10m
         public static float MediumDistanceSq = 900f;    // 30m
         public static float LowDistanceSq = 2500f;      // 50m
 
         public static long intervalMs = 4;
-        // Fallback wake while the server is empty; _tickWake.Set() does the real wake.
+        // server が空のときの fallback wake。実際の wake は _tickWake.Set() が行う。
         private const int IdleWaitMs = 250;
-        // Load-adaptive inter-tick wait: if the tick left more than this much of its budget
-        // unused (light load), block on WaitOne (~0% CPU); if less (heavy load, near the
-        // budget), busy-spin the small remainder to hit the rate precisely. Doubles as the
-        // spin cap — the loop never spins more than this per tick. Set to 0 for pure WaitOne
-        // (lowest CPU, looser rate under load); raise toward intervalMs to favor a tight
-        // rate at higher load. Saturated ticks (no slack) never wait or spin regardless.
+        // load-adaptive inter-tick wait。未使用 budget がこの値より大きい (light load) 場合は
+        // WaitOne で block する (~0% CPU)。小さい (heavy load、budget 近辺) 場合は、
+        // 小さな残り時間を busy-spin して rate を正確に合わせる。これは spin cap も兼ねるため、
+        // loop は tick ごとにこれ以上 spin しない。0 にすると pure WaitOne
+        // (最低 CPU、load 下では rate が緩くなる)。高 load で tighter rate を優先するなら intervalMs に近づける。
+        // saturated tick (slack なし) は wait も spin もしない。
         public static double MaxSpinMs = 2.5;
-        // Tick slicing: only process a subset of receivers each tick to spread the O(NÂ²) work.
-        // Adaptive: increases when ticks take too long, decreases when under budget.
+        // tick slicing: O(N^2) work を分散するため、各 tick では receiver の subset だけを処理する。
+        // adaptive: tick が長すぎると増やし、budget 内なら減らす。
         private static int _sliceCount = 1;
         private static int _sliceIndex = 0;
 
-        // Distance cache: recalculate quality/interval from distance every N ticks.
-        // The fast send loop uses cached values instead of computing distance per pair per tick.
-        // At 4ms tick interval, 125 ticks = ~500ms. Players at 6m/s cover 3m in that time,
-        // which is within one quality threshold (3m/10m/20m) — acceptable staleness.
+        // distance cache: N tick ごとに distance から quality/interval を再計算する。
+        // fast send loop は pair ごとに毎 tick distance を計算せず、cached value を使う。
+        // 4ms tick interval では 125 ticks = 約 500ms。6m/s の player はその間に 3m 移動するが、
+        // quality threshold (3m/10m/20m) ひとつ分に収まるため、許容できる stale さ。
         private static int _distanceTickCounter = 0;
         public static int DistanceUpdateIntervalTicks = 125;
 
-        // Cached muscle+tail byte counts for the position-only fast path (skip repack).
+        // position-only fast path (repack skip) 用に muscle+tail byte count を cache する。
         private static readonly int HighMuscleAndTailBytes = MuscleBytes(BitQuality.High) + TailBytes;
 
-        // Generation snapshot: populated once per tick before the O(N²) send loop.
-        // Eliminates Interlocked.Read per pair (N² memory fences → N).
-        // Pre-allocated to InitialPlayerArrayCapacity to avoid reallocation on early player joins.
+        // generation snapshot: O(N^2) send loop の前に tick ごとに一度 populate する。
+        // pair ごとの Interlocked.Read をなくす (N^2 memory fences -> N)。
+        // early player join 時の reallocation を避けるため InitialPlayerArrayCapacity で pre-allocate する。
         private static long[] _generationSnapshot = new long[InitialPlayerArrayCapacity];
 
-        // Position snapshots: contiguous arrays for cache-friendly reads in the inner loop.
-        // Avoids pointer-chasing through scattered heap PlayerState objects per pair.
+        // position snapshot: inner loop で cache-friendly に読むための contiguous array。
+        // pair ごとに散らばった heap 上の PlayerState object を pointer-chasing することを避ける。
         private static float[] _posXSnapshot = new float[InitialPlayerArrayCapacity];
         private static float[] _posYSnapshot = new float[InitialPlayerArrayCapacity];
         private static float[] _posZSnapshot = new float[InitialPlayerArrayCapacity];
@@ -244,11 +243,11 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
         static BasisServerReductionSystemEvents()
         {
-            // Raise the OS timer to 1ms so WaitOne keeps ~4ms accuracy on Windows (default
-            // ~15ms). Windows-only: the winmm P/Invoke is never resolved on Linux/macOS
-            // because the call is skipped there (those already resolve to ~1ms). try/catch so
-            // a missing winmm (minimal Windows containers) degrades instead of faulting the
-            // static ctor and taking the whole reduction system down with it.
+            // Windows で WaitOne が約 4ms の accuracy を保てるよう、OS timer を 1ms に上げる
+            // (default は約 15ms)。Windows-only。Linux/macOS ではこの call を skip するため
+            // winmm P/Invoke は resolve されない (それらはすでに約 1ms に resolve される)。
+            // minimal Windows container などで winmm がない場合も static ctor を fault させて
+            // reduction system 全体を落とさないよう try/catch で degrade する。
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 try { timeBeginPeriod(1); }
@@ -266,18 +265,18 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
         public static void HandleAvatarMovement(NetPacketReader reader, NetPeer fromPeer, byte channel)
         {
-            // Read the application-level sequence byte prepended by the client
+            // client が先頭に付けた application-level sequence byte を読む。
             if (!reader.TryGetByte(out byte sequence))
             {
                 reader.Recycle();
                 return;
             }
 
-            // Quality and additional-data presence are derived from the channel.
+            // quality と additional-data の有無は channel から derive する。
             byte quality = BasisNetworkCommons.GetQualityFromChannel(channel);
             bool hasAdditional = BasisNetworkCommons.ChannelHasAdditionalData(channel);
 
-            // Rent BEFORE deserialize so the pooled byte[] is reused (avoids alloc per frame per player).
+            // pooled byte[] を再利用するため、deserialize の前に rent する (player ごとの per-frame allocation を避ける)。
             var message = QueuedMessagePool.Rent();
             message.FromPeer = fromPeer;
             message.Sequence = sequence;
@@ -291,15 +290,15 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 return;
             }
 
-            // Overwrite any pending message for this peer.
-            // Uses indexer instead of AddOrUpdate to avoid closure allocation on every call.
-            // Do NOT return prev to the pool — the drain phase may have captured it.
-            // The orphaned prev (if any) is collected by the GC; this only occurs when two
-            // messages for the same peer arrive within the same tick — negligible cost.
+            // この peer 用の pending message を overwrite する。
+            // call ごとの closure allocation を避けるため、AddOrUpdate ではなく indexer を使う。
+            // prev は pool に返さない。drain phase が capture 済みの可能性があるため。
+            // orphaned prev があれば GC に回収される。同じ peer から同じ tick 内に 2 message 来た場合だけで、
+            // cost は無視できる。
             currentMessages[fromPeer.Id] = message;
 
-            // Wake the loop only while it is parked (empty server). Once a player is
-            // registered the loop is running, so this read short-circuits with no syscall.
+            // loop が park 中 (empty server) の場合だけ wake する。
+            // player が登録された後は loop が動作中なので、この read は syscall なしで short-circuit する。
             if (Volatile.Read(ref _activePlayerCount) == 0) _tickWake.Set();
         }
 
@@ -310,17 +309,17 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             message.Sequence = sequence;
             message.AvatarMessage = localMessage;
 
-            // Same as HandleAvatarMovement — indexer avoids closure allocation.
+            // HandleAvatarMovement と同じく、indexer により closure allocation を避ける。
             currentMessages[fromPeer.Id] = message;
 
             if (Volatile.Read(ref _activePlayerCount) == 0) _tickWake.Set();
         }
 
         /// <summary>
-        /// Dedicated tick loop on its own thread. Targets ~250Hz (4ms) while players are
-        /// connected and parks (~0% CPU) when the server is empty. The inter-tick wait uses
-        /// AutoResetEvent.WaitOne so an idle or under-budget loop never burns a core; the OS
-        /// timer is raised to 1ms (Windows) so the wait keeps ~4ms accuracy.
+        /// dedicated thread 上の tick loop。player 接続中は ~250Hz (4ms) を target とし、
+        /// server が空なら park する (~0% CPU)。inter-tick wait は AutoResetEvent.WaitOne を使うため、
+        /// idle または under-budget の loop が core を燃やし続けない。Windows では OS timer を 1ms に上げ、
+        /// wait が ~4ms accuracy を保てるようにする。
         /// </summary>
         private static void BackgroundTickLoop()
         {
@@ -328,9 +327,9 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             {
                 long startTick = Stopwatch.GetTimestamp();
 
-                // One bad tick must not kill the thread. An unhandled throw here (e.g. an
-                // edge case during mass connect/recycle) would otherwise stop every future
-                // tick and silently freeze all avatar sync until server restart.
+                // 1 回の bad tick で thread を殺してはいけない。
+                // ここで unhandled throw が起きると (例: mass connect/recycle 中の edge case)、
+                // 以後すべての tick が止まり、server restart まで avatar sync が静かに freeze する。
                 try
                 {
                     RunTick(startTick);
@@ -340,20 +339,20 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     BNL.LogError($"[BSR Tick] Unhandled exception: {ex}");
                 }
 
-                // Empty server: park until work arrives instead of spinning at 250Hz.
-                // _tickWake is signaled by the first inbound packet (and by Shutdown),
-                // so this costs ~0% CPU when idle with no added connect latency.
+                // empty server: 250Hz で spin せず、work が来るまで park する。
+                // _tickWake は最初の inbound packet (および Shutdown) で signal されるため、
+                // idle 時は ~0% CPU で、connect latency も増えない。
                 if (Volatile.Read(ref _activePlayerCount) == 0)
                 {
                     _tickWake.WaitOne(IdleWaitMs);
                     continue;
                 }
 
-                // Load-adaptive wait. remainMs is the unused budget = a direct load signal:
-                // large (light load) -> block on WaitOne (~0% CPU); small (heavy load, near
-                // budget) -> spin the remainder to hit the rate precisely, since the scheduler
-                // wakes a yielded thread late under load and the core is busy anyway. remainMs
-                // <= 0 (saturated) falls through both branches: no wait, no spin.
+                // load-adaptive wait。remainMs は未使用 budget で、直接的な load signal になる。
+                // 大きい (light load) -> WaitOne で block (~0% CPU)。
+                // 小さい (heavy load、budget 近辺) -> 残りを spin して rate を正確に合わせる。
+                // load 下では scheduler が yield した thread を遅れて wake しがちで、core もどうせ busy なため。
+                // remainMs <= 0 (saturated) ならどちらの branch も通らず、wait も spin もしない。
                 long targetTick = startTick + (long)(intervalMs * MsToTick);
                 double remainMs = (targetTick - Stopwatch.GetTimestamp()) / MsToTick;
                 if (remainMs > MaxSpinMs)
@@ -375,9 +374,9 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             bool profiling = BSRProfiler.Enabled;
             long phaseTick = profiling ? Stopwatch.GetTimestamp() : 0;
 
-            // Phase 1: Drain
-            // Swap to the back-buffer so inbound threads write to the cleared dictionary.
-            // No allocation per tick — just swap and drain.
+            // phase 1: drain。
+            // inbound thread が cleared dictionary へ write するよう back-buffer と swap する。
+            // tick ごとの allocation はなく、swap と drain だけ。
             _backMessages.Clear();
             var batch = Interlocked.Exchange(ref currentMessages, _backMessages);
             _backMessages = batch;
@@ -388,13 +387,13 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
             if (profiling) { BSRProfiler.drainTicks += Stopwatch.GetTimestamp() - phaseTick; phaseTick = Stopwatch.GetTimestamp(); }
 
-            // Phase 2: Process messages (static delegate avoids closure allocation per tick)
+            // phase 2: message を処理する (static delegate により per-tick closure allocation を避ける)。
             Parallel.ForEach(_messagesSnapshot, parallelOptions, s_processMessageAction);
             if (profiling) { BSRProfiler.processTicks += Stopwatch.GetTimestamp() - phaseTick; phaseTick = Stopwatch.GetTimestamp(); }
 
             ProcessPendingRemovals();
 
-            // Phase 2.5: Distance cache update (runs at ~2Hz instead of every tick)
+            // phase 2.5: distance cache update (毎 tick ではなく ~2Hz で実行)。
             _distanceTickCounter++;
             if (_distanceTickCounter >= DistanceUpdateIntervalTicks)
             {
@@ -404,7 +403,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 if (profiling) { BSRProfiler.distanceTicks += Stopwatch.GetTimestamp() - distStart; phaseTick = Stopwatch.GetTimestamp(); }
             }
 
-            //Phase 3: Send loop
+            // phase 3: send loop。
             long now = Stopwatch.GetTimestamp();
             UpdateCommunicationAndDistances(now);
             if (profiling)
@@ -412,7 +411,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 BSRProfiler.updateTicks += Stopwatch.GetTimestamp() - phaseTick; phaseTick = Stopwatch.GetTimestamp();
             }
 
-            //Phase 4: Network I/O
+            // phase 4: network I/O。
             BasisNetworkPIPCamera.UpdatePIPPositions(now);
             if (NetworkServer.Server is LNLNetManager lnlReductionServer && lnlReductionServer.manager != null)
             {
@@ -425,13 +424,13 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 BSRProfiler.messagesProcessed += _messagesSnapshot.Count;
             }
 
-            //Tick bookkeeping
+            // tick bookkeeping。
             long elapsedTicks = Stopwatch.GetTimestamp() - startTick;
             double elapsedMs = elapsedTicks / MsToTick;
 
             BSRProfiler.TryPrint();
 
-            // Adaptive slice count: if tick took > 3ms, increase slicing; if < 1ms, decrease.
+            // adaptive slice count: tick が 3ms を超えたら slicing を増やし、1ms 未満なら減らす。
             if (elapsedMs > 3.0 && _sliceCount < 32)
             {
                 _sliceCount++;
@@ -450,7 +449,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 {
                     removedState.IsActive = false;
 
-                    // Return pooled arrays to ArrayPool
+                    // pooled array を ArrayPool へ返す。
                     if (removedState.AvatarHigh.array != null)
                         ArrayPool<byte>.Shared.Return(removedState.AvatarHigh.array);
                     if (removedState.BundleRawScratch != null)
@@ -464,7 +463,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                         removedState.BundleCompressedScratch = null;
                     }
 
-                    // Remove from active players list
+                    // active players list から削除する。
                     lock (_activePlayersLock)
                     {
                         for (int i = _activePlayers.Count - 1; i >= 0; i--)
@@ -480,10 +479,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     }
 
 
-                    // Clear stale per-player tracking data for the removed ID across all remaining players.
-                    // Without this, when a new player reuses this ID, other players LastSeenGeneration
-                    // would still hold the old (high) generation value, causing the new-data check
-                    // (senderGen > seenGens[jId]) to fail -- no data would be sent for the new player.
+                    // 残っている全 player から、削除された ID の stale な per-player tracking data を clear する。
+                    // これをしないと、新しい player がこの ID を再利用したとき、他 player の LastSeenGeneration が
+                    // 古い (高い) generation value を保持したままになり、new-data check
+                    // (senderGen > seenGens[jId]) が fail して、新しい player の data が送られなくなる。
                     foreach (var kvp in playerStates)
                     {
                         var otherState = kvp.Value;
@@ -518,7 +517,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             int playerCount = activeCopy.Length;
             if (playerCount == 0) return;
 
-            // Snapshot positions into contiguous arrays for cache-friendly distance math.
+            // cache-friendly な distance math のため、position を contiguous array へ snapshot する。
             int maxId = 0;
             for (int i = 0; i < playerCount; i++)
             {
@@ -556,7 +555,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     int jId = activeCopy[index].id;
                     if (id == jId) continue;
 
-                    // Grow tracking array if needed (same logic as send loop)
+                    // 必要なら tracking array を grow する (send loop と同じ logic)。
                     if (jId >= tracking.Length)
                     {
                         lock (state)
@@ -586,7 +585,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
         private static void UpdateCommunicationAndDistances(long nowTicks)
         {
-            // Double-buffered snapshot: only rebuild when dirty
+            // double-buffered snapshot: dirty のときだけ rebuild する。
             if (_activePlayersDirty)
             {
                 lock (_activePlayersLock)
@@ -606,7 +605,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 return;
             }
 
-            // Snapshot generation counters only (positions handled by slow distance cache).
+            // generation counter だけを snapshot する (position は slow distance cache が扱う)。
             int maxId = 0;
             for (int i = 0; i < playerCount; i++)
             {
@@ -623,10 +622,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 _generationSnapshot[id] = Interlocked.Read(ref activeCopy[i].state.DataGeneration);
             }
 
-            // Fallback interval for pairs not yet in the distance cache (new players).
+            // まだ distance cache にない pair (new player) 用の fallback interval。
             long minIntervalTicks = (long)(BSRSMillisecondDefaultInterval * BSRBaseMultiplier * MsToTick);
 
-            // Tick slicing: only process a slice of receivers per tick
+            // tick slicing: 各 tick で receiver の slice だけを処理する。
             int sliceSize = (playerCount + _sliceCount - 1) / _sliceCount;
             int start = _sliceIndex * sliceSize;
             int end = Math.Min(start + sliceSize, playerCount);
@@ -651,8 +650,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     return;
                 }
 
-                // Per-receiver pending buffer: collect what would be sent this tick
-                // and decide compress-or-individual at the end. Lazily grown.
+                // receiver ごとの pending buffer。この tick で送る予定だったものを集め、
+                // 最後に compress するか individual で送るかを決める。lazy に grow する。
                 var pending = stateI.PendingSends;
                 if (pending == null)
                 {
@@ -661,7 +660,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 }
                 int pendingCount = 0;
 
-                // Thread-local send counter — no Interlocked in the hot loop
+                // thread-local send counter。hot loop で Interlocked を使わない。
                 long localSends = 0;
 
                 for (int index = 0; index < playerCount; index++)
@@ -677,7 +676,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                         continue;
                     }
 
-                    // Bounds check — grow array if needed (rare, only when IDs exceed capacity)
+                    // bounds check。必要なら array を grow する (ID が capacity を超えたときだけなので稀)。
                     if (jId >= tracking.Length)
                     {
                         lock (stateI)
@@ -691,14 +690,14 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                         }
                     }
 
-                    // 1. New data check — plain array read, no pointer chase
+                    // 1. new data check。plain array read で、pointer chase なし。
                     long senderGen = _generationSnapshot[jId];
                     if (senderGen <= tracking[jId].LastSeenGeneration)
                     {
                         continue;
                     }
 
-                    // 2. Interval check using cached distance results (no float math)
+                    // 2. cached distance result を使った interval check (float math なし)。
                     long elapsed = nowTicks - tracking[jId].LastSentTime;
                     long required = tracking[jId].CachedIntervalTicks;
                     if (required <= 0) required = minIntervalTicks;
@@ -707,13 +706,13 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                         continue;
                     }
 
-                    // 3. Quality + interval byte from distance cache
+                    // 3. distance cache から quality と interval byte を取得する。
                     int qi = tracking[jId].CachedQualityIndex;
                     byte startAtZeroInterval = tracking[jId].CachedIntervalByte;
 
                     PlayerState stateJ = activeCopy[index].state;
 
-                    // Lazy pre-serialization: skip if not serialized, mark needed for next tick
+                    // lazy pre-serialization: serialize 済みでなければ skip し、next tick に必要と mark する。
                     int srcLen = stateJ.SerializedKeyframeLength[qi];
                     byte[] srcArr = stateJ.SerializedKeyframe[qi];
                     if (srcLen == 0 || srcArr == null)
@@ -726,8 +725,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                         ? BasisNetworkCommons.GetPlayerAvatarChannelForQuality(qi, stateJ.HasAdditionalData)
                         : BasisNetworkCommons.GetPlayerAvatarLargeChannelForQuality(qi, stateJ.HasAdditionalData);
 
-                    // Defer the send. Cheaper per-pair than SendUnreliableRawMerge:
-                    // a single struct write vs pool-rent + BlockCopy + enqueue.
+                    // send を defer する。pair ごとに見ると SendUnreliableRawMerge より安い。
+                    // single struct write と、pool-rent + BlockCopy + enqueue の差。
                     if (pendingCount == pending.Length)
                     {
                         Array.Resize(ref pending, pending.Length * 2);
@@ -754,7 +753,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     FlushPendingForReceiver(stateI, peer, bundlingEnabled);
                 }
 
-                // One Interlocked.Add per receiver (not per send) — ~25 atomics/tick instead of ~32K
+                // send ごとではなく receiver ごとに Interlocked.Add する。~32K ではなく ~25 atomics/tick。
                 if (localSends > 0 && BSRProfiler.Enabled)
                 {
                     Interlocked.Add(ref BSRProfiler.SendCount, localSends);
@@ -763,12 +762,12 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         }
 
         /// <summary>
-        /// Flushes the per-receiver PendingSends buffer to the wire. When bundling is
-        /// enabled and the receiver has at least <see cref="AvatarBundleMinMessages"/>
-        /// messages queued, packs them greedily into one or more MTU-sized deflated
-        /// bundles on <see cref="BasisNetworkCommons.CompressedAvatarBundleChannel"/>.
-        /// Any tail too small to bundle (or pathological pairs that won't compress)
-        /// gets replayed as individual unreliable sends on the original quality channel.
+        /// receiver ごとの PendingSends buffer を wire へ flush する。
+        /// bundling が有効で、receiver に <see cref="AvatarBundleMinMessages"/> 件以上の message が
+        /// queue されている場合、greedy に 1 つ以上の MTU-sized deflated bundle へ pack し、
+        /// <see cref="BasisNetworkCommons.CompressedAvatarBundleChannel"/> で送る。
+        /// bundle するには小さすぎる tail (または compress できない pathological pair) は、
+        /// original quality channel 上の individual unreliable send として replay する。
         /// </summary>
         private static void FlushPendingForReceiver(PlayerState stateI, NetPeer peer, bool bundlingEnabled)
         {
@@ -776,8 +775,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             if (count <= 0) return;
             var pending = stateI.PendingSends;
 
-            // Per-receiver-tick stats accumulators: fold per-send Interlocked into one
-            // RecordOutboundBatch per channel at flush. Stack-only; ~4KB per call.
+            // receiver-tick ごとの stats accumulator。send ごとの Interlocked を、
+            // flush 時の channel ごとの RecordOutboundBatch 1 回に畳む。stack-only で call あたり約 4KB。
             Span<long> tailCounts = stackalloc long[256];
             Span<long> tailBytes = stackalloc long[256];
             long bundleCount = 0;
@@ -789,9 +788,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 cursor = EmitGreedyBundles(stateI, peer, pending, count, ref bundleCount, ref bundleBytes);
             }
 
-            // Send anything not packed into a bundle (the tail < min, or all of pending
-            // when bundling is disabled / pathological no-fit). Equivalent to the
-            // pre-bundling path; LiteNetLib's merge buffer still packs these into UDP packets.
+            // bundle に pack されなかったものを送る (tail < min、または bundling disabled / pathological no-fit 時の pending 全体)。
+            // pre-bundling path と同等で、LiteNetLib の merge buffer はこれらも UDP packet へ pack する。
             int tailSent = 0;
             for (int i = cursor; i < count; i++)
             {
@@ -803,7 +801,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 tailSent++;
             }
 
-            // Flush accumulated stats in one Interlocked.Add per (channel, metric).
+            // accumulated stats を (channel, metric) ごとに 1 回の Interlocked.Add で flush する。
             if (BasisNetworkStatistics.IsRecordingData)
             {
                 if (bundleCount > 0)
@@ -821,8 +819,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     }
                 }
             }
-            // Profiler attribution: distinguish "tail of bundled receiver" (cursor > 0) from
-            // "fallback because bundling produced nothing" (cursor == 0 with bundling enabled).
+            // profiler attribution: "tail of bundled receiver" (cursor > 0) と
+            // "bundling が何も生成しなかったための fallback" (bundling enabled かつ cursor == 0) を区別する。
             if (BSRProfiler.Enabled && tailSent > 0)
             {
                 Interlocked.Add(ref BSRProfiler.bundleTailUncompressed, tailSent);
@@ -833,8 +831,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
             stateI.PendingCount = 0;
 
-            // Return tick-scoped scratch buffers to the pool. Without this they'd retain
-            // ~85KB+ per PlayerState forever (LOH at 1k+ players, gen2 pause amplifier).
+            // tick-scoped scratch buffer を pool へ返す。これをしないと PlayerState ごとに
+            // 約 85KB 以上を永久保持する (1k+ players では LOH、gen2 pause amplifier になる)。
             if (stateI.BundleRawScratch != null)
             {
                 ArrayPool<byte>.Shared.Return(stateI.BundleRawScratch);
@@ -848,34 +846,33 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         }
 
         /// <summary>
-        /// Greedily packs as many pending messages as fit into MTU-sized compressed
-        /// bundles, emitting each on <see cref="BasisNetworkCommons.CompressedAvatarBundleChannel"/>.
-        /// Uses a per-receiver EMA of the compressed/raw ratio so the first deflate
-        /// attempt usually succeeds; on overshoot we shrink using the actual observed
-        /// ratio and retry once. Returns the index of the first not-yet-emitted entry —
-        /// callers send the [cursor, count) tail uncompressed.
+        /// MTU-sized compressed bundle に収まるだけの pending message を greedy に pack し、
+        /// 各 bundle を <see cref="BasisNetworkCommons.CompressedAvatarBundleChannel"/> で emit する。
+        /// receiver ごとの compressed/raw ratio EMA を使うため、最初の deflate attempt が成功しやすい。
+        /// overshoot 時は実測 ratio を使って shrink し、一度だけ retry する。
+        /// まだ emit されていない最初の entry index を返す。caller は [cursor, count) の tail を uncompressed で送る。
         /// </summary>
         private static int EmitGreedyBundles(PlayerState stateI, NetPeer peer, PendingAvatarSend[] pending, int count, ref long bundleCount, ref long bundleBytes)
         {
             int budget = peer.Mtu - BundleMtuHeadroom - BundleHeaderSize;
             if (budget <= 0) return 0;
 
-            // Initial ratio guess: deflate Fastest on bit-packed avatar data observed ~0.6.
-            // Stays in [0.05, 0.95] so prediction never picks zero or full-budget chunks.
+            // initial ratio guess: bit-packed avatar data に対する deflate Fastest の観測値は約 0.6。
+            // [0.05, 0.95] に保ち、prediction が zero や full-budget chunk を選ばないようにする。
             float ratio = stateI.LastBundleRatio;
             if (ratio < 0.05f || ratio > 0.95f) ratio = 0.6f;
 
             int cursor = 0;
-            // AvatarBundleMinMessages gates *starting* to bundle (caller already checked it for
-            // the first chunk). Inside the loop, individual chunks are sized by what fits in MTU;
-            // a chunk of only 1-2 large messages is still worthwhile if rawLen ≥ AvatarBundleMinBytes
-            // so the deflate header pays back. The outer condition just keeps the receiver tail of
-            // < min uncompressed (since uncompressed sends merge fine for tiny remainders).
+            // AvatarBundleMinMessages は bundle 開始だけを gate する (first chunk については caller が確認済み)。
+            // loop 内では、各 chunk を MTU に収まる size にする。large message 1-2 件だけの chunk でも、
+            // rawLen >= AvatarBundleMinBytes なら deflate header の元が取れる。
+            // outer condition は receiver tail が min 未満の場合だけ uncompressed に残す
+            // (tiny remainder は uncompressed send でも十分 merge されるため)。
             while (count - cursor >= AvatarBundleMinMessages)
             {
-                // Predict raw chunk size that would compress to ~budget * 0.95 (small safety
-                // margin so we don't waste a retry on near-MTU overshoots). Then walk pending
-                // accumulating sizes until we hit that target or run out of messages.
+                // ~budget * 0.95 に compress される raw chunk size を予測する
+                // (near-MTU overshoot で retry を無駄にしないための小さな safety margin)。
+                // その後、target に達するか message が尽きるまで pending を歩いて size を accumulate する。
                 int targetRaw = (int)((budget * 0.95f) / ratio);
                 int chunkEnd = PickChunkEnd(pending, cursor, count, targetRaw);
                 if (chunkEnd <= cursor) break;
@@ -891,9 +888,9 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     continue;
                 }
 
-                // Overshoot — recompute target using the actual ratio we just observed and
-                // retry with a smaller chunk. Heavier weight on the observed value: this
-                // receiver's payload likely just compresses worse than predicted.
+                // overshoot。直前に観測した actual ratio で target を再計算し、
+                // より小さい chunk で retry する。observed value を重めにする。
+                // この receiver の payload は予測より compress されにくい可能性が高いため。
                 UpdateRatioEMA(ref stateI.LastBundleRatio, compressedLen, rawLen, weightOnObserved: 0.7f);
                 float observed = (float)compressedLen / rawLen;
                 if (observed < 0.05f) observed = 0.05f;
@@ -910,8 +907,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 if (BSRProfiler.Enabled) Interlocked.Increment(ref BSRProfiler.bundleRetries);
                 if (!TryDeflateAndEmit(stateI, peer, cursor, retryEnd, retryRawLen, budget, ref bundleCount, ref bundleBytes, out int retryCompressed))
                 {
-                    // Two failures in a row — give up on bundling for this receiver this tick;
-                    // caller replays cursor..count uncompressed.
+                    // 2 回連続で失敗したため、この tick ではこの receiver の bundling を諦める。
+                    // caller が cursor..count を uncompressed で replay する。
                     break;
                 }
 
@@ -930,8 +927,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             while (chunkEnd < hardEnd)
             {
                 int entrySize = 3 + pending[chunkEnd].Length; // [chan:1][len:2][bytes]
-                // Always include at least one entry so the chunk grows; only break once
-                // adding the next would exceed the predicted budget.
+                // chunk が必ず grow するよう、少なくとも 1 entry は含める。
+                // 次を足すと predicted budget を超える場合だけ break する。
                 if (chunkEnd > cursor && rawAccum + entrySize > targetRaw) break;
                 rawAccum += entrySize;
                 chunkEnd++;
@@ -940,9 +937,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         }
 
         /// <summary>
-        /// Writes <c>[origChannel:1][len:2-LE][bytes (interval-patched)]</c> for each
-        /// pending entry in <c>[start, end)</c> into <c>stateI.BundleRawScratch</c>
-        /// (grown on demand) and returns the total bytes written.
+        /// <c>[start, end)</c> 内の pending entry ごとに
+        /// <c>[origChannel:1][len:2-LE][bytes (interval-patched)]</c> を
+        /// <c>stateI.BundleRawScratch</c> へ書き込み (必要に応じて grow)、
+        /// 書き込んだ total byte 数を返す。
         /// </summary>
         private static int BuildRawForRange(PlayerState stateI, PendingAvatarSend[] pending, int start, int end)
         {
@@ -968,7 +966,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(rawPos, 2), (ushort)len);
                 rawPos += 2;
                 Buffer.BlockCopy(p.Source, 0, raw, rawPos, len);
-                // Patch the per-receiver interval byte in our copy (source is shared).
+                // copy 内の per-receiver interval byte を patch する (source は shared)。
                 raw[rawPos + p.IntervalOffset] = p.Interval;
                 rawPos += len;
             }
@@ -976,20 +974,22 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         }
 
         /// <summary>
-        /// LZ4-compresses <c>stateI.BundleRawScratch[0..rawLen]</c> into the payload region of
-        /// <c>stateI.BundleCompressedScratch</c> (after the reserved bundle-header prefix),
-        /// emits one UDP datagram on CompressedAvatarBundleChannel if it fits the peer-MTU
-        /// budget, and reports the compressed payload length. On overshoot returns false
-        /// (caller retries with a smaller chunk). LZ4Codec.Encode is a single static call
-        /// with no allocations and no per-call setup — at high call rates this is ~10× cheaper
-        /// than DeflateStream, which allocates an internal window + hashtable on every Write.
+        /// <c>stateI.BundleRawScratch[0..rawLen]</c> を LZ4-compress し、
+        /// <c>stateI.BundleCompressedScratch</c> の payload region
+        /// (予約済み bundle-header prefix の後) へ書く。
+        /// peer-MTU budget に収まる場合は CompressedAvatarBundleChannel で 1 UDP datagram を emit し、
+        /// compressed payload length を報告する。overshoot では false を返す
+        /// (caller がより小さい chunk で retry する)。
+        /// LZ4Codec.Encode は allocation も per-call setup もない single static call なので、
+        /// Write ごとに internal window + hashtable を allocate する DeflateStream より、
+        /// high call rate では約 10 倍安い。
         /// </summary>
         private static bool TryDeflateAndEmit(PlayerState stateI, NetPeer peer, int chunkStart, int chunkEnd, int rawLen, int budget, ref long bundleCount, ref long bundleBytes, out int compressedLen)
         {
             compressedLen = 0;
             byte[] raw = stateI.BundleRawScratch;
             byte[] compressed = stateI.BundleCompressedScratch;
-            // LZ4 worst case is rawLen + (rawLen / 255) + 16 (returned by MaximumOutputSize).
+            // LZ4 worst case は rawLen + (rawLen / 255) + 16 (MaximumOutputSize が返す値)。
             int compCapacityNeeded = BundleHeaderSize + LZ4Codec.MaximumOutputSize(rawLen);
             if (compressed == null || compressed.Length < compCapacityNeeded)
             {
@@ -1001,9 +1001,9 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             bool profiling = BSRProfiler.Enabled;
             long deflateStart = profiling ? Stopwatch.GetTimestamp() : 0;
 
-            // Encode directly into the wire packet's payload region. Returns -1 if the
-            // destination span isn't large enough — shouldn't happen given the sizing above,
-            // but if it does we treat it as an overshoot and let the caller retry smaller.
+            // wire packet の payload region に直接 encode する。
+            // destination span が十分大きくない場合は -1 を返す。上の sizing を考えると起きないはずだが、
+            // 起きた場合は overshoot として扱い、caller に小さめで retry させる。
             compressedLen = LZ4Codec.Encode(
                 raw.AsSpan(0, rawLen),
                 compressed.AsSpan(BundleHeaderSize, compressed.Length - BundleHeaderSize),
@@ -1043,21 +1043,21 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             if (observed < 0.05f) observed = 0.05f;
             if (observed > 0.99f) observed = 0.99f;
             float prev = ema;
-            if (prev < 0.05f || prev > 0.95f) prev = observed; // unseeded → adopt
+            if (prev < 0.05f || prev > 0.95f) prev = observed; // unseeded なら採用する。
             ema = prev * (1f - weightOnObserved) + observed * weightOnObserved;
         }
 
         /// <summary>
-        /// Atomically sets a quality bit in the UsedQualities bitmask.
-        /// Called from parallel send loop threads lock-free via CAS.
+        /// UsedQualities bitmask 内の quality bit を atomic に set する。
+        /// parallel send loop thread から CAS で lock-free に呼ばれる。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void MarkQualityUsed(ref int usedQualities, int qi)
         {
             int bit = 1 << qi;
-            // Bits are sticky (only set, never cleared in the send loop), so a plain read
-            // showing "set" is always correct. Avoids the Volatile.Read barrier in the
-            // common case after the first few ticks when all 4 bits converge.
+            // bit は sticky (send loop では set だけで clear しない) なので、
+            // plain read で "set" が見えた場合は常に正しい。
+            // 最初の数 tick 後、4 bit すべてが converge した common case で Volatile.Read barrier を避ける。
             if ((usedQualities & bit) != 0) return;
 
             int cur = Volatile.Read(ref usedQualities);
@@ -1072,7 +1072,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         }
 
         /// <summary>
-        /// Maps squared distance to quality index (matches BitQuality enum values).
+        /// squared distance を quality index へ map する (BitQuality enum value と一致)。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetQualityIndex(float distSq)
@@ -1104,10 +1104,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         }
 
         /// <summary>
-        /// Propagates AdditionalAvatarData from the high quality message to lower quality variants.
-        /// BuildAllLowerFromHighInto only handles the muscle/position/rotation payload;
-        /// additional data (blendshapes, custom avatar behaviours) must be propagated separately.
-        /// VeryLow quality strips additional data entirely  face/detail data is invisible at 20m+.
+        /// high quality message から lower quality variant へ AdditionalAvatarData を propagate する。
+        /// BuildAllLowerFromHighInto は muscle/position/rotation payload だけを扱うため、
+        /// additional data (blendshape、custom avatar behaviour) は別途 propagate する必要がある。
+        /// VeryLow quality では additional data を完全に strip する。20m+ では face/detail data が見えないため。
         /// </summary>
         private static void PropagateAdditionalData(
             in LocalAvatarSyncMessage high,
@@ -1128,8 +1128,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             veryLow.LinkedAvatarIndex = high.LinkedAvatarIndex;
         }
         /// <summary>
-        /// Copies position bytes from the high-quality source to all lower quality arrays.
-        /// Position encoding is identical across all quality levels.
+        /// high-quality source からすべての lower quality array へ position byte を copy する。
+        /// position encoding は全 quality level で同一。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyPositionToLowerQualities(
@@ -1190,10 +1190,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
             var pos = BasisNetworkCompressionExtensions.ReadPosition(ref poolMsg.array);
 
-            // Deep-copy the avatar payload so state.AvatarHigh owns its own buffer.
-            // Without this copy, QueuedMessagePool.Return() preserves the byte[] and
-            // re-rents it for other peers — silently overwriting state.AvatarHigh.array.
-            // Uses ArrayPool to avoid per-message heap allocation (~208 bytes * 11K/sec).
+            // state.AvatarHigh が自身の buffer を所有するよう、avatar payload を deep-copy する。
+            // この copy がないと QueuedMessagePool.Return() が byte[] を保持し、
+            // 他 peer に re-rent して state.AvatarHigh.array を静かに overwrite してしまう。
+            // per-message heap allocation (約 208 bytes * 11K/sec) を避けるため ArrayPool を使う。
             byte[] rentedArray = ArrayPool<byte>.Shared.Rent(expectedPayloadSize);
             Buffer.BlockCopy(poolMsg.array, 0, rentedArray, 0, expectedPayloadSize);
             var high = new LocalAvatarSyncMessage
@@ -1236,10 +1236,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     catch (Exception ex)
                     {
                         BNL.LogError($"[ProcessMessage] Repack failed: {ex}");
-                        // Don't alias high into lower slots — that sends High-packed muscle
-                        // data on lower-quality channels, causing bit-width mismatches.
-                        // Null the arrays so PreSerializeAll skips them; the repacker's
-                        // EnsureBuffer and the position-only fast path both handle null safely.
+                        // high を lower slot へ alias しない。そうすると High-packed muscle data を
+                        // lower-quality channel で送ることになり、bit-width mismatch が起きる。
+                        // array を null にして PreSerializeAll に skip させる。
+                        // repacker の EnsureBuffer と position-only fast path はどちらも null を安全に扱う。
                         state.AvatarMedium.array = null;
                         state.AvatarLow.array = null;
                         state.AvatarVeryLow.array = null;
@@ -1247,25 +1247,25 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 }
                 else
                 {
-                    // Non-High quality: can't repack downward. Null lower slots to
-                    // avoid sending mismatched quality data on wrong channels.
+                    // Non-High quality は downward repack できない。
+                    // wrong channel で mismatched quality data を送らないよう lower slot を null にする。
                     state.AvatarMedium.array = null;
                     state.AvatarLow.array = null;
                     state.AvatarVeryLow.array = null;
                 }
 
-                // Propagate additional avatar data (e.g. blendshapes) to quality variants.
-                // BuildAllLowerFromHighInto only handles muscle/position payload;
-                // additional data must be copied separately.
+                // additional avatar data (例: blendshape) を quality variant へ propagate する。
+                // BuildAllLowerFromHighInto は muscle/position payload だけを扱うため、
+                // additional data は別途 copy する必要がある。
                 PropagateAdditionalData(high, ref state.AvatarMedium, ref state.AvatarLow, ref state.AvatarVeryLow);
                 state.HasAdditionalData = high.AdditionalAvatarDatas != null && high.AdditionalAvatarDatas.Length > 0;
 
-                // First frame: pre-serialize
+                // first frame: pre-serialize。
                 PreSerializeAll(state);
 
                 playerStates[id] = state;
 
-                // Add to active players list
+                // active players list に追加する。
                 lock (_activePlayersLock)
                 {
                     _activePlayers.Add((id, state));
@@ -1275,12 +1275,11 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             }
             else
             {
-                // Peer-slot reuse: LiteNetLib recycles NetPeer ids after disconnect.
-                // If the incoming peer is a different instance, the stored Peer is the
-                // old disconnected one — sends to it silently no-op, so the new player
-                // would never receive avatar data. Refresh the Peer ref and treat the
-                // next frame as the first frame so the sequence-delta check doesn't
-                // drop it against the previous player's last sequence.
+                // peer-slot reuse: LiteNetLib は disconnect 後に NetPeer id を recycle する。
+                // incoming peer が別 instance の場合、保存済み Peer は古い disconnected peer で、
+                // そこへ send しても静かに no-op になるため、新しい player は avatar data を受け取れない。
+                // Peer ref を refresh し、next frame を first frame として扱うことで、
+                // sequence-delta check が前 player の last sequence と比較して drop しないようにする。
                 if (!ReferenceEquals(state.Peer, message.FromPeer))
                 {
                     state.Peer = message.FromPeer;
@@ -1288,13 +1287,13 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     state.SmallId = id <= byte.MaxValue;
                 }
 
-                // Drop stale inbound packets (unreliable can deliver out of order)
+                // stale inbound packet を drop する (unreliable は out of order で届く可能性がある)。
                 if (state.HasReceivedFirst)
                 {
                     byte delta = unchecked((byte)(inboundSeq - state.LastInboundSequence));
                     if (delta == 0 || delta >= 128)
                     {
-                        // Duplicate or stale — discard. Return the just-rented array.
+                        // duplicate または stale なので discard する。直前に rent した array は返す。
                         ArrayPool<byte>.Shared.Return(rentedArray);
                         QueuedMessagePool.Return(message);
                         return;
@@ -1310,7 +1309,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
                 state.Position = pos;
 
-                // Increment outbound sequence for this sender's new update
+                // この sender の新しい update 用に outbound sequence を increment する。
                 unchecked { state.OutboundSequence++; }
 
                 byte[] prevArray = state.AvatarHigh.array;
@@ -1320,8 +1319,8 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
                 if (isHighQuality)
                 {
-                    // Check if muscles+tail changed (skip expensive bit repacking if only position moved).
-                    // Uses HighArrayActualSize instead of .Length since ArrayPool may return larger arrays.
+                    // muscles+tail が変わったか確認する (position だけが動いた場合は高価な bit repacking を skip)。
+                    // ArrayPool は大きめの array を返すことがあるため、.Length ではなく HighArrayActualSize を使う。
                     int muscleAndTailBytes = HighMuscleAndTailBytes;
                     bool musclesOrTailChanged = prevArray == null
                         || ReferenceEquals(prevArray, high.array)
@@ -1329,9 +1328,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                         || !high.array.AsSpan(WritePosition, muscleAndTailBytes)
                             .SequenceEqual(prevArray.AsSpan(WritePosition, muscleAndTailBytes));
 
-                    // Force a full repack when any lower quality array is null (e.g. after a
-                    // previous repack failure).  Without this, the position-only fast path would
-                    // skip the null arrays indefinitely and far receivers would never see the player.
+                    // lower quality array のいずれかが null の場合は full repack を強制する
+                    // (例: 前回の repack failure 後)。
+                    // これをしないと position-only fast path が null array を無期限に skip し、
+                    // 遠い receiver がその player を見られなくなる。
                     bool needsRecovery = state.AvatarMedium.array == null
                         || state.AvatarLow.array == null
                         || state.AvatarVeryLow.array == null;
@@ -1352,36 +1352,36 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                     }
                     else
                     {
-                        // Position-only fast path: copy position bytes to all lower qualities.
-                        // Position is identical across all quality levels (no bit-width difference).
+                        // position-only fast path: position byte をすべての lower quality へ copy する。
+                        // position は全 quality level で同一 (bit-width difference なし)。
                         CopyPositionToLowerQualities(high.array, ref state.AvatarMedium, ref state.AvatarLow, ref state.AvatarVeryLow);
                     }
                 }
                 else
                 {
-                    // Non-High quality: can't repack downward safely.
+                    // Non-High quality は安全に downward repack できない。
                     state.AvatarMedium.array = null;
                     state.AvatarLow.array = null;
                     state.AvatarVeryLow.array = null;
                 }
 
-                // Propagate additional avatar data to quality variants
+                // additional avatar data を quality variant へ propagate する。
                 PropagateAdditionalData(high, ref state.AvatarMedium, ref state.AvatarLow, ref state.AvatarVeryLow);
                 state.HasAdditionalData = high.AdditionalAvatarDatas != null && high.AdditionalAvatarDatas.Length > 0;
 
-                // Keep SyncMessage in sync (shell)
+                // SyncMessage (shell) を同期した状態に保つ。
                 state.SyncMessage.avatarSerialization = high;
 
                 PreSerializeAll(state);
 
-                // Return the previous tick's array to the pool now that muscle comparison is done.
+                // muscle comparison が終わったので、前 tick の array を pool へ返す。
                 if (prevArray != null)
                 {
                     ArrayPool<byte>.Shared.Return(prevArray);
                 }
 
-                // Single atomic increment replaces O(N) CAS bit-setting across all other players.
-                // Receivers detect new data by comparing this generation against their LastSeenGeneration.
+                // single atomic increment により、全 other player に対する O(N) CAS bit-setting を置き換える。
+                // receiver はこの generation と LastSeenGeneration を比較して new data を検出する。
                 Interlocked.Increment(ref state.DataGeneration);
             }
 
@@ -1391,22 +1391,23 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         #region Pre-serialization
 
         /// <summary>
-        /// Pre-serializes keyframe messages only for quality levels that have receivers.
-        /// UsedQualities bits accumulate from the send loop (never reset) so that tick slicing
-        /// doesn't cause quality oscillation — each slice contributes its needed bits and they
-        /// persist across ticks. Converges to the correct set within a few ticks.
-        /// Quality levels with no receivers get SerializedKeyframeLength set to 0 so the send loop
-        /// skips them and marks them as needed for next tick (one-tick catch-up delay, ~4ms).
-        /// First frame for a player serializes all 4 levels.
+        /// receiver がいる quality level だけ keyframe message を pre-serialize する。
+        /// UsedQualities bit は send loop から accumulate され、reset されない。
+        /// これにより tick slicing が quality oscillation を起こさない。
+        /// 各 slice は必要な bit を contribute し、それが tick をまたいで保持される。
+        /// 数 tick 以内に正しい set へ converge する。
+        /// receiver がいない quality level は SerializedKeyframeLength を 0 にするため、
+        /// send loop はそれを skip し、next tick に必要と mark する (1 tick catch-up delay、約 4ms)。
+        /// player の first frame では 4 level すべてを serialize する。
         /// </summary>
         private static void PreSerializeAll(PlayerState state)
         {
             ushort playerId = state.SyncMessage.playerIdMessage.playerID;
 
-            // Read accumulated quality bits. Bits are sticky — set by MarkQualityUsed in the
-            // send loop and never reset. With tick slicing (32 slices), each slice's receivers
-            // contribute their needed quality bits over successive ticks. NOT resetting prevents
-            // oscillation where each tick only has bits from 1/32 of receivers.
+            // accumulated quality bit を読む。bit は sticky で、send loop の MarkQualityUsed により set され、
+            // reset されない。tick slicing (32 slices) では、各 slice の receiver が successive tick で
+            // 必要な quality bit を contribute する。reset しないことで、
+            // 各 tick が receiver の 1/32 由来の bit だけを持つ oscillation を防ぐ。
             int mask = Volatile.Read(ref state.UsedQualities);
             if (mask == 0) mask = 0xF; // new player or no sends yet: serialize all
 
@@ -1427,7 +1428,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 }
                 else
                 {
-                    // Mark as not available  send loop will skip and request it for next tick.
+                    // not available と mark する。send loop は skip し、next tick 用に request する。
                     state.SerializedKeyframeLength[qi] = 0;
                     BSRProfiler.IncrementPreSerializationsSkipped();
                 }
@@ -1444,10 +1445,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
             var quality = (BitQuality)msg.DataQualityLevel;
 
-            // Guard: the message's quality must match the quality slot index.
-            // AvatarHigh may contain non-High quality data if the client sent a
-            // lower quality. Without this check, the payload would be sent on the
-            // wrong channel, causing size mismatches on the receiver (e.g. "Need 169, have 99").
+            // guard: message の quality は quality slot index と一致している必要がある。
+            // client が lower quality を送った場合、AvatarHigh が non-High quality data を含むことがある。
+            // この check がないと payload が wrong channel で送られ、
+            // receiver 側で size mismatch が起きる (例: "Need 169, have 99")。
             if ((int)quality != qi)
             {
                 state.SerializedKeyframeLength[qi] = 0;
@@ -1456,7 +1457,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
             int expectedPayload = BasisAvatarBitPacking.ConvertToSize(quality);
 
-            // Skip if the array is undersized (e.g. client sent wrong quality level)
+            // array が undersized の場合は skip する (例: client が wrong quality level を送った場合)。
             if (msg.array.Length < expectedPayload)
             {
                 BNL.LogError($"[PreSerializeKeyframe] Array undersized for quality {quality}: got {msg.array.Length}, need {expectedPayload}. Skipping.");
@@ -1466,7 +1467,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
 
             // Byte-ID:   [PlayerID:1][interval:1][sequence:1][array:N][additional...]
             // Ushort-ID: [PlayerID:2][interval:1][sequence:1][array:N][additional...]
-            // Quality and additional-data presence are derived from the channel number.
+            // quality と additional-data の有無は channel number から derive する。
             bool hasAdditional = state.HasAdditionalData
                 && msg.AdditionalAvatarDatas != null
                 && msg.AdditionalAvatarDatas.Length > 0
@@ -1475,10 +1476,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
             int additionalSize = 0;
             if (hasAdditional)
             {
-                additionalSize = 1 + 1; // AdditionalSize + LinkedAvatarIndex
+                additionalSize = 1 + 1; // AdditionalSize + LinkedAvatarIndex。
                 for (int i = 0; i < msg.AdditionalAvatarDatas.Length; i++)
                 {
-                    additionalSize += 1 + 1 + (msg.AdditionalAvatarDatas[i].array?.Length ?? 0); // PayloadSize + messageIndex + data
+                    additionalSize += 1 + 1 + (msg.AdditionalAvatarDatas[i].array?.Length ?? 0); // PayloadSize + messageIndex + data。
                 }
             }
 
@@ -1490,8 +1491,9 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 state.SerializedKeyframe[qi] = new byte[totalSize];
             }
 
-            // Write directly to SerializedKeyframe — avoids the intermediate NetDataWriter
-            // buffer and the final BlockCopy (~40MB/sec saved at 200K+ pre-serializations/5s).
+            // SerializedKeyframe へ直接 write する。
+            // intermediate NetDataWriter buffer と最後の BlockCopy を避ける
+            // (200K+ pre-serializations/5s で約 40MB/sec 節約)。
             byte[] dst = state.SerializedKeyframe[qi];
             int offset = 0;
 
@@ -1505,7 +1507,7 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
                 dst[offset++] = (byte)((playerId >> 8) & 0xFF);
             }
 
-            dst[offset++] = 0; // interval placeholder (patched per-receiver in send loop)
+            dst[offset++] = 0; // interval placeholder (send loop で receiver ごとに patch)。
             dst[offset++] = state.OutboundSequence;
 
             Buffer.BlockCopy(msg.array, 0, dst, offset, expectedPayload);
@@ -1543,12 +1545,13 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
     }
 
     /// <summary>
-    /// Power-of-two-sharded ConcurrentDictionary&lt;int, TValue&gt; replacement. Splits writes
-    /// across N=NextPow2(ProcessorCount) inner dicts indexed by a scrambled key, so per-bucket
-    /// lock contention drops by ~N× under ingress storms (HandleAvatarMovement → currentMessages
-    /// and ProcessMessage → playerStates upserts at 1k+ players, 250Hz). Reference-swappable —
-    /// preserves the existing Interlocked.Exchange double-buffer pattern. Enumeration walks
-    /// shards sequentially and inherits ConcurrentDictionary's per-shard snapshot semantics.
+    /// power-of-two-sharded な ConcurrentDictionary&lt;int, TValue&gt; replacement。
+    /// scrambled key で index される N=NextPow2(ProcessorCount) 個の inner dict に write を分散し、
+    /// ingress storm 時の per-bucket lock contention を約 N 倍減らす
+    /// (1k+ players、250Hz での HandleAvatarMovement -> currentMessages と
+    /// ProcessMessage -> playerStates upsert)。
+    /// reference-swappable で、既存の Interlocked.Exchange double-buffer pattern を維持する。
+    /// enumeration は shard を sequential に歩き、ConcurrentDictionary の per-shard snapshot semantics を継承する。
     /// </summary>
     public sealed class ShardedConcurrentDictionary<TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int, TValue>>
     {
@@ -1570,9 +1573,10 @@ namespace BasisNetworkServer.BasisNetworkingReductionSystem
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private ConcurrentDictionary<int, TValue> ShardOf(int key) => _shards[Scramble(key) & _mask];
 
-        // 32-bit integer hash mix (Murmur3-style). Player ids are dense small ints assigned by
-        // LiteNetLib; without scrambling, ids 0..N-1 would all hash to shard 0 under low-bit
-        // masking, completely defeating the shard split.
+        // 32-bit integer hash mix (Murmur3-style)。
+        // player id は LiteNetLib が割り当てる dense small int で、
+        // scrambling なしでは low-bit masking により id 0..N-1 がすべて shard 0 へ hash され、
+        // shard split の意味が完全になくなる。
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private static int Scramble(int key)
         {

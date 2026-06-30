@@ -5,7 +5,7 @@ namespace BasisNetworkCore.Serializable
     public static partial class SerializableBasis
     {
         /// <summary>
-        /// Snapshot of server/client stats. Fixed layout for easy wire format.
+        /// server/client stats の snapshot。wire format を扱いやすくするため fixed layout。
         /// </summary>
         public struct ServerStatisticMessage
         {

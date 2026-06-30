@@ -5,13 +5,13 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Server-wide toggles that admins can flip to globally disable
-    /// avatar, prop, or world loading for all non-admin players.
-    /// Thread-safe — reads/writes use interlocked operations.
+    /// admin が切り替えられる server-wide toggle。
+    /// non-admin player 全員に対して avatar / prop / world loading を global に disable する。
+    /// thread-safe。read/write には interlocked operation を使う。
     /// </summary>
     public static class BasisGlobalLockManager
     {
-        // 0 = unlocked (loading allowed), 1 = locked (loading blocked)
+        // 0 = unlocked (loading allowed)、1 = locked (loading blocked)。
         private static int _avatarsLocked;
         private static int _propsLocked;
         private static int _worldsLocked;
@@ -33,8 +33,8 @@ namespace BasisNetworkServer.Security
         public static bool DirectConnectLocked => Interlocked.CompareExchange(ref _directConnectLocked, 0, 0) == 1;
 
         /// <summary>
-        /// Seed the initial lock state from the server configuration.
-        /// Call once at startup before any client threads are running.
+        /// server configuration から initial lock state を seed する。
+        /// client thread が動き出す前、startup 時に一度だけ呼ぶ。
         /// </summary>
         public static void InitializeFromConfig(Configuration config)
         {
@@ -50,48 +50,48 @@ namespace BasisNetworkServer.Security
         }
 
         /// <summary>
-        /// Toggle avatar loading. Returns the new state (true = locked).
+        /// avatar loading を toggle する。新しい state を返す (true = locked)。
         /// </summary>
         public static bool ToggleAvatars() => Toggle(ref _avatarsLocked);
 
         /// <summary>
-        /// Toggle prop loading. Returns the new state (true = locked).
+        /// prop loading を toggle する。新しい state を返す (true = locked)。
         /// </summary>
         public static bool ToggleProps() => Toggle(ref _propsLocked);
 
         /// <summary>
-        /// Toggle world loading. Returns the new state (true = locked).
+        /// world loading を toggle する。新しい state を返す (true = locked)。
         /// </summary>
         public static bool ToggleWorlds() => Toggle(ref _worldsLocked);
 
         /// <summary>
-        /// Toggle server-share dropping. Returns the new state (true = locked).
+        /// server-share dropping を toggle する。新しい state を返す (true = locked)。
         /// </summary>
         public static bool ToggleServers() => Toggle(ref _serversLocked);
 
         /// <summary>
-        /// Toggle third-person camera availability. Returns the new state (true = disabled).
+        /// third-person camera availability を toggle する。新しい state を返す (true = disabled)。
         /// </summary>
         public static bool ToggleThirdPerson() => Toggle(ref _thirdPersonDisabled);
 
         /// <summary>
-        /// Toggle the network-side strip of AdditionalAvatarDatas on inbound avatar
-        /// sync messages. Returns the new state (true = additional data stripped).
+        /// inbound avatar sync message に対する network-side の AdditionalAvatarDatas strip を toggle する。
+        /// 新しい state を返す (true = additional data stripped)。
         /// </summary>
         public static bool ToggleAdditionalAvatarDataLock() => Toggle(ref _additionalAvatarDataLock);
 
         /// <summary>
-        /// Toggle the non-admin playspace-mover lockout. Returns the new state (true = locked).
+        /// non-admin playspace-mover lockout を toggle する。新しい state を返す (true = locked)。
         /// </summary>
         public static bool TogglePlayspaceMover() => Toggle(ref _playspaceMoverLocked);
 
         /// <summary>
-        /// Toggle the non-admin direct-connect (P2P) lockout. Returns the new state (true = locked).
+        /// non-admin direct-connect (P2P) lockout を toggle する。新しい state を返す (true = locked)。
         /// </summary>
         public static bool ToggleDirectConnect() => Toggle(ref _directConnectLocked);
 
         /// <summary>
-        /// Set the per-category camera photo-metadata disallow mask (set bit = disallowed).
+        /// camera photo-metadata の per-category disallow mask を set する (set bit = disallowed)。
         /// </summary>
         public static void SetCameraMetadataDisallowMask(byte mask) => Interlocked.Exchange(ref _cameraMetadataDisallowMask, mask);
 
@@ -108,8 +108,8 @@ namespace BasisNetworkServer.Security
         }
 
         /// <summary>
-        /// Sends the current global lock state to a specific peer.
-        /// Used when a new player connects so they know what's locked.
+        /// 現在の global lock state を specific peer へ送る。
+        /// new player 接続時に、何が locked か知らせるために使う。
         /// </summary>
         public static void SendLockStateToPeer(NetPeer peer)
         {
@@ -119,15 +119,15 @@ namespace BasisNetworkServer.Security
             writer.Put(PropsLocked);
             writer.Put(WorldsLocked);
             writer.Put(ServersLocked);
-            // Appended after ServersLocked so older clients reading 4 bools still parse cleanly.
+            // ServersLocked の後に append。4 bool だけ読む older client も clean に parse できる。
             writer.Put(ThirdPersonDisabled);
-            // Appended after ThirdPersonDisabled — older clients parsing 5 bools still work.
+            // ThirdPersonDisabled の後に append。5 bool を parse する older client も動作する。
             writer.Put(AdditionalAvatarDataLock);
-            // Appended after AdditionalAvatarDataLock (1 byte) — older clients parsing 6 bools still work.
+            // AdditionalAvatarDataLock (1 byte) の後に append。6 bool を parse する older client も動作する。
             writer.Put(CameraMetadataDisallowMask);
-            // Appended after CameraMetadataDisallowMask (1 byte) — older clients that stop reading earlier still parse.
+            // CameraMetadataDisallowMask (1 byte) の後に append。手前で reading を止める older client も parse できる。
             writer.Put((byte)NetworkServer.Configuration.BasisUserRestrictionMode);
-            // Appended after BasisUserRestrictionMode — older clients that stop reading earlier still parse.
+            // BasisUserRestrictionMode の後に append。手前で reading を止める older client も parse できる。
             writer.Put(PlayspaceMoverLocked);
             writer.Put(DirectConnectLocked);
             NetworkServer.TrySend(peer, writer, BasisNetworkCommons.AdminChannel, DeliveryMethod.ReliableOrdered);
@@ -135,7 +135,7 @@ namespace BasisNetworkServer.Security
         }
 
         /// <summary>
-        /// Broadcasts the current lock state to all connected clients.
+        /// 現在の lock state を connected client 全員へ broadcast する。
         /// </summary>
         public static void BroadcastLockState()
         {
@@ -145,15 +145,15 @@ namespace BasisNetworkServer.Security
             writer.Put(PropsLocked);
             writer.Put(WorldsLocked);
             writer.Put(ServersLocked);
-            // Appended after ServersLocked so older clients reading 4 bools still parse cleanly.
+            // ServersLocked の後に append。4 bool だけ読む older client も clean に parse できる。
             writer.Put(ThirdPersonDisabled);
-            // Appended after ThirdPersonDisabled — older clients parsing 5 bools still work.
+            // ThirdPersonDisabled の後に append。5 bool を parse する older client も動作する。
             writer.Put(AdditionalAvatarDataLock);
-            // Appended after AdditionalAvatarDataLock (1 byte) — older clients parsing 6 bools still work.
+            // AdditionalAvatarDataLock (1 byte) の後に append。6 bool を parse する older client も動作する。
             writer.Put(CameraMetadataDisallowMask);
-            // Appended after CameraMetadataDisallowMask (1 byte) — older clients that stop reading earlier still parse.
+            // CameraMetadataDisallowMask (1 byte) の後に append。手前で reading を止める older client も parse できる。
             writer.Put((byte)NetworkServer.Configuration.BasisUserRestrictionMode);
-            // Appended after BasisUserRestrictionMode — older clients that stop reading earlier still parse.
+            // BasisUserRestrictionMode の後に append。手前で reading を止める older client も parse できる。
             writer.Put(PlayspaceMoverLocked);
             writer.Put(DirectConnectLocked);
             NetworkServer.BroadcastMessageToClients(

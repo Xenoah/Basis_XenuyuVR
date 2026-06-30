@@ -3,7 +3,7 @@ using System.Text;
 namespace Basis.Network.Core
 {
     /// <summary>
-    /// Applies Basis chat transport limits without producing invalid UTF-16/UTF-8.
+    /// 不正な UTF-16 / UTF-8 を作らずに、Basis chat transport の制限を適用する。
     /// </summary>
     public static class BasisChatSanitizer
     {
@@ -45,7 +45,7 @@ namespace Basis.Network.Core
         private static string TrimLastScalar(string text)
         {
             int length = text.Length;
-            // No check for length == 0 because the caller should ensure this doesn't happen.
+            // length == 0 は caller 側で起こらないよう保証するため、ここでは確認しない。
 
             if (length >= 2 &&
                 char.IsHighSurrogate(text[length - 2]) &&

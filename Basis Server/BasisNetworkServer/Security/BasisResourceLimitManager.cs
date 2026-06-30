@@ -5,10 +5,9 @@ using static BasisNetworkCore.Serializable.SerializableBasis;
 namespace BasisNetworkServer.Security
 {
     /// <summary>
-    /// Server-defined caps that bound per-client resource use (persistent database growth and
-    /// content-share spheres). Seeded from Configuration at boot, editable live from the admin
-    /// panel (gated by basis.moderation.globallock), persisted to config.xml, and broadcast so
-    /// admin panels stay in sync.
+    /// client ごとの resource use (persistent database growth と content-share sphere) を制限する
+    /// server-defined cap。boot 時に Configuration から seed され、admin panel から live edit できる
+    /// (basis.moderation.globallock で gate)。config.xml に persist され、admin panel の同期用に broadcast される。
     /// </summary>
     public static class BasisResourceLimitManager
     {

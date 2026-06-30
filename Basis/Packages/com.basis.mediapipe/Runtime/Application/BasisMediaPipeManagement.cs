@@ -10,11 +10,12 @@ using UnityEngine;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// Device source that turns webcam MediaPipe landmarks into fake Basis trackers,
-    /// finger data, eye gaze and face blendshapes. Add this to the BasisDeviceManagement
-    /// GameObject and include it in its BaseTypes list; its per-frame work is driven by
-    /// BasisDeviceManagement.Simulate() (the central tick). Inert until the homuler
-    /// MediaPipe Unity Plugin is installed (see README).
+    /// Web カメラの MediaPipe ランドマークを、Basis の仮想トラッカー、
+    /// 指データ、視線、顔 BlendShape に変換するデバイスソース。
+    /// BasisDeviceManagement GameObject に追加し、BaseTypes リストへ含める。
+    /// フレームごとの処理は中央 tick である BasisDeviceManagement.Simulate()
+    /// から駆動される。homuler MediaPipe Unity Plugin が導入されるまでは動作しない
+    /// (README を参照)。
     /// </summary>
     public class BasisMediaPipeManagement : BasisBaseTypeManagement
     {
@@ -41,7 +42,7 @@ namespace Basis.MediaPipe
         private bool _armDiagLogged;
         public override bool IsDeviceBootable(string BootRequest) => BootRequest == SubSystem;
 
-        /// <summary>Pulls persisted settings into Config and restarts the backend if it is already running.</summary>
+        /// <summary>保存済み設定を Config に読み込み、backend が起動済みなら再起動する。</summary>
         public void ApplySettings()
         {
             LoadSettingsIntoConfig();
@@ -72,7 +73,7 @@ namespace Basis.MediaPipe
             ApplyTuning();
         }
 
-        /// <summary>Applies converter sign/gain tuning without restarting the backend.</summary>
+        /// <summary>backend を再起動せず、converter の符号と gain の調整を適用する。</summary>
         public void ApplyTuning()
         {
             _faceConverter.EyeLidIsOpenness = !BasisMediaPipeSettings.InvertBlink.RawValue;
@@ -120,7 +121,7 @@ namespace Basis.MediaPipe
             }
         }
 
-        /// <summary>Applies persisted resolution/FPS and restarts only the webcam (no model reload).</summary>
+        /// <summary>保存済みの解像度/FPS を適用し、モデルを再読み込みせず Web カメラだけを再起動する。</summary>
         public void ReloadCamera()
         {
             Config.CameraWidth = BasisMediaPipeSettings.ResolutionWidth.RawValue;
@@ -139,7 +140,7 @@ namespace Basis.MediaPipe
             BasisDeviceManagement.OnBootModeChanged -= HandleBootModeChanged;
             BasisDeviceManagement.OnBootModeChanged += HandleBootModeChanged;
 
-            // Webcam tracking is desktop-only; in VR the real HMD/controllers drive the trackers.
+            // Web カメラ tracking はデスクトップ専用。VR では実 HMD/Controller が tracker を駆動する。
             if (BasisDeviceManagement.StaticCurrentMode != BasisConstants.Desktop)
             {
                 BasisDebug.Log("BasisMediaPipe: not in Desktop mode; webcam tracking disabled.");
@@ -423,7 +424,7 @@ namespace Basis.MediaPipe
                 return;
             }
 
-            // No body pose: place the wrist from the hand landmarker, anchored to the head (face) when present.
+            // body pose が無い場合は hand landmarker から手首を配置し、顔がある場合は頭を基準に固定する。
             float faceSize = result.HasFace ? result.FaceImageSize : 0f;
             if (TryBuildArmRig(out MediaPipeArmConverter.AvatarArmRig handRig)
                 && _armConverter.TryGetArmFromHand(landmarks[0], result.HeadImagePosition, faceSize, CameraAspect(), in handRig, left, out Vector3 handWrist, out Quaternion handWristRotation))
@@ -531,9 +532,9 @@ namespace Basis.MediaPipe
             return input;
         }
 
-        // Declare our virtual devices to the matcher with raycast OFF, so InitializeTracking
-        // resolves these settings instead of generating a raycast-enabled fallback (the default
-        // for a forced non-CenterEye role). These are pose trackers, not UI pointers.
+        // 仮想デバイスを raycast OFF として matcher に登録し、InitializeTracking が
+        // raycast 有効の fallback (強制 non-CenterEye role の既定値) を生成せず、
+        // これらの設定を解決できるようにする。これは pose tracker であり、UI pointer ではない。
         private static bool _deviceMatchRegistered;
 
         private static void RegisterDeviceMatch()

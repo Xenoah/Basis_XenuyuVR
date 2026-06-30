@@ -8,24 +8,24 @@ using System.Threading;
 namespace BasisNetworkServer.BasisNetworking
 {
     /// <summary>
-    /// High-throughput, thread-safe network statistics with striped counters to minimize contention.
-    /// Tracks inbound/outbound counts and bytes per 0..255 message index,
-    /// and supports compact encoding/decoding to/from byte arrays (optionally using Brotli).
+    /// 競合を抑える striped counter を使う、高スループットで thread-safe なネットワーク統計。
+    /// 0..255 の message index ごとに inbound/outbound の件数と byte 数を追跡し、
+    /// byte 配列への compact encode/decode をサポートする (Brotli 利用も可)。
     /// </summary>
     public static class BasisNetworkStatistics
     {
         private const int Indices = 256;
 
-        // More stripes -> less contention (2x cores is a good start; clamp to a sane range).
+        // stripes が多いほど競合が減る (core 数の 2 倍を起点に、妥当な範囲へ clamp)。
         private static readonly int StripeCount = Math.Clamp(Environment.ProcessorCount * 2, 16, 128);
 
-        // Jagged arrays so Interlocked can take ref long (elements are referenceable).
+        // Interlocked が ref long を受け取れるよう jagged array にする (要素を参照できる)。
         private static readonly long[][] _inCountStripes;
         private static readonly long[][] _inBytesStripes;
         private static readonly long[][] _outCountStripes;
         private static readonly long[][] _outBytesStripes;
 
-        // Thread-local stripe selection. 0 means "uninitialized".
+        // thread-local の stripe 選択。0 は「未初期化」を表す。
         [ThreadStatic] private static int _stripePlusOne;
 
         static BasisNetworkStatistics()
@@ -44,9 +44,9 @@ namespace BasisNetworkServer.BasisNetworking
             }
         }
         public static bool IsRecordingData = false;
-        // ===== Recording API =====
+        // ===== 記録 API =====
 
-        /// <summary>Record one inbound message for <paramref name="index"/>, adding its encoded byte length.</summary>
+        /// <summary><paramref name="index"/> の inbound message を 1 件記録し、encoded byte length を加算する。</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RecordInbound(byte index, int bytesEncoded)
         {
@@ -61,7 +61,7 @@ namespace BasisNetworkServer.BasisNetworking
             Interlocked.Add(ref _inBytesStripes[s][index], bytesEncoded);
         }
 
-        /// <summary>Record one outbound message for <paramref name="index"/>, adding its encoded byte length.</summary>
+        /// <summary><paramref name="index"/> の outbound message を 1 件記録し、encoded byte length を加算する。</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RecordOutbound(byte index, int bytesEncoded)
         {
@@ -77,11 +77,11 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// Record a batch of N outbound messages on the same <paramref name="index"/>. Caller
-        /// is expected to have accumulated <paramref name="count"/> messages totaling
-        /// <paramref name="bytesEncoded"/> bytes within one logical scope (e.g. one receiver's
-        /// tick in the BSR send loop). Folds N×(LOCK XADD + LOCK ADD) into 2×LOCK ADD —
-        /// at 1k+ players this is several percent of total CPU saved in the BSR hot path.
+        /// 同じ <paramref name="index"/> の outbound message N 件をまとめて記録する。
+        /// 呼び出し側は 1 つの論理スコープ内 (例: BSR send loop の receiver 1 件の tick) で、
+        /// 合計 <paramref name="bytesEncoded"/> bytes の <paramref name="count"/> messages を
+        /// 蓄積済みであることを想定する。N x (LOCK XADD + LOCK ADD) を 2 x LOCK ADD に畳み込み、
+        /// 1000 人以上の player では BSR hot path の CPU を数パーセント節約する。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RecordOutboundBatch(byte index, long count, long bytesEncoded)
@@ -97,13 +97,13 @@ namespace BasisNetworkServer.BasisNetworking
             Interlocked.Add(ref _outBytesStripes[s][index], bytesEncoded);
         }
 
-        // ===== Snapshot API =====
+        // ===== スナップショット API =====
 
         /// <summary>
-        /// Non-destructive snapshot. Values may change during read, but each read is atomic.
-        /// Back-compat note:
-        ///   - Snapshot.PerIndex and Snapshot.TotalCalls are inbound.
-        ///   - Snapshot.OutPerIndex and Snapshot.OutTotalCalls are outbound.
+        /// 破壊しない snapshot。読み取り中に値は変化し得るが、各読み取りは atomic。
+        /// 後方互換メモ:
+        ///   - Snapshot.PerIndex と Snapshot.TotalCalls は inbound。
+        ///   - Snapshot.OutPerIndex と Snapshot.OutTotalCalls は outbound。
         /// </summary>
         public static Snapshot GetSnapshot()
         {
@@ -133,9 +133,9 @@ namespace BasisNetworkServer.BasisNetworking
         }
 
         /// <summary>
-        /// Atomic cut: collect and reset all counters without losing increments.
-        /// Back-compat note:
-        ///   - Snapshot.PerIndex/TotalCalls are inbound; OutPerIndex/OutTotalCalls are outbound.
+        /// atomic cut: increment を失わずに全 counter を収集して reset する。
+        /// 後方互換メモ:
+        ///   - Snapshot.PerIndex/TotalCalls は inbound。OutPerIndex/OutTotalCalls は outbound。
         /// </summary>
         public static Snapshot SnapshotAndReset()
         {
@@ -164,7 +164,7 @@ namespace BasisNetworkServer.BasisNetworking
             return new Snapshot(inPerIndex, outPerIndex);
         }
 
-        /// <summary>Zero everything.</summary>
+        /// <summary>すべてを 0 にする。</summary>
         public static void Clear()
         {
             for (int s = 0; s < StripeCount; s++)
@@ -194,7 +194,7 @@ namespace BasisNetworkServer.BasisNetworking
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int PickStripe()
         {
-            // Stable, cheap spread of threads across stripes.
+            // thread を stripes へ安定かつ低コストに分散する。
             int id = Thread.CurrentThread.ManagedThreadId;
             unchecked
             {
@@ -215,9 +215,9 @@ namespace BasisNetworkServer.BasisNetworking
 
         public sealed class Snapshot
         {
-            // Back-compat (inbound):
+            // 後方互換 (inbound):
             public readonly Dictionary<byte, IndexStats> PerIndex;
-            // New (outbound):
+            // 新規 (outbound):
             public readonly Dictionary<byte, IndexStats> OutPerIndex;
 
             public Snapshot( Dictionary<byte, IndexStats> inPerIndex, Dictionary<byte, IndexStats> outPerIndex)
@@ -227,7 +227,7 @@ namespace BasisNetworkServer.BasisNetworking
             }
 
             /// <summary>
-            /// Take an atomic cut *and* reset the live counters, then encode & (optionally) compress.
+            /// atomic cut を取り、live counter を reset してから encode し、必要なら compress する。
             /// </summary>
             public static byte[] SnapshotResetEncode(bool compress = true, int brotliQuality = 6)
             {
@@ -237,7 +237,7 @@ namespace BasisNetworkServer.BasisNetworking
             }
 
             /// <summary>
-            /// Encode a non-destructive snapshot (no reset). Useful for debugging.
+            /// 破壊しない snapshot を encode する (reset なし)。debug に便利。
             /// </summary>
             public static byte[] EncodeCurrent(bool compress = true, int brotliQuality = 6)
             {
@@ -247,7 +247,7 @@ namespace BasisNetworkServer.BasisNetworking
             }
 
             /// <summary>
-            /// Decode snapshot bytes (after optional decompression).
+            /// snapshot bytes を decode する (必要なら decompression 後)。
             /// </summary>
             public static Snapshot Decode(ReadOnlySpan<byte> data, bool compressed = true)
             {
@@ -255,15 +255,15 @@ namespace BasisNetworkServer.BasisNetworking
                 return DecodeSnapshot(raw);
             }
 
-            // --- Encoding/Decoding core ---
+            // --- エンコード/デコード中核 ---
 
             private static byte[] EncodeSnapshot(Snapshot s)
             {
                 using var ms = new MemoryStream(512); // small default; grows as needed
 
-                // Inbound map
+                // 受信 map
                 WriteMap(ms, s.PerIndex);
-                // Outbound map
+                // 送信 map
                 WriteMap(ms, s.OutPerIndex);
 
                 return ms.ToArray();
@@ -308,7 +308,7 @@ namespace BasisNetworkServer.BasisNetworking
             }
             private static void WriteUVar(Stream s, ulong value)
             {
-                // 10 bytes max for ulong
+                // ulong は最大 10 bytes
                 while (value >= 0x80)
                 {
                     s.WriteByte((byte)((value & 0x7Fu) | 0x80u));

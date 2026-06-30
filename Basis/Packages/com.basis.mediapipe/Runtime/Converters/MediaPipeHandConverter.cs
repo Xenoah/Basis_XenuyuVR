@@ -5,9 +5,9 @@ namespace Basis.MediaPipe
 {
     /// <summary>
     /// MediaPipe 21-point hand landmarks → finger curl/splay (BasisLocalHandDriver) plus a
-    /// wrist pose OFFSET for the hand trackers. Like the head, the offset is applied on top of a
-    /// base tracker space (the manager adds it to the head/eye position and the hand bone's rest
-    /// rotation), and rotation is relative to a calibrated neutral.
+    /// hand tracker 用の手首 pose OFFSET。頭と同様に、base tracker 空間へ offset を重ねる
+    /// (manager が head/eye 位置と hand bone の rest rotation へ加算する)。
+    /// rotation は calibration 済み neutral からの相対値。
     /// </summary>
     public sealed class MediaPipeHandConverter
     {
@@ -17,7 +17,7 @@ namespace Basis.MediaPipe
         public float MaxSplayDegrees = 20f;
         public float SplayGain = 1f;
 
-        // Wrist-position offset from the head, derived from the wrist's position in the frame.
+        // frame 内の手首位置から導出した、頭からの手首位置 offset。
         public float PlaneWidth = 0.7f;
         public float PlaneHeight = 0.7f;
         public float ForwardDepth = 0.35f;
@@ -51,7 +51,7 @@ namespace Basis.MediaPipe
             }
         }
 
-        /// <summary>Wrist pose as an offset: position relative to the head, rotation relative to the calibrated neutral.</summary>
+        /// <summary>offset としての手首 pose。位置は頭基準、rotation は calibration 済み neutral 基準。</summary>
         public bool TryGetHandTarget(Vector3[] lm, bool left, out Vector3 positionOffset, out Quaternion rotationOffset)
         {
             positionOffset = Vector3.zero;

@@ -6,10 +6,10 @@ using UnityEngine;
 namespace Basis.MediaPipe
 {
     /// <summary>
-    /// Routes MediaPipe ARKit-52 face blendshapes and derived eye gaze into Basis through
-    /// HVR.Basis.Comms, the same way OSC face tracking does: submit FT/v2/* values to the
-    /// scene AcquisitionService and notify the avatar's activity relay. The avatar's
-    /// AutomaticFaceTracking applies them to the mesh/eye bones and networks them to remotes.
+    /// MediaPipe の ARKit-52 顔 BlendShape と派生視線を、OSC face tracking と同じ経路で
+    /// HVR.Basis.Comms から Basis へ流す。scene の AcquisitionService へ FT/v2/* 値を送信し、
+    /// avatar の activity relay へ通知する。avatar 側の AutomaticFaceTracking が
+    /// mesh/eye bone に適用し、remote へ network 送信する。
     /// </summary>
     public sealed class MediaPipeFaceConverter
     {
@@ -140,8 +140,8 @@ namespace Basis.MediaPipe
             SubmitIfChanged(acquisition,_idTongueOut, _tongueSmoothed);
         }
 
-        // Skip submitting near-unchanged values: avoids redundant local SetBlendShapeWeight
-        // P/Invokes and network churn for a mostly-neutral face.
+        // ほぼ変化していない値は送信しない。neutral に近い顔での不要な
+        // local SetBlendShapeWeight P/Invoke と network churn を避ける。
         private void SubmitIfChanged(AcquisitionService acquisition, int id, float value)
         {
             if (_lastSubmitted.TryGetValue(id, out float last) && Mathf.Abs(value - last) < SubmitEpsilon) return;

@@ -1,89 +1,71 @@
 # Basis Addressables
 
-How Basis organizes its Addressable groups, and the editor tooling that maintains them.
-The goal is **runtime memory**: keep large or independently-loaded assets in their own
-bundles, and never duplicate a shared dependency across bundles.
+Basis が Addressable group をどう整理し、それを editor tooling がどう維持するかを説明します。目的は**runtime memory**です。大きな asset や独立して load される asset は個別の bundle に置き、共有 dependency が bundle 間で重複しないようにします。
 
-## Principle: group by dependency, not by category
+## 原則: category ではなく dependency で group 化する
 
-A group becomes one AssetBundle. Any asset a bundle references that is **not itself
-addressable** is *copied into that bundle*. So if two prefabs in different groups share a
-non-addressable font/material/shader, that asset is duplicated into both bundles, costing
-memory and disk.
+1 つの group は 1 つの AssetBundle になります。bundle が参照している asset のうち、**それ自体が addressable ではない**ものは、その bundle に*コピー*されます。そのため、別々の group にある 2 つの prefab が non-addressable な font / material / shader を共有していると、その asset は両方の bundle に複製され、memory と disk を消費します。
 
-Rules of thumb:
+目安:
 
-1. **Self-contained cluster** (no deps shared with other groups) -> safe to give its own group.
-2. **Shared dependency** (referenced from 2+ groups) -> make it addressable in a shared bundle
-   so it is referenced once instead of copied. Fonts go to **Basis Fonts**; everything else to
-   **Basis Shared**.
-3. Models and other large, on-demand assets -> their own groups so they load/unload alone.
+1. **自己完結した cluster**。他 group と共有する dependency がないものは、専用 group にして安全です。
+2. **共有 dependency**。2 つ以上の group から参照されるものは、shared bundle で addressable にし、コピーではなく 1 回だけ参照されるようにします。font は **Basis Fonts**、それ以外は **Basis Shared** に入れます。
+3. model やその他の大きな on-demand asset は、単独で load / unload できるよう専用 group にします。
 
-All Basis groups use **LZ4** compression and the local build/load paths.
+すべての Basis group は **LZ4** compression と local build/load path を使います。
 
 ## Groups
 
-These are created and maintained by the tools below; anything not matched by a rule stays in
-Foundation (the catch-all).
+以下の group は下記 tool によって作成・維持されます。rule に一致しないものは Foundation、つまり catch-all に残ります。
 
-| Group | Packing | Contents |
-|-------|---------|----------|
+| Group | Packing | 内容 |
+|-------|---------|------|
 | Built In Data | - | Unity built-in / local player data |
-| Basis Foundation Assets | PackTogether | Catch-all: players, orbs, mirror, scenes, data assets |
-| Basis UI Assets | PackTogether | UI prefabs (Panel Elements), icon textures/sprites |
-| Basis Fonts | PackTogether | Inter family + TMP fallback fonts (isolated shared dep) |
-| Basis Shared | PackTogether | Shared UI material/shaders/sprites (isolated shared deps) |
+| Basis Foundation Assets | PackTogether | catch-all: player、orb、mirror、scene、data asset |
+| Basis UI Assets | PackTogether | UI prefab (Panel Elements)、icon texture / sprite |
+| Basis Fonts | PackTogether | Inter family + TMP fallback font (分離された shared dependency) |
+| Basis Shared | PackTogether | 共有 UI material / shader / sprite (分離された shared dependency) |
 | Basis Gizmos | PackTogether | com.basis.gizmos debug-draw cluster |
-| Basis MediaPipe Models | PackSeparately | *.task.bytes face/hand/pose models (load independently) |
+| Basis MediaPipe Models | PackSeparately | *.task.bytes face / hand / pose model (独立 load) |
 | Basis OpenLipSync | PackTogether | OpenLipSync model + config |
-| Basis Localization | PackTogether | Language JSONs (Addressable label `language`) |
+| Basis Localization | PackTogether | language JSON (Addressable label `language`) |
 
 ## Tools
 
-All live in `com.basis.framework.editor/Editor/` and use the official
-`AddressableAssetSettings` API. They categorize by each entry's **resolved asset path**, so
-friendly-named entries (e.g. `GizmoMaterial`, `LocalPlayer`) land in the right group. Do not
-hand-edit the group YAML under `Assets/AddressableAssetsData/`.
+tool はすべて `com.basis.framework.editor/Editor/` にあり、公式の `AddressableAssetSettings` API を使います。各 entry の**解決済み asset path**で分類するため、`GizmoMaterial` や `LocalPlayer` のような friendly name の entry も正しい group に入ります。`Assets/AddressableAssetsData/` 配下の group YAML は手動編集しないでください。
 
-| Menu | File | Does |
+| Menu | File | 役割 |
 |------|------|------|
-| Basis > Addressables > Dependency Report | `BasisAddressableDependencyReport.cs` | Writes `BasisAddressableDependencyReport.txt` to the project root: per-group footprint and dependencies shared across groups (duplication hotspots) |
-| Basis > Addressables > Organize Groups | `BasisAddressableOrganizer.cs` | Path rules (gizmos, fonts) + isolates every cross-group shared dependency into Basis Fonts / Basis Shared |
-| Basis > Addressables > Organize Model Groups | `BasisModelAddressableSetup.cs` | Moves MediaPipe `*.task.bytes` and OpenLipSync model+config into their groups (also runs as an importer) |
-| Basis > Localization > Register Languages as Addressable | `BasisLocalizationAddressableSetup.cs` | Registers language JSONs (address `Languages/{code}`, label `language`) into Basis Localization (also an importer) |
-| _(helper, no menu)_ | `BasisAddressableGroups.cs` | `GetOrCreate(settings, name, packing)` — LZ4 + local paths |
+| Basis > Addressables > Dependency Report | `BasisAddressableDependencyReport.cs` | project root に `BasisAddressableDependencyReport.txt` を書き出します。group ごとの footprint と、group 間で共有される dependency、つまり重複 hot spot を示します。 |
+| Basis > Addressables > Organize Groups | `BasisAddressableOrganizer.cs` | path rule (gizmos、fonts) を適用し、cross-group shared dependency を Basis Fonts / Basis Shared へ分離します。 |
+| Basis > Addressables > Organize Model Groups | `BasisModelAddressableSetup.cs` | MediaPipe `*.task.bytes` と OpenLipSync model + config を専用 group へ移動します。importer としても動作します。 |
+| Basis > Localization > Register Languages as Addressable | `BasisLocalizationAddressableSetup.cs` | language JSON を Basis Localization に登録します。address は `Languages/{code}`、label は `language` です。importer としても動作します。 |
+| _(helper, menu なし)_ | `BasisAddressableGroups.cs` | `GetOrCreate(settings, name, packing)`。LZ4 と local path を設定します。 |
 
 ## Workflow
 
-1. Run **Organize Model Groups**, **Organize Groups**, and **Register Languages as Addressable**
-   (the importers also run them automatically when matching assets are imported).
-2. Run **Dependency Report** and confirm cross-group shared deps are ~0. TMP
-   `Editor Resources/*.psd` icons may appear; they are editor-only and stripped from builds, so
-   ignore them.
-3. **Build Addressables content** (Window > Asset Management > Addressables > Groups > Build >
-   New Build > Default Build Script) for player builds.
+1. **Organize Model Groups**、**Organize Groups**、**Register Languages as Addressable** を実行します。matching asset が import された時は importer からも自動実行されます。
+2. **Dependency Report** を実行し、cross-group shared dependency がほぼ 0 であることを確認します。TMP の `Editor Resources/*.psd` icon が表示される場合がありますが、editor-only で build からは除外されるため無視して構いません。
+3. player build 用に **Build Addressables content** を実行します。場所は Window > Asset Management > Addressables > Groups > Build > New Build > Default Build Script です。
 
-Re-running is safe (idempotent).
+再実行しても安全です。処理は idempotent です。
 
-## Used packages and licenses
+## 使用 package と license
 
-| Package | Version | License | Role here |
-|---------|---------|---------|-----------|
-| com.unity.addressables | 2.9.1 | Unity Companion License | The Addressables system (`Unity.Addressables`, `Unity.ResourceManager`) |
-| com.basis.framework / com.basis.framework.editor | embedded | MIT | Tooling + runtime localization loader |
-| com.basis.sdk | embedded | MIT | UI prefabs, sprites, materials; Inter fonts (see notes) |
-| com.basis.textmeshpro | embedded | Unity Companion License | TMP shaders + LiberationSans fallback (shared deps) |
-| com.basis.gizmos | embedded | MIT | Gizmo prefabs / material / shader |
-| com.basis.mediapipe | embedded | MIT | MediaPipe `.task.bytes` models (see notes) |
-| com.github.homuler.mediapipe | 0.16.3 | Apache-2.0 | MediaPipe inference plugin; bundles MediaPipe + native libs |
+| Package | Version | License | ここでの役割 |
+|---------|---------|---------|--------------|
+| com.unity.addressables | 2.9.1 | Unity Companion License | Addressables system (`Unity.Addressables`, `Unity.ResourceManager`) |
+| com.basis.framework / com.basis.framework.editor | embedded | MIT | tooling + runtime localization loader |
+| com.basis.sdk | embedded | MIT | UI prefab、sprite、material、Inter font (notes 参照) |
+| com.basis.textmeshpro | embedded | Unity Companion License | TMP shader + LiberationSans fallback (shared dependency) |
+| com.basis.gizmos | embedded | MIT | Gizmo prefab / material / shader |
+| com.basis.mediapipe | embedded | MIT | MediaPipe `.task.bytes` model (notes 参照) |
+| com.github.homuler.mediapipe | 0.16.3 | Apache-2.0 | MediaPipe inference plugin。MediaPipe と native lib を同梱します。 |
 | com.basis.openlipsync / com.basisvr.openlipsync | 0.2.0 | Apache-2.0 | OpenLipSync driver + model/config |
-| com.basis.tests | embedded | MIT (Basis repo) | Test prefabs (currently in Foundation) |
+| com.basis.tests | embedded | MIT (Basis repo) | test prefab。現在は Foundation に入っています。 |
 
-Asset-level notes:
+asset 単位の notes:
 
-- **Inter** typeface (`com.basis.sdk/Fonts/`, the bulk of Basis Fonts) is under the
-  **SIL Open Font License 1.1**.
-- **MediaPipe** face/hand/pose models are Google's, **Apache-2.0**. See
-  `com.basis.mediapipe/THIRD_PARTY_NOTICES.md` for the full MediaPipe + homuler notice.
-- "embedded" = a local package under `Packages/` (no manifest version); licenses are taken from
-  each package's `package.json`/`LICENSE`.
+- **Inter** typeface (`com.basis.sdk/Fonts/`、Basis Fonts の大部分) は **SIL Open Font License 1.1** です。
+- **MediaPipe** face / hand / pose model は Google のもので、**Apache-2.0** です。MediaPipe + homuler の完全な notice は `com.basis.mediapipe/THIRD_PARTY_NOTICES.md` を参照してください。
+- "embedded" は `Packages/` 配下の local package を意味します。manifest version はありません。license は各 package の `package.json` / `LICENSE` から取得しています。
