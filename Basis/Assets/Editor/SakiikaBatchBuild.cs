@@ -49,7 +49,7 @@ public static class SakiikaBatchBuild
             var options = new BuildPlayerOptions
             {
                 scenes = scenes,
-                locationPathName = "../Builds/Windows/SakiikaVR.exe",
+                locationPathName = "../Builds/Windows/さきいかVR.exe",
                 target = BuildTarget.StandaloneWindows64,
                 subtarget = (int)StandaloneBuildSubtarget.Player,
                 options = BuildOptions.None,
