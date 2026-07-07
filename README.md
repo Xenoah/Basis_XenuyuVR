@@ -1,147 +1,73 @@
- ### Basis lets you set up your own Social VR and Networked VR games with ease.
+<p align="center">
+  <img src="Sakiika.png" alt="さきいかVR" width="240">
+</p>
 
-<table border="0">
- <tr>
-    <td><div align="center"><img src="./Basis/Images/BasisLogo.png" alt="Logo" width="160" height="160"></td>
-    <td><div align="center"><h3><strong>Basis</strong></h3>
-The Social VR Framework</br>
-<a href="https://discord.gg/F35u3cUMqt"><strong>Join our Discord!»</strong></a></br></br>
-<a href="https://github.com/BasisVR/Basis/issues/new?labels=bug&template=bug-report---.md">Report Bug</a> -
-<a href="https://github.com/BasisVR/Basis/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a></div></td>
- </tr>
-</table>
+# さきいかVR Built With Basis
 
- ## About Basis
+さきいかVRは、[Basis Framework](https://github.com/BasisVR) を用いて開発しているソーシャルVRクライアントです。専用サーバーを持たず、プレイヤー同士のP2Pと Misskey を使って、ワールドの公開・参加ができます。
 
-[Basis Philosophy](https://basisvr.org/philosophy) <- read our Philosophy here!
+> Built with Basis. 「Basis」「BasisVR」の名称・ロゴは Basis Project の商標です。本プロジェクトは Basis を利用した非公式のフォークであり、Basis Project による承認・提携を示すものではありません。
 
-We are an MIT-Licensed Open-Source project with a focus on open development and full access to any optional modification desired or required.
+## ダウンロード
 
-Our goal is to help equip VR Creators, so we can accelerate the growth of VR.
+最新のWindowsビルドはReleasesから入手できます。
 
-<img src="./Basis/Images/Banner.png" alt="Banner" width="550" height="155">
+**➡ [最新リリースをダウンロード](../../releases/latest)**
 
-We are actively working on Basis. If you like what you see, please consider contributing in any way you can.
+## 開発への参加(プルリクエスト歓迎)
 
- ## How you can Contribute
+**誰でもプルリクエスト形式で開発に参加できます。** 小さなバグ修正、ドキュメントの改善、機能提案など、どんな些細な変更でも歓迎です。まずは1行の修正からでも大歓迎です。
 
-Do you have a suggestion for improving Basis? Please fork the repo and create a pull request! You can also open an issue with the tag “improvement”.
-Not sure how to contribute, but still wanting to help out? Consider donating! We appreciate any help possible.
+1. このリポジトリを Fork する
+2. 変更をコミットして Pull Request を送る
+3. メンテナ(リポジトリオーナー)が内容を確認し、承認・マージします
 
-<noscript><a href="https://liberapay.com/dooly/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript> [Github Sponsor](https://github.com/sponsors/dooly123)</br>[KoFi](https://ko-fi.com/dooly)</br>
+> ⚠️ **レビューについてのお願い**
+> 個人で開発・運用しているため、レビューやマージまでにお時間をいただくことがあります。あらかじめご了承ください。すべてのPRはオーナーの承認を経てマージされます。
 
-Please help shape the future of Basis and leave your mark on its foundation.
+---
 
- #### Creating a Fork
+## まるさんしVR ワールドシステム仕様
 
-1. Fork the Project
-2. Optionally, [Setup CI Secrets](./CI.md).
-3. Create your Feature Branch (`git checkout -b feature/ACrazyNewFeature`)
-4. Commit your Changes (`git commit -m 'Add some ACrazyNewFeature'`)
-5. Push to the Branch (`git push origin feature/ACrazyNewFeature`)
-6. Open a Pull Request
+まるさんしVRは、専用のワールド管理サーバーを持たず、**プレイヤー自身がワールドをホストするP2P方式**と、**Misskeyを使った公開ワールド一覧**で成り立っています。従来の「サーバーに接続して入る」方式は廃止されました。
 
- ## Installation
+### ワールドを立てる(ホスト)
 
-This project is currently using Unity 6 (open the project through Unity Hub to see the version)
-Other Unity versions may work, but will require changes and adaptations.
-Currently, OPENXR and SteamVR are supported, as well as OPENXR Quest.
+ライブラリの「ワールド」タブでワールドを選ぶと、次の2つの方法で開けます。
 
-As a note, command line args for basis are:
+- **インバイトで開く** — 自分がホストになりワールドを立て、**接続文字列**(`IP:ポート#パスワード`)がクリップボードにコピーされます。これをフレンドに渡すと参加できます。一覧には公開されません。
+- **パブリックで開く** — 上記に加えて、Misskeyに接続情報を含むノートを投稿します。他のプレイヤーの「ワールド」タブの一覧に表示され、誰でも参加できます。
 
-to disable booting a VR mode.
- --disable-OpenVRLoader
- --disable-OpenXRLoader
+ホストはBasisのホストモード(クライアント内にサーバーをインプロセス起動)を利用しており、**専用サーバーは不要**です。
 
-to force a VR mode from boot.
- --force-OpenXRLoader
- --force-OpenVRLoader
+### Misskeyログインと公開一覧(サーバーレス)
 
-1. Make sure you have the correct Unity version installed.
-2. Clone the repository
-   ```sh
-   git clone https://github.com/BasisVR/Basis.git
-   ```
-3. Open the project and make sure to load the scene Initialisation
-4. Enter play!
+- ワールドの公開・参加には**Misskeyログインが必須**です(MiAuth方式。アプリにトークンを貼る必要はありません)。
+- **ゲーム内のユーザー名にはMisskeyのアカウント名が使われます**(手動変更は不可)。
+- 公開ワールドは Misskey のノート(ハッシュタグ `#SakiikaVRWorld` + 機械可読ペイロード)として告知され、クライアントはそのタグを検索して一覧を表示します。**独自のディレクトリサーバーは存在しません。**
+- ホストを終了すると告知ノートは自動削除され、古い告知は一定時間で一覧から除外されます。
 
- ## Contact
+### NAT越え(ポート開放不要)
 
-basis enquiries - developerbasis@gmail.com
-Luke Dooly - [@lukedooly](https://x.com/lukedooly) - doolanl208@gmail.com
+手動のポート開放なしで接続できるよう、段階的なNAT越えを実装しています。
 
-Discord:</br>
-[Our Discord Community](https://discord.gg/F35u3cUMqt)</br>
-[Doolys Discord Account](https://discord.com/users/170859544782700544)
+- **ICE-lite(STUN + Misskeyシグナリング + UDPホールパンチ)** — 公開STUNサーバーで自分の公開アドレスを取得し、Misskeyのノート返信をシグナリングチャンネルとしてお互いのアドレスを交換、UDPパンチで直接接続します。**全錐/制限錐/ポート制限錐NATはポート開放なしで直結**でき、pingは2者間の生RTT(最良)になります。
+- **TURN中継(対称型NAT対応)** — 対称型NATを自動検出した場合は、TURNサーバー経由でリレーして到達性を確保します(coturn、long-term認証)。この経路のみ中継分だけpingが増えます。
+- STUN・Misskey・TURNは接続確立時のみ使用し、**ゲーム中の通信は直接P2P**なので遅延に影響しません。
 
-Thank you to everyone who has helped Basis become something remarkable.
+### ホームワールド
 
- ## License
+ワールド詳細で「ホームワールドに設定」しておくと、**次回起動時に自動でそのワールドをインバイトセッションとして立てます**(Misskeyログイン済みが条件)。
 
-Distributed under the MIT License. See [MIT License](https://opensource.org/licenses/MIT) for more information.
+### ワールドの切り替え(接続を維持したまま)
 
- ### Built With
+すでに自分がホストしている状態で別のワールドを開いたり、インバイト↔パブリックを切り替えたりした場合、**サーバーは再起動されず、ワールドだけがネットワーク越しに差し替わります**。
 
-This would not be possible without the following:
-- [ULipSync](https://github.com/hecomi/uLipSync)
-- [UnityJigglePhysics](https://github.com/naelstrof/UnityJigglePhysics)
-- [opussharp](https://github.com/AvionBlock/OpusSharp)
-- [opus](https://github.com/xiph/opus)
-- [Steam Audio](https://github.com/ValveSoftware/steam-audio)
-- [Unity Starter Assets - ThirdPerson](https://assetstore.unity.com/packages/essentials/starter-assets-thirdperson-updates-in-new-charactercontroller-pa-196526)
-- [RNNoise](https://github.com/xiph/rnnoise?tab=BSD-3-Clause-1-ov-file)
-- [RNNoise.Net](https://github.com/Yellow-Dog-Man/RNNoise.Net)
-- [unity](https://unity.com/)
-- [ionic icons](https://github.com/ionic-team/ionicons?ref=svgrepo.com)
-- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
-- [K4os.Compression.LZ4](https://github.com/MiloszKrajewski/K4os.Compression.LZ4)
-- [cilbox](https://github.com/cnlohr/cilbox)
+- **ワールド内にいる人は切断されません。** 全員がそのまま新しいワールドへ一緒に移動します(インスタンスを保ったままワールドを変更する挙動)。
+- 接続文字列・パスワードは同じものが維持されます。
+- インバイトで立てた後にパブリックへ切り替えると、その場でMisskeyへ公開告知が投稿されます。
 
-## Third-Party Code and Trademarks
+### 制限事項
 
-This project includes third-party software under the following licenses:
-
-### Apache License 2.0
-- [Steam Audio](https://github.com/ValveSoftware/steam-audio) - See `Basis/Packages/com.steam.steamaudio/LICENSE.md`
-- [OpenLipSync ONNX Runtime](https://github.com/microsoft/onnxruntime) (MIT) - See `Basis/Packages/com.basisvr.openlipsync/THIRD_PARTY_NOTICES.md`
-
-### BSD-3-Clause
-- [OpenVR](https://github.com/valvesoftware/openvr) - (C) Valve Corporation. See `Basis/Packages/com.valvesoftware.unity.openvr/LICENSE.md`
-- [SteamVR](https://github.com/ValveSoftware/steamvr_unity_plugin) - (C) Valve Corporation. See `Basis/Packages/com.steam.steamvr/LICENSE`
-
-### BSD (Modified/Clear)
-- [Opus Codec](https://github.com/xiph/opus) - Copyright 2001-2011 Xiph.Org, Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry, CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo. See `Basis/Packages/com.avionblock.opussharp/Opus_LICENSE_PLEASE_READ.txt`
-
-### MIT
-- [uLipSync](https://github.com/hecomi/uLipSync) - Copyright 2021 hecomi. See `Basis/Packages/com.hecomi.ulipsync/LICENSE.md`
-- [OpusSharp](https://github.com/AvionBlock/OpusSharp) - Copyright 2026 AvionBlock. See `Basis/Packages/com.avionblock.opussharp/LICENSE.txt`
-- [URP Volumetric Fog](https://github.com/cqf2186863072/URP-Volumetric-Fog) - Copyright 2025 Cristian Qiu Felez. See `Basis/Packages/com.cqf.urpvolumetricfog/LICENSE.md`
-- [RNNoise.Net](https://github.com/Yellow-Dog-Man/RNNoise.Net) - Copyright 2023 Yellow Dog Man Studios. See `Basis/Packages/com.xiph.rnnoise/LICENSE`
-- [HVR Basis Comms](https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/dev.hai-vr.basis.comms) - Copyright 2025 Hai~ and MR LUKE B DOOLAN. See `Basis/Packages/dev.hai-vr.basis.comms/LICENSE`
-- [HVR Basis NDMF](https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/dev.hai-vr.basis.ndmf) - Copyright (c) 2025 Haï~. See `Basis/Packages/dev.hai-vr.basis.ndmf/LICENSE`
-- [MeaMod.DNS](https://github.com/meamod/MeaMod.DNS) - Copyright 2021 James Weston. See `Basis/Packages/nuget.meamod.dns/LICENSE`
-- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) - Copyright 2007 James Newton-King. See `Basis/Packages/org.basisvr.newtonsoft.json/LICENSE`
-- [BouncyCastle](https://github.com/bcgit/bc-csharp) - Copyright 2000-2024 The Legion of the Bouncy Castle Inc. See `Basis/Packages/org.basisvr.bouncycastle/LICENSE`
-- [Base128](https://github.com/Wojmik/Base128) - See `Basis/Packages/org.basisvr.base128/LICENSE`
-- [Generator.Equals](https://github.com/diegofrata/Generator.Equals) - Copyright Diego Frata. See `Basis/Packages/org.basisvr.generator.equals/LICENSE`
-- [SimpleBase](https://github.com/ssg/SimpleBase) - Copyright Sedat Kapanoglu. See `Basis/Packages/org.basisvr.simplebase/LICENSE`
-- [ZeroMessenger](https://github.com/Cysharp/ZeroMessenger) - Copyright 2024 Annulus Games. See `Basis/Packages/com.basis.zeromessenger/LICENSE.md`
-- [K4os.Compression.LZ4](https://github.com/MiloszKrajewski/K4os.Compression.LZ4) - Copyright 2017 Milosz Krajewski. See `Basis/Packages/org.basisvr.k4os.compression.lz4/LICENSE`
-- [UnityJigglePhysics](https://github.com/naelstrof/UnityJigglePhysics) - MIT licensed upstream
-- [AudioLink](https://github.com/llealloo/vrc-udon-audio-link) - MIT licensed upstream
-- [cilbox](https://github.com/cnlohr/cilbox) - MIT licensed upstream
-
-### SIL Open Font License 1.1
-- [Inter](https://github.com/rsms/inter) - Copyright 2020 The Inter Project Authors. See `Basis/Packages/com.basis.sdk/LICENSE-Inter-OFL.txt`.
-- [Poppins](https://github.com/itfoundry/Poppins) - Copyright 2020 The Poppins Project Authors. See `Basis/Packages/com.basis.sdk/LICENSE-Poppins-OFL.txt`.
-- [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) - Copyright 2014-2021 Adobe, with Reserved Font Name 'Source'. See `Basis/Packages/com.basis.sdk/LICENSE-NotoSansJP-OFL.txt`.
-
-### Trademarks
-
-"Valve", "Steam", and the associated figurative images are trademarks and/or registered trademarks of Valve Corporation in the US and in various other jurisdictions. All rights reserved. Use of these trademarks must comply with the guidelines outlined in `Basis/Packages/com.steam.steamaudio/TRADEMARK_RIGHTS.md`.
-
-## Basis Trademark Guidelines
-
-"Basis", "BasisVR", "Basis Framework", and the Basis logo are marks representing the
-Basis Project. Please see [TRADEMARK.md](./TRADEMARK.md) for our policies
-on their usage.
+- 対称型NAT同士など一部の組み合わせは、TURNを介しても直結できない場合があります。
+- 大人数のホストはホスト機の上り回線・CPUに依存します(全ゲストの通信がホストに集中するため)。

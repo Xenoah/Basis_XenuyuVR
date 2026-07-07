@@ -73,7 +73,7 @@ namespace Basis.BasisUI
             });
         }
 
-        private static readonly Color MutedColor = new Color(1f, 0.3f, 0.3f, 1f);
+        private static readonly Color MutedColor = new Color(1f, 0.42f, 0.66f, 1f);
         private static readonly Color ShoutColor = new Color(1f, 0.5490196f, 0f, 1f);
         private static readonly Color PrivateColor = new Color(0.6078432f, 0.1882353f, 1f, 1f);
         private static readonly Color DirectColor = new Color(0.12156863f, 0.7490196f, 0.3529412f, 1f);

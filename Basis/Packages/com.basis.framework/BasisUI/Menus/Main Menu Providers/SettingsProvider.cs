@@ -2069,14 +2069,14 @@ namespace Basis.BasisUI
                 c => Basis.Scripts.UI.BasisRaycastLineCustomization.PreviewUiLineColor(c));
 
             Color highlightColorInit = Basis.Scripts.BasisSdk.Highlight.BasisHighlightConfigOverride.ParseColor(BasisSettingsDefaults.HighlightColor.RawValue)
-                ?? new Color(0.48365337f, 0.33490568f, 1f, 1f);
+                ?? new Color(0.5254902f, 0.7019608f, 0f, 1f);
             SettingsProviderUIStyle.AddBindingColorPicker(content,
                 BasisLocalization.Get("settings.chat.pickup.highlightColor"),
                 BasisSettingsDefaults.HighlightColor, highlightColorInit,
                 c => Basis.Scripts.BasisSdk.Highlight.BasisHighlightConfigOverride.PreviewColor(c));
 
             Color pickupLineColorInit = Basis.Scripts.UI.BasisRaycastLineCustomization.ParseColor(BasisSettingsDefaults.PickupLineColor.RawValue)
-                ?? new Color(0.48365337f, 0.33490568f, 1f, 1f);
+                ?? new Color(0.5254902f, 0.7019608f, 0f, 1f);
             SettingsProviderUIStyle.AddBindingColorPicker(content,
                 BasisLocalization.Get("settings.chat.pickup.lineColor"),
                 BasisSettingsDefaults.PickupLineColor, pickupLineColorInit,

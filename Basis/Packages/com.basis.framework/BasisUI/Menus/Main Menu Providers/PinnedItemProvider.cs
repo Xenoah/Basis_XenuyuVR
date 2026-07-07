@@ -14,7 +14,13 @@ namespace Basis.BasisUI
         public PinnedItemProvider(BasisDataStoreItemKeys.ItemKey item, CachedMetaData.CachedContent cachedItemData)
         {
             _key = item;
-            _title = LibraryProviderStrUtil.TitleToCase(cachedItemData.BasisBundleConnector.BasisBundleDescription.AssetBundleName);
+            // Embedded items ship with their addressable key as the display name;
+            // route through localization (embedded.item.<key>) so they can be
+            // translated, falling back to the raw name when no entry exists.
+            string rawName = cachedItemData.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
+            string locKey = "embedded.item." + rawName;
+            string localized = BasisLocalization.Get(locKey);
+            _title = localized != locKey ? localized : LibraryProviderStrUtil.TitleToCase(rawName);
             _iconAddress = (item.EmbeddedSettings.IsEmbedded && item.EmbeddedSettings.SourceType == BasisDataStoreItemKeys.EmbeddedSource.Addressable) ? EmbeddedItems.GetAddressableSpriteForEmbeddedItem(item) : AddressableAssets.Sprites.Items;
         }
 

@@ -216,12 +216,31 @@ namespace Basis.BasisUI
                 empty.SetDescription(text);
             }
 
+            // Entry rows default to a single-line height, so a multi-line description
+            // (e.g. a hosted-session connection string) overflows and overlaps the next
+            // row. Size the row to its line count so rows stack cleanly.
+            private const float RowBaseHeight = 70f;
+            private const float RowLineHeight = 30f;
+
+            private static void FitRowToDescription(PanelElementDescriptor row, string description, float extra)
+            {
+                int lines = 1;
+                if (!string.IsNullOrEmpty(description))
+                {
+                    lines = 1;
+                    foreach (char c in description) if (c == '\n') lines++;
+                }
+                row.SetHeight(RowBaseHeight + lines * RowLineHeight + extra);
+            }
+
             private void BuildPendingRow(BasisNotification n)
             {
                 PanelElementDescriptor row = PanelElementDescriptor.CreateNew(
                     PanelElementDescriptor.ElementStyles.Entry, Root);
                 row.SetTitle(n.Title);
-                row.SetDescription(WithTimestamp(n.Description, n.CreatedUtc));
+                string desc = WithTimestamp(n.Description, n.CreatedUtc);
+                row.SetDescription(desc);
+                FitRowToDescription(row, desc, 70f); // room for the action buttons
 
                 // Horizontal action row — same pattern as the library Yes/No dialogs.
                 PanelTabGroup actions = PanelTabGroup.CreateNew(
@@ -252,7 +271,9 @@ namespace Basis.BasisUI
                     ? OutcomeBadge(n.Status)
                     : $"{n.Title}   {OutcomeBadge(n.Status)}");
 
-                row.SetDescription(WithTimestamp(n.Description, n.ResolvedUtc ?? n.CreatedUtc));
+                string desc = WithTimestamp(n.Description, n.ResolvedUtc ?? n.CreatedUtc);
+                row.SetDescription(desc);
+                FitRowToDescription(row, desc, 0f);
             }
 
             // Appends a dimmed local-time stamp ("2:34 PM") below the description.

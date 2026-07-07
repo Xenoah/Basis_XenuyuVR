@@ -1,0 +1,146 @@
+{
+  "code": "ja",
+  "nativeName": "日本語",
+  "entries": [
+    {
+      "key": "menu.provider.publicWorlds",
+      "value": "ワールド"
+    },
+    {
+      "key": "embedded.item.Personal Mirror",
+      "value": "パーソナルミラー"
+    },
+    {
+      "key": "embedded.item.Photo Camera",
+      "value": "カメラ"
+    },
+    {
+      "key": "sakiika.worlds.refresh",
+      "value": "更新"
+    },
+    {
+      "key": "sakiika.worlds.join",
+      "value": "参加"
+    },
+    {
+      "key": "sakiika.worlds.empty",
+      "value": "現在公開中のワールドはありません。ライブラリのワールドタブから公開してみましょう!"
+    },
+    {
+      "key": "sakiika.worlds.querying",
+      "value": "Misskeyを検索中…"
+    },
+    {
+      "key": "sakiika.worlds.unnamed",
+      "value": "名称未設定ワールド"
+    },
+    {
+      "key": "sakiika.worlds.row.description",
+      "value": "ホスト: {0}  •  {1}  •  {2}"
+    },
+    {
+      "key": "sakiika.worlds.minutesAgo",
+      "value": "{0}分前"
+    },
+    {
+      "key": "sakiika.worlds.hoursAgo",
+      "value": "{0}時間前"
+    },
+    {
+      "key": "sakiika.worlds.misskey",
+      "value": "Misskeyアカウント"
+    },
+    {
+      "key": "sakiika.worlds.misskey.description",
+      "value": "ワールドの公開・参加にはMisskeyログインが必要です。ユーザー名にはMisskeyのアカウント名が使われます。"
+    },
+    {
+      "key": "sakiika.worlds.instance",
+      "value": "インスタンスURL"
+    },
+    {
+      "key": "sakiika.worlds.login",
+      "value": "Misskeyでログイン"
+    },
+    {
+      "key": "sakiika.worlds.logout",
+      "value": "ログアウト"
+    },
+    {
+      "key": "sakiika.worlds.loginWaiting",
+      "value": "ブラウザでの許可を待っています…"
+    },
+    {
+      "key": "sakiika.worlds.loginFailed",
+      "value": "ログインに失敗またはタイムアウトしました。"
+    },
+    {
+      "key": "sakiika.worlds.loggedInAs",
+      "value": "ログイン中: @{0}({1})"
+    },
+    {
+      "key": "sakiika.worlds.notLoggedIn",
+      "value": "未ログイン"
+    },
+    {
+      "key": "sakiika.home.set",
+      "value": "ホームワールドに設定"
+    },
+    {
+      "key": "sakiika.home.unset",
+      "value": "ホームワールドを解除"
+    },
+    {
+      "key": "library.p2p.invite",
+      "value": "インバイトで開く"
+    },
+    {
+      "key": "library.p2p.public",
+      "value": "パブリックで開く"
+    },
+    {
+      "key": "library.p2p.needMisskey",
+      "value": "Misskeyログインが必要です"
+    },
+    {
+      "key": "sakiika.session.misskeyRequired.title",
+      "value": "Misskeyログインが必要です"
+    },
+    {
+      "key": "sakiika.session.misskeyRequired.body",
+      "value": "ワールドを開く・参加するには、ワールドパネルでMisskeyにログインしてください。ユーザー名にはMisskeyのアカウント名が使われます。"
+    },
+    {
+      "key": "sakiika.session.hostFailed",
+      "value": "ホストセッションを開始できませんでした。"
+    },
+    {
+      "key": "sakiika.session.startedInvite.title",
+      "value": "インバイトワールドを開始しました"
+    },
+    {
+      "key": "sakiika.session.startedPublic.title",
+      "value": "パブリックワールドを開始しました"
+    },
+    {
+      "key": "sakiika.session.started.body",
+      "value": "「{0}」を開きました。\n\n接続文字列(クリップボードにコピー済み):\n{1}\n\nフレンドに共有すると招待できます。"
+    },
+    {
+      "key": "sakiika.session.noPublicIp",
+      "value": "グローバルIPを取得できなかったため、Misskeyへの公開投稿は行われませんでした。"
+    },
+    {
+      "key": "sakiika.session.announceFailed",
+      "value": "Misskeyへの公開ノート投稿に失敗しました。接続文字列からは引き続き参加できます。"
+    },
+    {
+      "key": "sakiika.session.joinFailed.title",
+      "value": "参加に失敗しました"
+    },
+    {
+      "key": "sakiika.session.badConnection.body",
+      "value": "接続情報を解析できませんでした:\n{0}"
+    }
+  ]
+}

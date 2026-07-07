@@ -17,7 +17,10 @@ namespace Basis.BasisUI
 {
     public class ServersProvider : BasisMenuActionProvider<BasisMainMenu>
     {
-        [RuntimeInitializeOnLoadMethod]
+        // SakiikaVR: the direct server-join panel is retired. Worlds are hosted
+        // P2P from the Library's World tab (Invite / Public) and public sessions
+        // are discovered through the Worlds panel (com.sakiika.provider.worlds),
+        // so this provider is intentionally no longer registered with the menu.
         public static void AddToMenu()
         {
             BasisMenuBase<BasisMainMenu>.AddProvider(new ServersProvider());

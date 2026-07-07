@@ -195,7 +195,7 @@ namespace BasisServerHandle
                     RejectWithReason(ConReq, "Banned IP");
                     return;
                 }
-              //  BNL.Log("Processing Connection Request");
+                BNL.Log($"Processing connection request from {ConReq.RemoteEndPoint}");
                 int ServerCount = NetworkServer.Server.ConnectedPeersCount;
 
                 if (ServerCount >= NetworkServer.Configuration.PeerLimit)

@@ -40,7 +40,7 @@ namespace Basis.Scripts.BasisSdk.Highlight
         [Tooltip("Material backing the outline + glow composite shader.")]
         public Material compositeMaterial;
 
-        public Color outlineColor = new Color(0f, 0.9f, 0.85f, 1f);
+        public Color outlineColor = new Color(0.5254902f, 0.7019608f, 0f, 1f);
 
         [Tooltip("Outline thickness, measured in MASK pixels (not screen pixels). The mask is " +
                  "dilated by this many pixels per axis to form a constant-width ring that follows " +

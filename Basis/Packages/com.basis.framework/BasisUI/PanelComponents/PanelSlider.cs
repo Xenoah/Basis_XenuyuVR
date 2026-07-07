@@ -112,8 +112,8 @@ namespace Basis.BasisUI
 
         [Header("Slider Fill")]
         public Graphic FillGraphic;
-        public Color FillColorMin = new Color(0.35f, 0.55f, 0.85f, 1f);
-        public Color FillColorMax = new Color(0.25f, 0.8f, 0.5f, 1f);
+        public Color FillColorMin = new Color(0.33f, 0.47f, 0.08f, 1f);
+        public Color FillColorMax = new Color(0.5254902f, 0.7019608f, 0f, 1f);
         [Tooltip("When set, the fill color is sampled from this gradient (t = normalized slider position) instead of lerping FillColorMin -> FillColorMax.")]
         public Gradient FillColorGradient;
         public bool UseFillColorGradient;

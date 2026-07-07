@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: 400aab2496c5028449f88f0184de3e3b, type: 2}
-  m_Color: {r: 0.3529412, g: 0.3529412, b: 0.43529412, a: 1}
+  m_Color: {r: 0.2, g: 0.24, b: 0.16, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -555,8 +555,8 @@ MonoBehaviour:
   Background: {fileID: 0}
   ToggleVisualOffset: 35
   TweenDuration: 0.2
-  OffColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
-  OnColor: {r: 0.2, g: 0.8, b: 0.4, a: 1}
+  OffColor: {r: 0.28, g: 0.32, b: 0.24, a: 1}
+  OnColor: {r: 0.5254902, g: 0.7019608, b: 0, a: 1}
 --- !u!114 &4384726876132874969 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2695670721113310902, guid: c291cad985c051346b5516c30fda2029, type: 3}

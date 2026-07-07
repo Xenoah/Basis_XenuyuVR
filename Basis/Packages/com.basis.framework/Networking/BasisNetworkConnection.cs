@@ -56,6 +56,13 @@ namespace Basis.Scripts.Networking
             if (isHostMode)
             {
                 ipString = "localhost";
+                // Never leave an old in-process server running: two servers on the
+                // same port split the DID handshake and fail authentication.
+                if (BasisNetworkServerRunner != null)
+                {
+                    BasisDebug.LogWarning("Host connect found an existing server runner; stopping it before starting a new one.", BasisDebug.LogTag.Networking);
+                    BasisNetworkServerRunner.Stop();
+                }
                 BasisNetworkServerRunner = new BasisNetworkServerRunner();
                 var serverConfig = new Configuration
                 {
@@ -112,6 +119,23 @@ namespace Basis.Scripts.Networking
             {
                 try
                 {
+                    if (isHostMode)
+                    {
+                        // The in-process server boots on a background task and can
+                        // take several seconds on a cold start. Connecting before it
+                        // listens burns through LiteNetLib's connect attempts and
+                        // ends in ConnectionFailed, so hold the client here.
+                        DateTime hostDeadline = DateTime.UtcNow.AddSeconds(30);
+                        while (!NetworkServer.IsListening && DateTime.UtcNow < hostDeadline)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+                        if (!NetworkServer.IsListening)
+                        {
+                            BasisDebug.LogWarning("Host-mode server never started listening; connecting anyway.", BasisDebug.LogTag.Networking);
+                        }
+                    }
+
                     var serverConfig = new Configuration
                     {
                         IPv4Address = ipString,

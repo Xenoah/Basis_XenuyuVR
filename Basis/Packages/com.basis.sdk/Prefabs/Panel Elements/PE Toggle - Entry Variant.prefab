@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: 400aab2496c5028449f88f0184de3e3b, type: 2}
-  m_Color: {r: 0.3529412, g: 0.3529412, b: 0.43529412, a: 1}
+  m_Color: {r: 0.2, g: 0.24, b: 0.16, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -565,8 +565,8 @@ MonoBehaviour:
   Background: {fileID: 2885130199011414187}
   ToggleVisualOffset: 35
   TweenDuration: 0.2
-  OffColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
-  OnColor: {r: 0.5377359, g: 0.5377359, b: 0.7169812, a: 1}
+  OffColor: {r: 0.28, g: 0.32, b: 0.24, a: 1}
+  OnColor: {r: 0.5254902, g: 0.7019608, b: 0, a: 1}
 --- !u!224 &1145583136380266281 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8906398806221495751, guid: 00eaf66b466c4644eb2568c728a1dac8, type: 3}

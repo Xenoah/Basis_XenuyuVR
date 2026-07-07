@@ -71,9 +71,15 @@ public static class NetworkServer
     public static int HighQualityLength;
     #region Server Entry Point
 
+    // Serializes start/stop so two racing host connects can never leave two
+    // servers bound to the same port (which splits the DID handshake).
+    private static readonly object _lifecycleLock = new object();
+
     public static void StartServer(Configuration configuration)
     {
-        StopServer();
+        lock (_lifecycleLock)
+        {
+        StopServerInternal();
         Configuration = configuration;
 
         // Rejoin-only lockdown means "the players here right now" — meaningless after a restart, and a
@@ -101,10 +107,23 @@ public static class NetworkServer
         BasisNetworkUdpDropMonitor.Start();
 
         BNL.Log("Server Worker Threads Booted");
+        }
     }
+
+    /// <summary>True once the socket is bound and accepting traffic; cleared on stop.</summary>
+    public static volatile bool IsListening;
 
     public static void StopServer()
     {
+        lock (_lifecycleLock)
+        {
+            StopServerInternal();
+        }
+    }
+
+    private static void StopServerInternal()
+    {
+        IsListening = false;
         if (Server == null) return;
         try
         {
@@ -213,6 +232,7 @@ public static class NetworkServer
         }
 
         Server.Start(ipv4, ipv6, configuration.SetPort);
+        IsListening = true;
         BNL.Log($"Listening on UDP port {configuration.SetPort}");
         BNL.Log($"  IPv4 bind: {ipv4}");
         BNL.Log($"  IPv6 bind: [{ipv6}]");

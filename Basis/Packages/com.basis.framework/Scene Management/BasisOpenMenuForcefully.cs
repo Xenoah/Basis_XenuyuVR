@@ -5,7 +5,7 @@ using UnityEngine;
 public class BasisOpenMenuForcefully : MonoBehaviour
 {
     public bool OpenServerMenu = true;
-    public string ProviderTitleKey = "menu.provider.servers";
+    public string ProviderTitleKey = "menu.provider.publicWorlds";
     public void Start()
     {
         if(BasisDeviceManagement.OnInitializationComplete)
@@ -26,7 +26,12 @@ public class BasisOpenMenuForcefully : MonoBehaviour
         BasisMainMenu.Open();
         if (OpenServerMenu)
         {
-            BasisMainMenu.OpenWithProvider(BasisLocalization.Get(ProviderTitleKey));
+            // SakiikaVR: the Servers panel is retired — scenes that still carry
+            // its serialized key are routed to the Worlds panel instead.
+            string key = ProviderTitleKey == "menu.provider.servers"
+                ? "menu.provider.publicWorlds"
+                : ProviderTitleKey;
+            BasisMainMenu.OpenWithProvider(BasisLocalization.Get(key));
         }
         else
         {

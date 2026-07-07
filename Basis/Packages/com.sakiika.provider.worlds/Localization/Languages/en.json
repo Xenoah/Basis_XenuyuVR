@@ -1,0 +1,146 @@
+{
+  "code": "en",
+  "nativeName": "English",
+  "entries": [
+    {
+      "key": "menu.provider.publicWorlds",
+      "value": "Worlds"
+    },
+    {
+      "key": "embedded.item.Personal Mirror",
+      "value": "Personal Mirror"
+    },
+    {
+      "key": "embedded.item.Photo Camera",
+      "value": "Camera"
+    },
+    {
+      "key": "sakiika.worlds.refresh",
+      "value": "Refresh"
+    },
+    {
+      "key": "sakiika.worlds.join",
+      "value": "Join"
+    },
+    {
+      "key": "sakiika.worlds.empty",
+      "value": "No public worlds right now. Host one from the Library's World tab!"
+    },
+    {
+      "key": "sakiika.worlds.querying",
+      "value": "Searching Misskey..."
+    },
+    {
+      "key": "sakiika.worlds.unnamed",
+      "value": "Unnamed World"
+    },
+    {
+      "key": "sakiika.worlds.row.description",
+      "value": "Host: {0}  •  {1}  •  {2}"
+    },
+    {
+      "key": "sakiika.worlds.minutesAgo",
+      "value": "{0} min ago"
+    },
+    {
+      "key": "sakiika.worlds.hoursAgo",
+      "value": "{0} h ago"
+    },
+    {
+      "key": "sakiika.worlds.misskey",
+      "value": "Misskey Account"
+    },
+    {
+      "key": "sakiika.worlds.misskey.description",
+      "value": "A Misskey login is required to open or join worlds. Your Misskey account name is used as your display name."
+    },
+    {
+      "key": "sakiika.worlds.instance",
+      "value": "Instance URL"
+    },
+    {
+      "key": "sakiika.worlds.login",
+      "value": "Login with Misskey"
+    },
+    {
+      "key": "sakiika.worlds.logout",
+      "value": "Logout"
+    },
+    {
+      "key": "sakiika.worlds.loginWaiting",
+      "value": "Waiting for approval in your browser..."
+    },
+    {
+      "key": "sakiika.worlds.loginFailed",
+      "value": "Login failed or timed out."
+    },
+    {
+      "key": "sakiika.worlds.loggedInAs",
+      "value": "Logged in: @{0} ({1})"
+    },
+    {
+      "key": "sakiika.worlds.notLoggedIn",
+      "value": "Not logged in"
+    },
+    {
+      "key": "sakiika.home.set",
+      "value": "Set as Home World"
+    },
+    {
+      "key": "sakiika.home.unset",
+      "value": "Unset Home World"
+    },
+    {
+      "key": "library.p2p.invite",
+      "value": "Open (Invite)"
+    },
+    {
+      "key": "library.p2p.public",
+      "value": "Open (Public)"
+    },
+    {
+      "key": "library.p2p.needMisskey",
+      "value": "Misskey login required"
+    },
+    {
+      "key": "sakiika.session.misskeyRequired.title",
+      "value": "Misskey Login Required"
+    },
+    {
+      "key": "sakiika.session.misskeyRequired.body",
+      "value": "Log in with Misskey in the Worlds panel to open or join worlds. Your Misskey account name is used as your display name."
+    },
+    {
+      "key": "sakiika.session.hostFailed",
+      "value": "Could not start the hosted session."
+    },
+    {
+      "key": "sakiika.session.startedInvite.title",
+      "value": "Invite World Started"
+    },
+    {
+      "key": "sakiika.session.startedPublic.title",
+      "value": "Public World Started"
+    },
+    {
+      "key": "sakiika.session.started.body",
+      "value": "\"{0}\" is now open.\n\nConnection string (copied to clipboard):\n{1}\n\nShare it with friends to invite them."
+    },
+    {
+      "key": "sakiika.session.noPublicIp",
+      "value": "Could not determine your public IP, so the world was NOT announced on Misskey."
+    },
+    {
+      "key": "sakiika.session.announceFailed",
+      "value": "Posting the announce note to Misskey failed. The world is still joinable via the connection string."
+    },
+    {
+      "key": "sakiika.session.joinFailed.title",
+      "value": "Join Failed"
+    },
+    {
+      "key": "sakiika.session.badConnection.body",
+      "value": "The connection info could not be parsed:\n{0}"
+    }
+  ]
+}

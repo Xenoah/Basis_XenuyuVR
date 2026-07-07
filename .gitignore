@@ -36,3 +36,7 @@ __pycache__/
 CLAUDE.md
 .claude
 .wolf
+
+# SakiikaVR: local build output and runtime-generated files
+Builds/
+Basis/permissions.xml

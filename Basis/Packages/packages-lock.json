@@ -256,6 +256,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.sakiika.provider.worlds": {
+      "version": "file:com.sakiika.provider.worlds",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.steam.steamaudio": {
       "version": "file:com.steam.steamaudio",
       "depth": 0,

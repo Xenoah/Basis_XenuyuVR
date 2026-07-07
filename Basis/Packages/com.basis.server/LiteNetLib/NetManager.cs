@@ -876,10 +876,39 @@ namespace LiteNetLib
             CreateEvent(NetEvent.EType.ConnectionRequest, connectionRequest: req);
         }
 
+        // ── SakiikaVR: STUN pass-through for serverless ICE-lite ────────────
+        // LiteNetLib frames its own packets, so a raw STUN response would normally
+        // be dropped by the parser. We divert packets carrying the STUN magic
+        // cookie to this hook before parsing; normal traffic never matches.
+        public static Action<IPEndPoint, byte[], int> OnStunResponse;
+
+        private static bool IsStunMessage(byte[] data, int size)
+        {
+            // Type high bits zero + 32-bit magic cookie 0x2112A442 at offset 4.
+            return size >= 20
+                && (data[0] & 0xC0) == 0
+                && data[4] == 0x21 && data[5] == 0x12 && data[6] == 0xA4 && data[7] == 0x42;
+        }
+
+        /// <summary>Sends a raw (unframed) STUN datagram from this manager's socket.</summary>
+        public bool SendStunBinding(byte[] data, IPEndPoint target)
+        {
+            if (data == null || target == null) return false;
+            return SendRaw(data, 0, data.Length, target) > 0;
+        }
+
         private void OnMessageReceived(NetPacket packet, IPEndPoint remoteEndPoint)
         {
             if (packet.Size == 0)
             {
+                PoolRecycle(packet);
+                return;
+            }
+
+            if (OnStunResponse != null && IsStunMessage(packet.RawData, packet.Size))
+            {
+                try { OnStunResponse(remoteEndPoint, packet.RawData, packet.Size); }
+                catch { /* handler owns its errors */ }
                 PoolRecycle(packet);
                 return;
             }

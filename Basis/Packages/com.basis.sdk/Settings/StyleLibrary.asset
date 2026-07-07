@@ -37,7 +37,7 @@ MonoBehaviour:
       PixelsPerUnitMultiplier: 3.5
     - Title: Toggle Background
       Color:
-        Color: {r: 0.3529412, g: 0.3529412, b: 0.43529412, a: 1}
+        Color: {r: 0.2, g: 0.24, b: 0.16, a: 1}
         PaletteStyle: 10
         Type: 1
       Sprite: {fileID: 0}
@@ -51,7 +51,7 @@ MonoBehaviour:
       PixelsPerUnitMultiplier: 1.75
     - Title: Page Tab
       Color:
-        Color: {r: 0.08627451, g: 0.08627451, b: 0.10980393, a: 1}
+        Color: {r: 0.08, g: 0.095, b: 0.065, a: 1}
         PaletteStyle: 10
         Type: 0
       Sprite: {fileID: 21300000, guid: b018fdcb256418e41ba98a12b355ce2d, type: 3}

@@ -10,7 +10,14 @@ namespace Basis.Network.Core
         /// <summary>Schema version stamped into the file; 0 = pre-versioning, upgraded on load.</summary>
         public int ConfigVersion = 0;
 
+#if UNITY_2017_1_OR_NEWER
+        // Managed sockets inside the Unity player: the experimental native-socket
+        // path silently drops loopback traffic under IL2CPP, which breaks host
+        // mode (in-process server + client connecting to 127.0.0.1).
+        public bool UseNativeSockets = false;
+#else
         public bool UseNativeSockets = true;
+#endif
         public bool NatPunchEnabled = true;
         public int NatPortPredictionRange = 32;
         public int PingInterval = 1500;

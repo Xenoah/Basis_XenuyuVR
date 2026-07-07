@@ -1,6 +1,7 @@
 using Basis.BasisUI.Styling;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Networking;
+using Basis.Scripts.Networking.Sakiika;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.UI.UI_Panels;
 using BasisPermissions;
@@ -542,8 +543,14 @@ namespace Basis.BasisUI
                     var serverUrls = new HashSet<string>(
                         serverItems.Select(k => k.Url ?? string.Empty),
                         StringComparer.OrdinalIgnoreCase);
+                    // SakiikaVR: pinned embedded items (Personal Mirror, Photo
+                    // Camera, …) already live on the hotbar — hide them from the
+                    // library grid so they aren't listed twice.
                     var data = BasisDataStoreItemKeys.DisplayKeys()
                         .Where(k => k.Mode == mode && !serverUrls.Contains(k.Url ?? string.Empty))
+                        .Where(k => !(k.EmbeddedSettings.IsEmbedded
+                                      && k.EmbeddedSettings.SourceType == BasisDataStoreItemKeys.EmbeddedSource.Addressable
+                                      && k.PinnedSettings.IsPinned))
                         .Concat(serverItems)
                         .ToList();
 
@@ -1265,8 +1272,9 @@ namespace Basis.BasisUI
             PanelButton loadPanelButton = null;
             bool replaceLoad = false;
 
-            // only do this menu for props & worlds
-            if (item.Mode == BundledContentHolder.Mode.Prop || item.Mode == BundledContentHolder.Mode.World)
+            // SakiikaVR: worlds are opened as hosted sessions (Invite/Public), so
+            // the sync-mode dropdown and persistence toggle only apply to props.
+            if (item.Mode == BundledContentHolder.Mode.Prop)
             {
                 // Advanced Settings
                 PanelTabGroup advancedActionsPanel = PanelTabGroup.CreateNew(PanelTabGroup.TabGroupStyles.VerticalStackedNoBackground, existingItemDialog.Descriptor.ContentParent);
@@ -1406,6 +1414,10 @@ namespace Basis.BasisUI
                 }
             };
 
+            // SakiikaVR: worlds are opened via the Invite/Public session buttons
+            // below — the legacy Share and Load actions only apply to avatars and props.
+            if (item.Mode != BundledContentHolder.Mode.World)
+            {
             // Share button - only enabled when connected to a server
             PanelButton sharePanelButton = PanelButton.CreateNew(ButtonStyles.StandardButton, actionsPanel.TabButtonParent);
             sharePanelButton.Descriptor.SetTitle(BasisLocalization.Get("library.share"));
@@ -1514,6 +1526,66 @@ namespace Basis.BasisUI
                     }
                 }
             };
+            }
+
+            // ── SakiikaVR: player-hosted P2P sessions ──────────────────────
+            // A world can be opened as a hosted session straight from the library:
+            // Invite hands the host a connection string to share privately, Public
+            // additionally announces the session on Misskey so it appears in the
+            // Worlds panel. Embedded-addressable and local-file worlds are excluded
+            // because joiners could never download the bundle.
+            bool p2pHostable = item.Mode == BundledContentHolder.Mode.World
+                && !isLocalItem
+                && !(item.EmbeddedSettings.IsEmbedded && item.EmbeddedSettings.SourceType == BasisDataStoreItemKeys.EmbeddedSource.Addressable);
+            if (p2pHostable)
+            {
+                string worldDisplayName = LibraryProviderStrUtil.TitleToCase(description.AssetBundleName);
+
+                // Home world toggle — the home world is hosted automatically as an
+                // invite session on startup. Lives in the main action row, in the
+                // space the Share/Load buttons occupy for other content types.
+                PanelButton homeButton = PanelButton.CreateNew(ButtonStyles.StandardButton, actionsPanel.TabButtonParent);
+                homeButton.Descriptor.SetWidth(620);
+                homeButton.Descriptor.SetHeight(60);
+                void UpdateHomeButtonTitle() => homeButton.Descriptor.SetTitle(BasisLocalization.Get(
+                    SakiikaWorldSession.IsHomeWorld(item) ? "sakiika.home.unset" : "sakiika.home.set"));
+                UpdateHomeButtonTitle();
+                homeButton.OnClicked += () =>
+                {
+                    SakiikaWorldSession.ToggleHomeWorld(item);
+                    UpdateHomeButtonTitle();
+                };
+
+                PanelTabGroup p2pPanel = PanelTabGroup.CreateNew(existingItemDialog.Descriptor.ContentParent, LayoutDirection.HorizontalNoBackground);
+                p2pPanel.Descriptor.SetHeight(60);
+
+                PanelButton inviteButton = PanelButton.CreateNew(ButtonStyles.StandardButton, p2pPanel.TabButtonParent);
+                inviteButton.Descriptor.SetTitle(BasisLocalization.Get("library.p2p.invite"));
+                inviteButton.Descriptor.SetWidth(495);
+                inviteButton.Descriptor.SetHeight(60);
+                inviteButton.OnClicked += async () =>
+                {
+                    if (existingItemDialog.IsBusy) return;
+                    existingItemDialog.IsBusy = true;
+                    existingItemDialog.CloseWithResult(null);
+                    await SakiikaWorldSession.StartWorldSessionAsync(item, worldDisplayName, WorldSessionVisibility.Invite);
+                };
+
+                PanelButton publicButton = PanelButton.CreateNew(ButtonStyles.AcceptButton, p2pPanel.TabButtonParent);
+                publicButton.Descriptor.SetTitle(BasisLocalization.Get("library.p2p.public"));
+                publicButton.Descriptor.SetWidth(495);
+                publicButton.Descriptor.SetHeight(60);
+                publicButton.SetInteractable(
+                    MisskeyService.IsLoggedIn,
+                    MisskeyService.IsLoggedIn ? null : BasisLocalization.Get("library.p2p.needMisskey"));
+                publicButton.OnClicked += async () =>
+                {
+                    if (existingItemDialog.IsBusy) return;
+                    existingItemDialog.IsBusy = true;
+                    existingItemDialog.CloseWithResult(null);
+                    await SakiikaWorldSession.StartWorldSessionAsync(item, worldDisplayName, WorldSessionVisibility.Public);
+                };
+            }
         }
 
         private static void ApplyMetaDataToButton(PanelButton buttonPanel, CachedMetaData.CachedContent cachedMeta, string urlKey)

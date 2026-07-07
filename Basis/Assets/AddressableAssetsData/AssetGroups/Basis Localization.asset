@@ -123,6 +123,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - language
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d4a9dfa2a9c2d14a8bced63e086b85e
+    m_Address: Languages/com.sakiika.provider.worlds/ja
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - language
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 37b0700be4ebfb84e98f6cc5e965eebb
     m_Address: Languages/com.basis.developer.recorder/es
     m_ReadOnly: 0
@@ -539,6 +545,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f6537e50c438161439b98b9ab08cbdf7
     m_Address: Languages/dev.hai-vr.hvr.license-review/ja
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - language
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f6e6c901430185840851f4297621d72a
+    m_Address: Languages/com.sakiika.provider.worlds/en
     m_ReadOnly: 0
     m_SerializedLabels:
     - language
