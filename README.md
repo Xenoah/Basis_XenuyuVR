@@ -2,11 +2,11 @@
   <img src="Sakiika.png" alt="さきいかVR" width="240">
 </p>
 
-# さきいかVR Built With Basis
+# さきいかVR
 
-さきいかVRは、[Basis Framework](https://github.com/BasisVR) を用いて開発しているソーシャルVRクライアントです。専用サーバーを持たず、プレイヤー同士のP2Pと Misskey を使って、ワールドの公開・参加ができます。
+さきいかVRは、専用サーバーを持たず、プレイヤー同士のP2Pと Misskey を使って、ワールドの公開・参加ができます。
 
-> Built with Basis. 「Basis」「BasisVR」の名称・ロゴは Basis Project の商標です。本プロジェクトは Basis を利用した非公式のフォークであり、Basis Project による承認・提携を示すものではありません。
+> Built with Basis. 
 
 ## ダウンロード
 
