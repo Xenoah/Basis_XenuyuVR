@@ -1,0 +1,19 @@
+{
+    "name": "jp.lilxyzw.basispatcher",
+    "rootNamespace": "jp.lilxyzw.basispatcher",
+    "references": [
+        "Basis Framework",
+        "BasisSDK",
+        "BasisSettings",
+        "HVR.Basis.Comms"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

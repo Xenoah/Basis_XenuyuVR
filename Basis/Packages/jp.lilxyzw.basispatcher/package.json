@@ -1,0 +1,8 @@
+{
+  "name": "jp.lilxyzw.basispatcher",
+  "version": "0.2.0",
+  "displayName": "lilBasisPatcher",
+  "description": "The core script of my Basis plugin.",
+  "license": "MIT",
+  "repo" : "https://lilxyzw.github.io/vpm-repos-basis/vpm.json"
+}

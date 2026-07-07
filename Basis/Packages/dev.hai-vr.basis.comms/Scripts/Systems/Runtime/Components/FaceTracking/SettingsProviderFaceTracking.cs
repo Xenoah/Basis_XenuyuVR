@@ -22,7 +22,9 @@ namespace HVR.Basis.Comms
         {
             SettingsProvider.FaceTrackingDebugBuilder = BuildFaceTrackingSection;
             SettingsProvider.EyeTrackingDebugBuilder = BuildEyeTrackingSection;
-            SettingsProvider.AvatarCustomizationBuilder = BuildAvatarCustomizationSection;
+            // += so builders registered by other packages (e.g. jp.lilxyzw.facecamera)
+            // survive regardless of RuntimeInitializeOnLoadMethod ordering.
+            SettingsProvider.AvatarCustomizationBuilder += BuildAvatarCustomizationSection;
         }
 
         static void BuildFaceTrackingSection(RectTransform parent)

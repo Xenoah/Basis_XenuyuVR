@@ -1,0 +1,11 @@
+{
+  "name": "jp.lilxyzw.facecamera",
+  "version": "0.1.1",
+  "displayName": "FaceCamera",
+  "description": "Camera for checking the avatar's facial expressions.",
+  "license": "MIT",
+  "repo" : "https://lilxyzw.github.io/vpm-repos-basis/vpm.json",
+  "vpmDependencies": {
+    "jp.lilxyzw.basispatcher": "^0.1.0"
+  }
+}

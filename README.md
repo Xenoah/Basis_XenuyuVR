@@ -80,3 +80,16 @@
 
 - 
 「まるさんかくしかくサーバー」(nodokaha様)のTURNサーバーを使わせてもらっています。
+
+---
+
+## FaceCamera(表情確認カメラ)
+
+[lilxyzw/FaceCamera](https://github.com/lilxyzw/FaceCamera)(MIT License)を統合しています。自分のアバターの顔を映す小窓を画面(VRではHUD)に表示し、表情を確認しながら遊べる機能です。
+
+- **有効化** — 設定メニューの「Plugins」タブ → FaceCamera セクションで「有効」をオンにします(デフォルトはオフ)。
+- **表示調整** — 小窓のアンカー位置(左上/右上/左下/右下)、不透明度、サイズ、オフセットをデスクトップ/VRそれぞれ個別に設定できます。
+- **アバターごとの調整** — アバターカスタマイズメニューから、カメラの撮影範囲(Range)と高さオフセット(OffsetY)をアバター単位で保存できます。
+- 表示は日本語/英語に対応しています。
+
+依存プラグインの [lilxyzw/lilBasisPatcher](https://github.com/lilxyzw/lilBasisPatcher)(MIT License)も同梱しています(設定タブ共有・アバター別設定保存の基盤。Editor部分はこのプロジェクトでは不要のため未同梱)。各ライセンス全文は `Basis/Packages/jp.lilxyzw.facecamera/LICENSE` と `Basis/Packages/jp.lilxyzw.basispatcher/LICENSE`、および[LICENSE](LICENSE)のThird-Party Code欄を参照してください。

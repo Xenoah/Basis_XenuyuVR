@@ -1,0 +1,82 @@
+{
+  "code": "en",
+  "nativeName": "English",
+  "entries": [
+    {
+      "key": "settings.jp.lilxyzw.facecamera",
+      "value": "FaceCamera"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.enabled",
+      "value": "Enabled"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.enabled.tooltip",
+      "value": "Enable face camera."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.anchor",
+      "value": "Anchor"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.anchor.tooltip",
+      "value": "Position of the origin."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.opacity",
+      "value": "Opacity"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.opacity.tooltip",
+      "value": "Face camera opacity."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.desktop",
+      "value": "Desktop Settings"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.vr",
+      "value": "VR Settings"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.size",
+      "value": "Size"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.size.tooltip",
+      "value": "Preview screen size."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetx",
+      "value": "Offset X"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetx.tooltip",
+      "value": "X-axis position on the preview screen."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsety",
+      "value": "Offset Y"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsety.tooltip",
+      "value": "Y-axis position on the preview screen."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.range",
+      "value": "Range"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.range.tooltip",
+      "value": "FaceCamera rendering range."
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetyavatar",
+      "value": "Offset Y"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetyavatar.tooltip",
+      "value": "Camera Y-axis offset"
+    }
+  ]
+}

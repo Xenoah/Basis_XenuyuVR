@@ -1,0 +1,82 @@
+{
+  "code": "ja",
+  "nativeName": "日本語",
+  "entries": [
+    {
+      "key": "settings.jp.lilxyzw.facecamera",
+      "value": "FaceCamera"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.enabled",
+      "value": "有効"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.enabled.tooltip",
+      "value": "FaceCameraを有効化します。"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.anchor",
+      "value": "アンカー"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.anchor.tooltip",
+      "value": "原点の方向"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.opacity",
+      "value": "不透明度"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.opacity.tooltip",
+      "value": "FaceCameraの不透明度"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.desktop",
+      "value": "デスクトップ設定"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.vr",
+      "value": "VR設定"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.size",
+      "value": "サイズ"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.size.tooltip",
+      "value": "プレビュー画面のサイズ"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetx",
+      "value": "X軸オフセット"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetx.tooltip",
+      "value": "プレビュー画面の横方向の位置"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsety",
+      "value": "Y軸オフセット"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsety.tooltip",
+      "value": "プレビュー画面の縦方向の位置"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.range",
+      "value": "範囲"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.range.tooltip",
+      "value": "FaceCameraの撮影範囲"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetyavatar",
+      "value": "Y軸オフセット"
+    },
+    {
+      "key": "settings.jp.lilxyzw.facecamera.offsetyavatar.tooltip",
+      "value": "撮影範囲のY軸方向のオフセット量"
+    }
+  ]
+}

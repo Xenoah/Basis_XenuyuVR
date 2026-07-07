@@ -1,0 +1,22 @@
+{
+    "name": "jp.lilxyzw.facecamera",
+    "rootNamespace": "jp.lilxyzw.facecamera",
+    "references": [
+        "Unity.RenderPipelines.Universal.Runtime",
+        "BasisSDK",
+        "Basis Framework",
+        "BasisCommon",
+        "BasisSettings",
+        "HVR.Basis.Comms",
+        "jp.lilxyzw.basispatcher"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
