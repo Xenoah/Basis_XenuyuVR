@@ -136,6 +136,8 @@
     <assembly fullname="audioplugin_phonon" preserve="all" />
     <assembly fullname="com.cqf.urpvolumetricfog.runtime" preserve="all" />
     <assembly fullname="com.gator-dragon-games.jigglephysics" preserve="all" />
+    <assembly fullname="jp.lilxyzw.basispatcher" preserve="all" />
+    <assembly fullname="jp.lilxyzw.facecamera" preserve="all" />
     <assembly fullname="openvr_api" preserve="all" />
     <assembly fullname="opus" preserve="all" />
     <assembly fullname="phonon" preserve="all" />

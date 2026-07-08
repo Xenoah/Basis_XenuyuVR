@@ -129,6 +129,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - language
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 316ce3c07383e9143970f5e43323afaa
+    m_Address: Languages/jp.lilxyzw.facecamera/en
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - language
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 37b0700be4ebfb84e98f6cc5e965eebb
     m_Address: Languages/com.basis.developer.recorder/es
     m_ReadOnly: 0
@@ -461,6 +467,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c7f4063db58ab1e48abc696d2c627a5a
     m_Address: Languages/com.basis.developer.exceptions/ar
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - language
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: caecae03bebb27a4aa81f0379c09f184
+    m_Address: Languages/jp.lilxyzw.facecamera/ja
     m_ReadOnly: 0
     m_SerializedLabels:
     - language
