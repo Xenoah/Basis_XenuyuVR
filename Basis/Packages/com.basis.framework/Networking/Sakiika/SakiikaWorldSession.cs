@@ -41,6 +41,15 @@ namespace Basis.Scripts.Networking.Sakiika
         public static string ActiveNoteId { get; private set; }
         public static string ActiveConnectionString { get; private set; }
 
+        /// <summary>
+        /// Connection string of the session we're currently in — set both when
+        /// hosting and when joining someone else's world. Friend invites forward
+        /// this so the recipient lands in the same session.
+        /// </summary>
+        public static string CurrentSessionConnectionString { get; private set; }
+        /// <summary>Display name of the current session's world, best-effort.</summary>
+        public static string CurrentSessionWorldName { get; private set; }
+
         /// <summary>Live TURN relay for the current hosted session (symmetric NAT), if any.</summary>
         private static SakiikaTurnClient _activeTurn;
 
@@ -183,6 +192,8 @@ namespace Basis.Scripts.Networking.Sakiika
                 }
                 string connectionString = $"{hostForShare}:{sharePort.ToString(CultureInfo.InvariantCulture)}#{password}";
                 ActiveConnectionString = connectionString;
+                CurrentSessionConnectionString = connectionString;
+                CurrentSessionWorldName = worldDisplayName ?? string.Empty;
                 // From here the in-process server is live; a subsequent world open
                 // reuses it (swap the world) instead of restarting.
                 _isHostingOwnSession = true;
@@ -250,6 +261,7 @@ namespace Basis.Scripts.Networking.Sakiika
         private static async Task ReuseSessionSwapWorldAsync(BasisDataStoreItemKeys.ItemKey item, string worldDisplayName, WorldSessionVisibility visibility, bool showResultDialog)
         {
             BasisDebug.Log($"Reusing host session; swapping world to '{worldDisplayName}' visibility={visibility}", BasisDebug.LogTag.Networking);
+            CurrentSessionWorldName = worldDisplayName ?? string.Empty;
 
             if (visibility == WorldSessionVisibility.Public && !MisskeyService.IsLoggedIn)
             {
@@ -425,6 +437,8 @@ namespace Basis.Scripts.Networking.Sakiika
             await DeleteActiveNoteAsync();
             _isHostingOwnSession = false;
             ActiveConnectionString = null;
+            CurrentSessionConnectionString = connectionString.Trim();
+            CurrentSessionWorldName = string.Empty;
 
             BasisMainMenu.Close();
             await BasisConnectionService.ConnectAsync(entry, userName);
@@ -456,6 +470,8 @@ namespace Basis.Scripts.Networking.Sakiika
             await DeleteActiveNoteAsync();
             _isHostingOwnSession = false;
             ActiveConnectionString = null;
+            CurrentSessionConnectionString = payload.conn;
+            CurrentSessionWorldName = payload.name ?? string.Empty;
 
             IPEndPoint hostEndpoint = ParseEndpoint(payload.conn);
 
@@ -578,6 +594,8 @@ namespace Basis.Scripts.Networking.Sakiika
         {
             // We are leaving/replacing the current session, so we no longer host it.
             _isHostingOwnSession = false;
+            CurrentSessionConnectionString = null;
+            CurrentSessionWorldName = null;
             if (!BasisNetworkConnection.LocalPlayerIsConnected
                 && !NetworkServer.IsListening
                 && BasisNetworkConnection.BasisNetworkServerRunner == null)

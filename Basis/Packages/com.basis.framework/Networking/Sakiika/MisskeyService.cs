@@ -1,5 +1,6 @@
 using Basis.Scripts.Common;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -32,7 +33,12 @@ namespace Basis.Scripts.Networking.Sakiika
         public const string PayloadPrefix = "MVRP1:";
 
         public const string MiAuthAppName = "SakiikaVR";
-        public const string MiAuthPermission = "write:notes";
+        // read:account is needed for notes/mentions (receiving friend invites),
+        // read:following for mutual-follow lists when the user hides them.
+        // Tokens issued before these scopes were added keep working for
+        // everything except invite receiving; the poller detects the 403 and
+        // disables itself until the user re-logs in.
+        public const string MiAuthPermission = "write:notes,read:account,read:following";
 
         /// <summary>Announce notes older than this are treated as stale and hidden from the list.</summary>
         public static readonly TimeSpan MaxAnnounceAge = TimeSpan.FromHours(12);
@@ -151,7 +157,14 @@ namespace Basis.Scripts.Networking.Sakiika
         /// Creates a note, optionally as a reply to <paramref name="replyId"/> and with a
         /// given visibility ("public", "home", "specified"). Returns the note id or null.
         /// </summary>
-        public static async Task<string> CreateNoteAsync(string text, string replyId, string visibility)
+        public static Task<string> CreateNoteAsync(string text, string replyId, string visibility)
+            => CreateNoteAsync(text, replyId, visibility, null);
+
+        /// <summary>
+        /// Creates a note; when <paramref name="visibility"/> is "specified",
+        /// <paramref name="visibleUserIds"/> selects the recipients (a Misskey DM).
+        /// </summary>
+        public static async Task<string> CreateNoteAsync(string text, string replyId, string visibility, string[] visibleUserIds)
         {
             if (!IsLoggedIn)
             {
@@ -163,6 +176,16 @@ namespace Basis.Scripts.Networking.Sakiika
             sb.Append("{\"i\":\"").Append(JsonEscape(Token)).Append('"');
             sb.Append(",\"visibility\":\"").Append(JsonEscape(visibility)).Append('"');
             if (!string.IsNullOrEmpty(replyId)) sb.Append(",\"replyId\":\"").Append(JsonEscape(replyId)).Append('"');
+            if (visibleUserIds != null && visibleUserIds.Length > 0)
+            {
+                sb.Append(",\"visibleUserIds\":[");
+                for (int i = 0; i < visibleUserIds.Length; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    sb.Append('"').Append(JsonEscape(visibleUserIds[i])).Append('"');
+                }
+                sb.Append(']');
+            }
             sb.Append(",\"text\":\"").Append(JsonEscape(text)).Append("\"}");
             string body = sb.ToString();
             (bool ok, string response, long code) = await PostJsonAsync($"{InstanceUrl}/api/notes/create", body);
@@ -238,6 +261,159 @@ namespace Basis.Scripts.Networking.Sakiika
             }
         }
 
+        // ── Users (friends tab) ──────────────────────────────────────────────
+
+        /// <summary>
+        /// Resolves a username on the configured instance to its full user object
+        /// (id, avatarUrl, …) via <c>users/show</c>. Public endpoint — works with
+        /// tokens that predate the friends feature. Null on failure.
+        /// </summary>
+        public static async Task<MisskeyUser> GetUserByUsernameAsync(string username)
+        {
+            if (string.IsNullOrEmpty(username)) return null;
+            StringBuilder body = new StringBuilder();
+            body.Append("{\"username\":\"").Append(JsonEscape(username)).Append('"');
+            if (IsLoggedIn) body.Append(",\"i\":\"").Append(JsonEscape(Token)).Append('"');
+            body.Append('}');
+
+            (bool ok, string response, long code) = await PostJsonAsync($"{InstanceUrl}/api/users/show", body.ToString());
+            if (!ok)
+            {
+                BasisDebug.LogWarning($"[Misskey] users/show failed (HTTP {code}): {response}");
+                return null;
+            }
+            try
+            {
+                MisskeyUser user = JsonUtility.FromJson<MisskeyUser>(response);
+                return string.IsNullOrEmpty(user?.id) ? null : user;
+            }
+            catch (Exception ex)
+            {
+                BasisDebug.LogError($"[Misskey] users/show parse failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        [Serializable]
+        private class FollowEntry
+        {
+            public string id;
+            public MisskeyUser followee;
+            public MisskeyUser follower;
+        }
+
+        [Serializable]
+        private class FollowListWrapper
+        {
+            public FollowEntry[] Items;
+        }
+
+        /// <summary>Users the given account follows (paginated, capped).</summary>
+        public static Task<List<MisskeyUser>> GetFollowingUsersAsync(string userId, int maxCount = 300)
+            => GetFollowListAsync(userId, "following", maxCount);
+
+        /// <summary>Users following the given account (paginated, capped).</summary>
+        public static Task<List<MisskeyUser>> GetFollowerUsersAsync(string userId, int maxCount = 300)
+            => GetFollowListAsync(userId, "followers", maxCount);
+
+        private static async Task<List<MisskeyUser>> GetFollowListAsync(string userId, string direction, int maxCount)
+        {
+            List<MisskeyUser> users = new List<MisskeyUser>();
+            if (string.IsNullOrEmpty(userId)) return users;
+
+            string untilId = null;
+            while (users.Count < maxCount)
+            {
+                int pageSize = Math.Min(100, maxCount - users.Count);
+                StringBuilder body = new StringBuilder();
+                body.Append("{\"userId\":\"").Append(JsonEscape(userId)).Append("\",\"limit\":").Append(pageSize);
+                if (!string.IsNullOrEmpty(untilId)) body.Append(",\"untilId\":\"").Append(JsonEscape(untilId)).Append('"');
+                if (IsLoggedIn) body.Append(",\"i\":\"").Append(JsonEscape(Token)).Append('"');
+                body.Append('}');
+
+                (bool ok, string response, long code) = await PostJsonAsync($"{InstanceUrl}/api/users/{direction}", body.ToString());
+                if (!ok)
+                {
+                    BasisDebug.LogWarning($"[Misskey] users/{direction} failed (HTTP {code}): {response}");
+                    break;
+                }
+
+                FollowEntry[] entries;
+                try
+                {
+                    FollowListWrapper wrapper = JsonUtility.FromJson<FollowListWrapper>("{\"Items\":" + response + "}");
+                    entries = wrapper?.Items ?? Array.Empty<FollowEntry>();
+                }
+                catch (Exception ex)
+                {
+                    BasisDebug.LogError($"[Misskey] users/{direction} parse failed: {ex.Message}");
+                    break;
+                }
+
+                if (entries.Length == 0) break;
+                foreach (FollowEntry entry in entries)
+                {
+                    MisskeyUser user = direction == "following" ? entry?.followee : entry?.follower;
+                    if (user != null && !string.IsNullOrEmpty(user.id)) users.Add(user);
+                    untilId = entry?.id;
+                }
+                if (entries.Length < pageSize) break;
+            }
+            return users;
+        }
+
+        /// <summary>
+        /// Recent notes of one user (presence probing). The token is attached so
+        /// followers-only presence notes are visible to mutuals.
+        /// </summary>
+        public static async Task<MisskeyNote[]> GetUserNotesAsync(string userId, int limit = 5)
+        {
+            if (string.IsNullOrEmpty(userId)) return Array.Empty<MisskeyNote>();
+            StringBuilder body = new StringBuilder();
+            body.Append("{\"userId\":\"").Append(JsonEscape(userId)).Append("\",\"limit\":").Append(limit)
+                .Append(",\"withReplies\":false,\"withRenotes\":false");
+            if (IsLoggedIn) body.Append(",\"i\":\"").Append(JsonEscape(Token)).Append('"');
+            body.Append('}');
+
+            (bool ok, string response, long _) = await PostJsonAsync($"{InstanceUrl}/api/users/notes", body.ToString());
+            if (!ok) return Array.Empty<MisskeyNote>();
+            try
+            {
+                NoteListWrapper wrapper = JsonUtility.FromJson<NoteListWrapper>("{\"Items\":" + response + "}");
+                return wrapper?.Items ?? Array.Empty<MisskeyNote>();
+            }
+            catch
+            {
+                return Array.Empty<MisskeyNote>();
+            }
+        }
+
+        /// <summary>
+        /// Direct ("specified") notes addressed to the logged-in account — the
+        /// friend-invite inbox. Returns ok=false with the HTTP code on failure so
+        /// the caller can distinguish a permission problem (old token without
+        /// read:account) from a transient error.
+        /// </summary>
+        public static async Task<(bool ok, long code, MisskeyNote[] notes)> GetSpecifiedMentionsAsync(int limit = 10)
+        {
+            if (!IsLoggedIn) return (false, 0, Array.Empty<MisskeyNote>());
+            StringBuilder body = new StringBuilder();
+            body.Append("{\"i\":\"").Append(JsonEscape(Token)).Append("\",\"limit\":").Append(limit)
+                .Append(",\"visibility\":\"specified\"}");
+
+            (bool ok, string response, long code) = await PostJsonAsync($"{InstanceUrl}/api/notes/mentions", body.ToString());
+            if (!ok) return (false, code, Array.Empty<MisskeyNote>());
+            try
+            {
+                NoteListWrapper wrapper = JsonUtility.FromJson<NoteListWrapper>("{\"Items\":" + response + "}");
+                return (true, code, wrapper?.Items ?? Array.Empty<MisskeyNote>());
+            }
+            catch
+            {
+                return (false, code, Array.Empty<MisskeyNote>());
+            }
+        }
+
         /// <summary>
         /// Fetches replies to a note (used as the hole-punch signaling channel):
         /// guests reply to the host's announce note with their endpoint.
@@ -277,18 +453,36 @@ namespace Basis.Scripts.Networking.Sakiika
 
         public static bool TryDecodeWorldPayload(string noteText, out WorldAnnouncePayload payload)
         {
+            bool ok = TryDecodePayload(noteText, PayloadPrefix, out payload);
+            if (ok && string.IsNullOrEmpty(payload.conn))
+            {
+                payload = null;
+                return false;
+            }
+            return ok;
+        }
+
+        /// <summary>Base64-JSON payload line with an arbitrary prefix (world announce, invite, …).</summary>
+        public static string BuildPayloadLine<T>(string prefix, T payload)
+        {
+            string json = JsonUtility.ToJson(payload);
+            return prefix + Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        }
+
+        public static bool TryDecodePayload<T>(string noteText, string prefix, out T payload) where T : class
+        {
             payload = null;
             if (string.IsNullOrEmpty(noteText)) return false;
 
             foreach (string rawLine in noteText.Split('\n'))
             {
                 string line = rawLine.Trim();
-                if (!line.StartsWith(PayloadPrefix, StringComparison.Ordinal)) continue;
+                if (!line.StartsWith(prefix, StringComparison.Ordinal)) continue;
                 try
                 {
-                    string json = Encoding.UTF8.GetString(Convert.FromBase64String(line.Substring(PayloadPrefix.Length)));
-                    WorldAnnouncePayload decoded = JsonUtility.FromJson<WorldAnnouncePayload>(json);
-                    if (decoded == null || string.IsNullOrEmpty(decoded.conn)) return false;
+                    string json = Encoding.UTF8.GetString(Convert.FromBase64String(line.Substring(prefix.Length)));
+                    T decoded = JsonUtility.FromJson<T>(json);
+                    if (decoded == null) return false;
                     payload = decoded;
                     return true;
                 }
@@ -361,9 +555,11 @@ namespace Basis.Scripts.Networking.Sakiika
     [Serializable]
     public class MisskeyUser
     {
+        public string id;
         public string username;
         public string name;
         public string host;
+        public string avatarUrl;
     }
 
     [Serializable]

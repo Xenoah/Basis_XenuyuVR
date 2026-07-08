@@ -141,6 +141,94 @@
     {
       "key": "sakiika.session.badConnection.body",
       "value": "接続情報を解析できませんでした:\n{0}"
+    },
+    {
+      "key": "menu.provider.friends",
+      "value": "フレンド"
+    },
+    {
+      "key": "friends.section.online",
+      "value": "VRでオンライン"
+    },
+    {
+      "key": "friends.section.mutuals",
+      "value": "相互フォロー"
+    },
+    {
+      "key": "friends.loading",
+      "value": "フレンドを読み込み中..."
+    },
+    {
+      "key": "friends.empty.online",
+      "value": "現在オンラインのフレンドはいません。"
+    },
+    {
+      "key": "friends.empty.mutuals",
+      "value": "相互フォローのユーザーがいません。Misskeyでフォローし合うとここに表示されます。"
+    },
+    {
+      "key": "friends.notLoggedIn.title",
+      "value": "Misskeyログインが必要です"
+    },
+    {
+      "key": "friends.notLoggedIn.body",
+      "value": "ワールドパネルからMisskeyにログインすると、相互フォローのフレンドが表示されます。"
+    },
+    {
+      "key": "friends.dialog.invite.title",
+      "value": "インバイトを送る"
+    },
+    {
+      "key": "friends.dialog.invite.body",
+      "value": "{0} を現在のワールドに招待しますか?"
+    },
+    {
+      "key": "friends.dialog.invite.send",
+      "value": "送信"
+    },
+    {
+      "key": "friends.dialog.offline.title",
+      "value": "オフライン"
+    },
+    {
+      "key": "friends.dialog.offline.body",
+      "value": "{0} は現在VRでオンラインではありません。"
+    },
+    {
+      "key": "friends.invite.needSession.title",
+      "value": "ワールドが開かれていません"
+    },
+    {
+      "key": "friends.invite.needSession.body",
+      "value": "先にライブラリのワールドタブから「インバイトで開く」または「パブリックで開く」でワールドを開いてください。"
+    },
+    {
+      "key": "friends.invite.sent.title",
+      "value": "インバイトを送信しました"
+    },
+    {
+      "key": "friends.invite.sent.body",
+      "value": "{0} にインバイトを送りました。相手が承認するとワールドに参加します。"
+    },
+    {
+      "key": "friends.invite.failed.title",
+      "value": "インバイトの送信に失敗しました"
+    },
+    {
+      "key": "friends.invite.failed.body",
+      "value": "{0} へのインバイトを送信できませんでした。時間をおいて再度お試しください。"
+    },
+    {
+      "key": "friends.invite.received.title",
+      "value": "ワールドインバイト"
+    },
+    {
+      "key": "friends.invite.received.body",
+      "value": "{0} があなたをワールド「{1}」に招待しています。参加しますか?"
+    },
+    {
+      "key": "friends.invite.received.join",
+      "value": "参加"
     }
   ]
 }

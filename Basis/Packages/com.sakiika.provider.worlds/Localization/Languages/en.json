@@ -141,6 +141,94 @@
     {
       "key": "sakiika.session.badConnection.body",
       "value": "The connection info could not be parsed:\n{0}"
+    },
+    {
+      "key": "menu.provider.friends",
+      "value": "Friends"
+    },
+    {
+      "key": "friends.section.online",
+      "value": "Online in VR"
+    },
+    {
+      "key": "friends.section.mutuals",
+      "value": "Mutual Follows"
+    },
+    {
+      "key": "friends.loading",
+      "value": "Loading friends..."
+    },
+    {
+      "key": "friends.empty.online",
+      "value": "No friends are online right now."
+    },
+    {
+      "key": "friends.empty.mutuals",
+      "value": "No mutual follows yet. Follow each other on Misskey and they will show up here."
+    },
+    {
+      "key": "friends.notLoggedIn.title",
+      "value": "Misskey Login Required"
+    },
+    {
+      "key": "friends.notLoggedIn.body",
+      "value": "Log in to Misskey from the Worlds panel to see your mutual follows here."
+    },
+    {
+      "key": "friends.dialog.invite.title",
+      "value": "Send Invite"
+    },
+    {
+      "key": "friends.dialog.invite.body",
+      "value": "Invite {0} to your current world?"
+    },
+    {
+      "key": "friends.dialog.invite.send",
+      "value": "Send"
+    },
+    {
+      "key": "friends.dialog.offline.title",
+      "value": "Offline"
+    },
+    {
+      "key": "friends.dialog.offline.body",
+      "value": "{0} is not online in VR right now."
+    },
+    {
+      "key": "friends.invite.needSession.title",
+      "value": "No World Open"
+    },
+    {
+      "key": "friends.invite.needSession.body",
+      "value": "Open a world first (Invite or Public) from the Library's World tab."
+    },
+    {
+      "key": "friends.invite.sent.title",
+      "value": "Invite Sent"
+    },
+    {
+      "key": "friends.invite.sent.body",
+      "value": "Sent an invite to {0}. They will join your world when they accept."
+    },
+    {
+      "key": "friends.invite.failed.title",
+      "value": "Invite Failed"
+    },
+    {
+      "key": "friends.invite.failed.body",
+      "value": "The invite to {0} could not be sent. Please try again later."
+    },
+    {
+      "key": "friends.invite.received.title",
+      "value": "World Invite"
+    },
+    {
+      "key": "friends.invite.received.body",
+      "value": "{0} invited you to the world \"{1}\". Join now?"
+    },
+    {
+      "key": "friends.invite.received.join",
+      "value": "Join"
     }
   ]
 }
