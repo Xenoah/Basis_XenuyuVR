@@ -41,6 +41,15 @@ namespace Basis.BasisUI
         // Keyed by avatarUrl; session-lifetime cache so panel refreshes don't re-download.
         private static readonly Dictionary<string, Sprite> _avatarCache = new Dictionary<string, Sprite>(StringComparer.Ordinal);
 
+        // Last fetched friend data. Reopening the panel rebuilds from this cache
+        // instead of refetching (switching tabs was reloading the whole list);
+        // the Refresh button and cache expiry hit the network again.
+        private static readonly TimeSpan CacheLifetime = TimeSpan.FromMinutes(3);
+        private static List<MisskeyUser> _cachedMutuals;
+        private static HashSet<string> _cachedOnlineIds;
+        private static DateTime _cacheAtUtc;
+        private static string _cacheForUsername;
+
         public override void RunAction()
         {
             if (BasisMainMenu.ActiveMenuTitle == Title)
@@ -66,27 +75,43 @@ namespace Basis.BasisUI
 
         // ── Panel body ───────────────────────────────────────────────────────
 
-        private async Task RefreshAsync()
+        private bool HasFreshCache =>
+            _cachedMutuals != null
+            && _cacheForUsername == MisskeyService.Username
+            && DateTime.UtcNow - _cacheAtUtc < CacheLifetime;
+
+        private async Task RefreshAsync(bool force = false)
         {
             if (_refreshing || _panel == null) return;
             _refreshing = true;
             try
             {
-                RectTransform container = _container;
-                ClearChildren(container);
-
-                BuildHeader(container);
-
                 if (!MisskeyService.IsLoggedIn)
                 {
+                    RectTransform container = _container;
+                    ClearChildren(container);
+                    BuildHeader(container);
                     PanelElementDescriptor prompt = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
                     prompt.SetTitle(BasisLocalization.Get("friends.notLoggedIn.title"));
                     prompt.SetDescription(BasisLocalization.Get("friends.notLoggedIn.body"));
                     return;
                 }
 
-                PanelElementDescriptor loading = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
-                loading.SetTitle(BasisLocalization.Get("friends.loading"));
+                // Reopening the panel shows the cached list instantly; only an
+                // explicit refresh or an expired cache goes back to the network.
+                if (!force && HasFreshCache)
+                {
+                    BuildBody(_cachedMutuals, _cachedOnlineIds);
+                    return;
+                }
+
+                {
+                    RectTransform container = _container;
+                    ClearChildren(container);
+                    BuildHeader(container);
+                    PanelElementDescriptor loading = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
+                    loading.SetTitle(BasisLocalization.Get("friends.loading"));
+                }
 
                 List<MisskeyUser> mutuals = await FetchMutualFollowsAsync();
                 if (_panel == null) return;
@@ -97,36 +122,12 @@ namespace Basis.BasisUI
                 HashSet<string> onlineIds = await SakiikaPresence.QueryOnlineUserIdsAsync(mutuals);
                 if (_panel == null) return;
 
-                container = _container;
-                ClearChildren(container);
-                BuildHeader(container);
+                _cachedMutuals = mutuals;
+                _cachedOnlineIds = onlineIds;
+                _cacheAtUtc = DateTime.UtcNow;
+                _cacheForUsername = MisskeyService.Username;
 
-                // ── Online in VR (above the full list) ──
-                List<MisskeyUser> online = mutuals.Where(u => onlineIds.Contains(u.id)).ToList();
-                PanelElementDescriptor onlineHeader = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
-                onlineHeader.SetTitle($"{BasisLocalization.Get("friends.section.online")} ({online.Count})");
-                if (online.Count == 0)
-                {
-                    onlineHeader.SetDescription(BasisLocalization.Get("friends.empty.online"));
-                }
-                else
-                {
-                    RectTransform onlineGrid = CreateFriendsGrid(container);
-                    foreach (MisskeyUser user in online) CreateFriendCard(user, true, onlineGrid);
-                }
-
-                // ── All mutual follows ──
-                PanelElementDescriptor mutualHeader = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
-                mutualHeader.SetTitle($"{BasisLocalization.Get("friends.section.mutuals")} ({mutuals.Count})");
-                if (mutuals.Count == 0)
-                {
-                    mutualHeader.SetDescription(BasisLocalization.Get("friends.empty.mutuals"));
-                }
-                else
-                {
-                    RectTransform mutualGrid = CreateFriendsGrid(container);
-                    foreach (MisskeyUser user in mutuals) CreateFriendCard(user, onlineIds.Contains(user.id), mutualGrid);
-                }
+                BuildBody(mutuals, onlineIds);
             }
             catch (Exception ex)
             {
@@ -138,12 +139,46 @@ namespace Basis.BasisUI
             }
         }
 
+        private void BuildBody(List<MisskeyUser> mutuals, HashSet<string> onlineIds)
+        {
+            RectTransform container = _container;
+            ClearChildren(container);
+            BuildHeader(container);
+
+            // ── Online in VR (above the full list) ──
+            List<MisskeyUser> online = mutuals.Where(u => onlineIds.Contains(u.id)).ToList();
+            PanelElementDescriptor onlineHeader = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
+            onlineHeader.SetTitle($"{BasisLocalization.Get("friends.section.online")} ({online.Count})");
+            if (online.Count == 0)
+            {
+                onlineHeader.SetDescription(BasisLocalization.Get("friends.empty.online"));
+            }
+            else
+            {
+                RectTransform onlineGrid = CreateFriendsGrid(container, online.Count);
+                foreach (MisskeyUser user in online) CreateFriendCard(user, true, onlineGrid);
+            }
+
+            // ── All mutual follows ──
+            PanelElementDescriptor mutualHeader = PanelElementDescriptor.CreateNew(PanelElementDescriptor.ElementStyles.Group, container);
+            mutualHeader.SetTitle($"{BasisLocalization.Get("friends.section.mutuals")} ({mutuals.Count})");
+            if (mutuals.Count == 0)
+            {
+                mutualHeader.SetDescription(BasisLocalization.Get("friends.empty.mutuals"));
+            }
+            else
+            {
+                RectTransform mutualGrid = CreateFriendsGrid(container, mutuals.Count);
+                foreach (MisskeyUser user in mutuals) CreateFriendCard(user, onlineIds.Contains(user.id), mutualGrid);
+            }
+        }
+
         private void BuildHeader(RectTransform container)
         {
             PanelButton refresh = PanelButton.CreateNew(ButtonStyles.StandardButton, container);
             refresh.Descriptor.SetTitle(BasisLocalization.Get("sakiika.worlds.refresh"));
             refresh.Descriptor.SetHeight(60);
-            refresh.OnClicked += () => _ = RefreshAsync();
+            refresh.OnClicked += () => _ = RefreshAsync(force: true);
         }
 
         private static void ClearChildren(RectTransform container)
@@ -190,25 +225,39 @@ namespace Basis.BasisUI
 
         // ── Cards ────────────────────────────────────────────────────────────
 
+        private const int GridColumns = 5;
+        private static readonly Vector2 GridCellSize = new Vector2(200, 250);
+        private static readonly Vector2 GridSpacing = new Vector2(10, 15);
+        private const int GridPadding = 10;
+
         /// <summary>
         /// Plain GridLayoutGroup matching the library grid prefab's cell metrics,
         /// so friend cards line up exactly like the world tab's grid but can sit
-        /// as a section inside this vertical page.
+        /// as a section inside this vertical page. The page's VerticalLayoutGroup
+        /// has childControlHeight off (it uses each child's own rect height), so
+        /// the height is set explicitly from the card count — a ContentSizeFitter
+        /// here grows around the center pivot and overlaps the neighbors instead.
         /// </summary>
-        private static RectTransform CreateFriendsGrid(RectTransform parent)
+        private static RectTransform CreateFriendsGrid(RectTransform parent, int cardCount)
         {
             GameObject go = new GameObject("FriendsGrid", typeof(RectTransform));
             RectTransform rect = (RectTransform)go.transform;
             rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+
+            int rows = Mathf.Max(1, Mathf.CeilToInt(cardCount / (float)GridColumns));
+            float height = GridPadding * 2 + rows * GridCellSize.y + (rows - 1) * GridSpacing.y;
+            rect.sizeDelta = new Vector2(0f, height);
 
             GridLayoutGroup grid = go.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(200, 250);
-            grid.spacing = new Vector2(10, 15);
-            grid.padding = new RectOffset(10, 10, 10, 10);
+            grid.cellSize = GridCellSize;
+            grid.spacing = GridSpacing;
+            grid.padding = new RectOffset(GridPadding, GridPadding, GridPadding, GridPadding);
             grid.childAlignment = TextAnchor.UpperLeft;
-
-            ContentSizeFitter fitter = go.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = GridColumns;
 
             LayoutElement layout = go.AddComponent<LayoutElement>();
             layout.flexibleWidth = 1f;
