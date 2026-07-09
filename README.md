@@ -9,6 +9,14 @@
 > 現状、バグやグローバルIpのセキュリティが未完成なので気を付けてください。
 > Built with Basis. 
 
+## スクリーンショット
+
+<p align="center">
+  <img src="docs/screenshots/library-worlds.png" alt="ライブラリ(ワールド一覧)" width="32%">
+  <img src="docs/screenshots/friends.png" alt="フレンドパネル(相互フォロー一覧)" width="32%">
+  <img src="docs/screenshots/settings.png" alt="設定メニュー" width="32%">
+</p>
+
 # 実装したい機能
 ・動画プレーヤー
 ・ワールド検索(Misskeyに投稿されたワールドをクライアント内で検索)
