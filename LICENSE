@@ -1,4 +1,32 @@
-MIT License
+さきいかVR License (SakiikaVR-original code)
+=======================================================================
+
+Copyright (c) 2026 Kinuyu
+
+本リポジトリのうち、さきいかVR固有のコード(アップストリームの Basis および
+後述のサードパーティ製コンポーネントに由来しない、本プロジェクトのために
+書かれたオリジナルのコード・アセット)には、以下の条件が適用されます。
+
+- さきいかVR本体のビルド・実行・改変、およびさきいかVRへの貢献
+  (Pull Request 等)を目的とした利用は許可します。
+- さきいかVR以外のプロジェクト・ソフトウェアでの利用(コピー、改変しての
+  流用、再配布、組み込みを含む)は禁止します。
+- 上記で明示的に許可されていない権利は、すべて留保されます。
+
+English summary: Code and assets original to SakiikaVR (i.e., not derived
+from upstream Basis or the third-party components listed below) may be used
+only to build, run, modify, and contribute to SakiikaVR itself. Using
+SakiikaVR-original code in any other project or software (including copying,
+adapting, redistributing, or embedding it) is prohibited. All rights not
+expressly granted are reserved.
+
+この条項は、アップストリームの Basis(下記 MIT License)および
+サードパーティ製コンポーネントには適用されません。それらの部分は
+それぞれのライセンスに従います。
+
+-----------------------------------------------------------------------
+
+MIT License (upstream Basis)
 
 Copyright (c) 2024 MR LUKE B DOOLAN
 

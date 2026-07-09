@@ -101,3 +101,9 @@
 - 表示は日本語/英語に対応しています。
 
 依存プラグインの [lilxyzw/lilBasisPatcher](https://github.com/lilxyzw/lilBasisPatcher)(MIT License)も同梱しています(設定タブ共有・アバター別設定保存の基盤。Editor部分はこのプロジェクトでは不要のため未同梱)。各ライセンス全文は `Basis/Packages/jp.lilxyzw.facecamera/LICENSE` と `Basis/Packages/jp.lilxyzw.basispatcher/LICENSE`、および[LICENSE](LICENSE)のThird-Party Code欄を参照してください。
+
+## ライセンス
+
+- **さきいかVR固有のコードは、さきいかVR本体での利用・貢献に限り許可されます。他のプロジェクトでの使用・流用・再配布は禁止です。**
+- ベースの [Basis](https://github.com/BasisVR/Basis) 由来のコードはMIT License、同梱のサードパーティ製コンポーネントはそれぞれのライセンスに従います。
+- 詳細は [LICENSE](LICENSE) を参照してください。
