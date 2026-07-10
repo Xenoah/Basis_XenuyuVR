@@ -413,19 +413,11 @@ namespace Basis.BasisUI
             other = "Dynamic"
         });
 
-        public static BasisSettingsBinding<bool> AvatarPreview = new("avatarpreview", new BasisPlatformDefault<bool>(false));
-
-        public static BasisSettingsBinding<bool> AvatarPreviewMirror = new("avatarpreviewmirror", new BasisPlatformDefault<bool>(true));
-
         public static BasisSettingsBinding<bool> CameraHud = new("camerahud", new BasisPlatformDefault<bool>(false));
 
         public static BasisSettingsBinding<bool> LimitHandHeldCameraRate = new("limithandheldcamerarate", new BasisPlatformDefault<bool>(false));
 
         public static BasisSettingsBinding<float> HandHeldCameraRenderHz = new("handheldcamerarenderhz_v2", new BasisPlatformDefault<float>(30));
-
-        public static BasisSettingsBinding<bool> LimitAvatarPreviewRate = new("limitavatarpreviewrate", new BasisPlatformDefault<bool>(false));
-
-        public static BasisSettingsBinding<float> AvatarPreviewRenderHz = new("avatarpreviewrenderhz_v2", new BasisPlatformDefault<float>(30));
 
         public static BasisSettingsBinding<bool> DesktopReticle = new("desktopreticle", new BasisPlatformDefault<bool>(false));
 
@@ -1685,13 +1677,9 @@ namespace Basis.BasisUI
 
             // UI
             RememberMenuState.LoadBindingValue();
-            AvatarPreview.LoadBindingValue();
-            AvatarPreviewMirror.LoadBindingValue();
             CameraHud.LoadBindingValue();
             LimitHandHeldCameraRate.LoadBindingValue();
             HandHeldCameraRenderHz.LoadBindingValue();
-            LimitAvatarPreviewRate.LoadBindingValue();
-            AvatarPreviewRenderHz.LoadBindingValue();
             DesktopReticle.LoadBindingValue();
             EnablePassthrough.LoadBindingValue();
             EnableThirdPersonCamera.LoadBindingValue();

@@ -91,7 +91,6 @@
     <type fullname="Basis.Scripts.Drivers.BasisAudioAndVisemeDriver" preserve="nothing" serialized="true" />
     <type fullname="Basis.Scripts.Drivers.BasisAvatarScaleModifier" preserve="nothing" serialized="true" />
     <type fullname="Basis.Scripts.Drivers.BasisLocalAvatarDriver" preserve="nothing" serialized="true" />
-    <type fullname="Basis.Scripts.Drivers.BasisLocalAvatarPreviewDriver" preserve="nothing" serialized="true" />
     <type fullname="Basis.Scripts.Drivers.BasisLocalBoneDriver" preserve="nothing" serialized="true" />
     <type fullname="Basis.Scripts.Drivers.BasisLocalFacialBlinkDriver" preserve="nothing" serialized="true" />
     <type fullname="Basis.Scripts.Drivers.BasisLocalMicrophoneIconDriver" preserve="nothing" serialized="true" />

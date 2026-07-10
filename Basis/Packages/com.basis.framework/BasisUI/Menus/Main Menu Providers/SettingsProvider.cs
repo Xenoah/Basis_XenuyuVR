@@ -463,8 +463,6 @@ namespace Basis.BasisUI
             }, false, _ => descriptor.ForceRebuild());
 
             // HUD overlays — heads-up display elements rendered over the scene.
-            PanelToggle toggleAvatarPreview = null;
-            PanelToggle toggleAvatarPreviewMirror = null;
             PanelSectionToggleHelpers.CreateCollapsibleFlatSection(container,
                 BasisLocalization.Get("settings.general.hud.title"), () =>
             {
@@ -473,36 +471,11 @@ namespace Basis.BasisUI
                 toggleDesktopReticle.Descriptor.SetTitle(BasisLocalization.Get("settings.general.desktopReticle"));
                 toggleDesktopReticle.Descriptor.SetTooltip(BasisLocalization.Get("settings.general.desktopReticle.tooltip"));
 
-                toggleAvatarPreview = PanelToggle.CreateNewEntry(container);
-                toggleAvatarPreview.AssignBinding(BasisSettingsDefaults.AvatarPreview);
-                toggleAvatarPreview.Descriptor.SetTitle(BasisLocalization.Get("settings.general.avatarPreview"));
-                toggleAvatarPreview.Descriptor.SetTooltip(BasisLocalization.Get("settings.general.avatarPreview.tooltip"));
-
-                toggleAvatarPreviewMirror = PanelToggle.CreateNewEntry(container);
-                toggleAvatarPreviewMirror.AssignBinding(BasisSettingsDefaults.AvatarPreviewMirror);
-                toggleAvatarPreviewMirror.Descriptor.SetTitle(BasisLocalization.Get("settings.general.avatarPreviewMirror"));
-                toggleAvatarPreviewMirror.Descriptor.SetTooltip(BasisLocalization.Get("settings.general.avatarPreviewMirror.tooltip"));
-
-                // Mirror is a sub-option of avatar preview — only show it when preview is on.
-                toggleAvatarPreviewMirror.Descriptor.SetActive(BasisSettingsDefaults.AvatarPreview.RawValue);
-                toggleAvatarPreview.OnValueChanged += val =>
-                {
-                    toggleAvatarPreviewMirror.Descriptor.SetActive(val);
-                    descriptor.ForceRebuild();
-                };
-
                 PanelToggle toggleCameraHud = PanelToggle.CreateNewEntry(container);
                 toggleCameraHud.AssignBinding(BasisSettingsDefaults.CameraHud);
                 toggleCameraHud.Descriptor.SetTitle(BasisLocalization.Get("settings.general.cameraHud"));
                 toggleCameraHud.Descriptor.SetTooltip(BasisLocalization.Get("settings.general.cameraHud.tooltip"));
-            }, false, visible =>
-            {
-                if (visible && toggleAvatarPreviewMirror != null)
-                {
-                    toggleAvatarPreviewMirror.Descriptor.SetActive(BasisSettingsDefaults.AvatarPreview.RawValue);
-                }
-                descriptor.ForceRebuild();
-            });
+            }, false, _ => descriptor.ForceRebuild());
 
             // Passthrough / mixed reality — standalone VR only (Quest).
             if (BasisDeviceManagement.IsMobileHardware() && BasisDeviceManagement.IsCurrentModeVR())
@@ -692,8 +665,6 @@ namespace Basis.BasisUI
 
         private static void ResetGeneralDefaults()
         {
-            BasisSettingsDefaults.AvatarPreview.ResetToDefault();
-            BasisSettingsDefaults.AvatarPreviewMirror.ResetToDefault();
             BasisSettingsDefaults.CameraHud.ResetToDefault();
             BasisSettingsDefaults.DisableSeats.ResetToDefault();
             BasisSettingsDefaults.DisablePropPickup.ResetToDefault();
@@ -2568,20 +2539,6 @@ namespace Basis.BasisUI
                 BasisSettingsDefaults.HandHeldCameraRenderHz);
             sliderHandHeldRate.Descriptor.SetTooltip(BasisLocalization.Get("settings.developer.handheldCameraRate.tooltip"));
 
-            PanelToggle toggleAvatarPreviewRate = PanelToggle.CreateNewEntry(container);
-            toggleAvatarPreviewRate.Descriptor.SetTitle(BasisLocalization.Get("settings.developer.avatarPreviewRate.limit"));
-            toggleAvatarPreviewRate.Descriptor.SetTooltip(BasisLocalization.Get("settings.developer.avatarPreviewRate.limit.tooltip"));
-            toggleAvatarPreviewRate.AssignBinding(BasisSettingsDefaults.LimitAvatarPreviewRate);
-
-            PanelSlider sliderAvatarPreviewRate = PanelSlider.CreateEntryAndBind(
-                container,
-                new PanelSlider.SliderSettings(
-                    BasisLocalization.Get("settings.developer.avatarPreviewRate"),
-                    BasisLocalization.Get("settings.developer.avatarPreviewRate.description"),
-                    1, 120, true, 0, ValueDisplayMode.Hz),
-                BasisSettingsDefaults.AvatarPreviewRenderHz);
-            sliderAvatarPreviewRate.Descriptor.SetTooltip(BasisLocalization.Get("settings.developer.avatarPreviewRate.tooltip"));
-
             PanelSectionToggleHelpers.FinalizeFlatSectionFromIndex(cameraRateToggle, container, cameraRateStart, false,
                 _ => descriptor.ForceRebuild());
 
@@ -3010,8 +2967,6 @@ namespace Basis.BasisUI
             BasisSettingsDefaults.RotationSnapDegrees.ResetToDefault();
             BasisSettingsDefaults.LimitHandHeldCameraRate.ResetToDefault();
             BasisSettingsDefaults.HandHeldCameraRenderHz.ResetToDefault();
-            BasisSettingsDefaults.LimitAvatarPreviewRate.ResetToDefault();
-            BasisSettingsDefaults.AvatarPreviewRenderHz.ResetToDefault();
             BasisSettingsDefaults.NetEuroMinCutoff.ResetToDefault();
             BasisSettingsDefaults.NetEuroBeta.ResetToDefault();
             BasisSettingsDefaults.NetEuroDerivativeCutoff.ResetToDefault();

@@ -393,8 +393,6 @@ MonoBehaviour:
     duration: 0.35
     halfDuration: 0
     CameraDriver: {fileID: 22857711927985140}
-  avatarPreviewDriver:
-    CameraFieldOfView: 40
 --- !u!114 &3806033592985501336
 MonoBehaviour:
   m_ObjectHideFlags: 0

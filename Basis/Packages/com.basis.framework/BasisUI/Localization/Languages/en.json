@@ -11,14 +11,6 @@
       "value": "Show a small aiming dot in the center of the screen on desktop."
     },
     {
-      "key": "settings.general.avatarPreview.tooltip",
-      "value": "Show a small preview of your avatar while in the menu."
-    },
-    {
-      "key": "settings.general.avatarPreviewMirror.tooltip",
-      "value": "Flip the avatar preview so it faces you like a mirror."
-    },
-    {
       "key": "settings.general.cameraHud.tooltip",
       "value": "VR only: spawns a grabbable, resizable screen by your handheld camera showing its view, while the camera is in direct-to-screen (recording) mode."
     },
@@ -3559,22 +3551,6 @@
       "value": "Show a small aim reticle at screen center while in desktop mode."
     },
     {
-      "key": "settings.general.avatarPreview",
-      "value": "Avatar Preview"
-    },
-    {
-      "key": "settings.general.avatarPreview.description",
-      "value": "Show a small preview of your avatar near the microphone icon."
-    },
-    {
-      "key": "settings.general.avatarPreviewMirror",
-      "value": "Mirror Avatar Preview"
-    },
-    {
-      "key": "settings.general.avatarPreviewMirror.description",
-      "value": "Flip the avatar preview horizontally so it reads like a mirror."
-    },
-    {
       "key": "settings.general.cameraHud",
       "value": "Camera Preview Screen"
     },
@@ -6209,26 +6185,6 @@
     {
       "key": "settings.developer.handheldCameraRate.tooltip",
       "value": "Throttle the handheld camera's render rate. Only applies while the limit toggle is on."
-    },
-    {
-      "key": "settings.developer.avatarPreviewRate.limit",
-      "value": "Limit Avatar Preview Rate"
-    },
-    {
-      "key": "settings.developer.avatarPreviewRate.limit.tooltip",
-      "value": "On: cap the avatar preview's render rate to the value below. Off: render every frame."
-    },
-    {
-      "key": "settings.developer.avatarPreviewRate",
-      "value": "Avatar Preview Rate"
-    },
-    {
-      "key": "settings.developer.avatarPreviewRate.description",
-      "value": "Maximum render rate for the on-screen avatar preview when the limit is enabled."
-    },
-    {
-      "key": "settings.developer.avatarPreviewRate.tooltip",
-      "value": "Throttle the avatar preview's render rate. Only applies while the limit toggle is on."
     },
     {
       "key": "settings.developer.logTagFilter",

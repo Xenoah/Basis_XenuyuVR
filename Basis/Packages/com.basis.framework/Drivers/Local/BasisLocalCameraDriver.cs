@@ -216,9 +216,6 @@ namespace Basis.Scripts.Drivers
         public BasisLocalMicrophoneIconDriver microphoneIconDriver = new BasisLocalMicrophoneIconDriver();
 #endif
 
-        /// <summary>Driver for avatar preview camera and HUD display.</summary>
-        [SerializeField]
-        public BasisLocalAvatarPreviewDriver avatarPreviewDriver = new BasisLocalAvatarPreviewDriver();
         /// <summary>
         /// World forward vector of the active camera instance, or zero if no instance exists.
         /// Derived from the cached <see cref="Rotation"/> to avoid a native transform PInvoke per call.
@@ -349,8 +346,6 @@ namespace Basis.Scripts.Drivers
             microphoneIconDriver.HardEnableVisuals(false);
 #endif
 
-            avatarPreviewDriver.Initialize(this);
-
 #if STEAMAUDIO_ENABLED
             if (SteamListener != null)
             {
@@ -364,7 +359,6 @@ namespace Basis.Scripts.Drivers
         /// </summary>
         public void OnDestroy()
         {
-            avatarPreviewDriver.Cleanup();
             CameraInstance = null;
 
             ListenerTransform = null;
@@ -415,7 +409,6 @@ namespace Basis.Scripts.Drivers
 #endif
                 HasEvents = false;
             }
-            avatarPreviewDriver.Cleanup();
         }
 
         /// <summary>
@@ -682,7 +675,6 @@ namespace Basis.Scripts.Drivers
                         _micLayoutRatio = ratio;
                     }
                 }
-                avatarPreviewDriver.Simulate();
             }
 
             if (!IsThirdPerson || !BasisDeviceManagement.IsUserInDesktop())
