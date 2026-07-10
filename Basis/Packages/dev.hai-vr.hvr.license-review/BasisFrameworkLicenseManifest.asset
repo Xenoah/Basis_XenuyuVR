@@ -17,7 +17,7 @@ MonoBehaviour:
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.avionblock.opussharp
     licenses:
     - path: Opus_LICENSE_PLEASE_READ.txt
@@ -30,87 +30,102 @@ MonoBehaviour:
     licenses:
     - path: LICENSE.md
       spdx: BSD-3-Clause
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.steam.steamvr
     licenses:
     - path: LICENSE
       spdx: BSD-3-Clause
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.cqf.urpvolumetricfog
     licenses:
     - path: LICENSE.md
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: dev.hai-vr.basis.comms
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: nuget.meamod.dns
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: org.basisvr.newtonsoft.json
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: org.basisvr.bouncycastle
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: org.basisvr.base128
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: org.basisvr.generator.equals
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: org.basisvr.simplebase
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.steam.steamaudio
     licenses:
     - path: LICENSE.md
       spdx: Apache-2.0
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.basis.openlipsync
     licenses:
     - path: LICENSE
       spdx: Apache-2.0
-      overrideProductName:
+      overrideProductName: 
   - packageName: org.basisvr.k4os.compression.lz4
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.llealloo.audiolink
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.cnlohr.cilbox
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.gator-dragon-games.jigglephysics
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
   - packageName: com.basis.framework
     licenses:
     - path: LICENSE
       spdx: MIT
-      overrideProductName:
+      overrideProductName: 
+  - packageName: jp.lilxyzw.basispatcher
+    licenses:
+    - path: LICENSE
+      spdx: MIT
+      overrideProductName: 
+  - packageName: jp.lilxyzw.facecamera
+    licenses:
+    - path: LICENSE
+      spdx: MIT
+      overrideProductName: 
+  - packageName: jp.lilxyzw.emock
+    licenses:
+    - path: LICENSE
+      spdx: MIT
+      overrideProductName: 
   excludedPackageNames:
   - com.singularitygroup.hotreload
   - dev.hai-vr.basis.ndmf
@@ -138,11 +153,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2021 llealloo
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -162,7 +177,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -170,7 +185,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -193,7 +208,7 @@ MonoBehaviour:
       SOFTWARE.
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.llealloo.audiolink/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.llealloo.audiolink/LICENSE
   - productName: Base128
     packageName: org.basisvr.base128
     licensePath: LICENSE
@@ -201,11 +216,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) Wojmik
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -225,7 +240,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -233,7 +248,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -255,7 +270,7 @@ MonoBehaviour:
 
       SOFTWARE.
 
-
+      
 
       ---
 
@@ -266,18 +281,81 @@ MonoBehaviour:
       https://github.com/BasisVR/UpmBuilds
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/org.basisvr.base128/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/org.basisvr.base128/LICENSE
+  - productName: Basis Framework
+    packageName: com.basis.framework
+    licensePath: LICENSE
+    spdx: MIT
+    fullLicenseName: MIT License
+    fullLicenseText: 'MIT License
+
+      
+
+      Copyright (c) 2024 BasisVR
+
+      
+
+      Permission
+      is hereby granted, free of charge, to any person obtaining a copy
+
+      of
+      this software and associated documentation files (the "Software"), to deal
+
+      in
+      the Software without restriction, including without limitation the rights
+
+      to
+      use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
+      copies
+      of the Software, and to permit persons to whom the Software is
+
+      furnished
+      to do so, subject to the following conditions:
+
+      
+
+      The above copyright
+      notice and this permission notice shall be included in all
+
+      copies or
+      substantial portions of the Software.
+
+      
+
+      THE SOFTWARE IS PROVIDED
+      "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
+      IMPLIED, INCLUDING
+      BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
+      FITNESS FOR A
+      PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+      AUTHORS
+      OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+      LIABILITY,
+      WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+      OUT
+      OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+      SOFTWARE.
+
+'
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.basis.framework/LICENSE
   - productName: Basis OpenLipSync
     packageName: com.basis.openlipsync
     licensePath: LICENSE
     spdx: Apache-2.0
     fullLicenseName: Apache License 2.0
-    fullLicenseText: "                                 Apache License\r\n
-      Version 2.0, January 2004\r\n                        http://www.apache.org/licenses/\r\n\r\n
-      TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\r\n\r\n   1. Definitions.\r\n\r\n
-      \"License\" shall mean the terms and conditions for use, reproduction,\r\n
-      and distribution as defined by Sections 1 through 9 of this document.\r\n\r\n
-      \"Licensor\" shall mean the copyright owner or entity authorized by\r\n
+    fullLicenseText: "                                 Apache License\r\n                          
+      Version 2.0, January 2004\r\n                        http://www.apache.org/licenses/\r\n\r\n  
+      TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\r\n\r\n   1. Definitions.\r\n\r\n     
+      \"License\" shall mean the terms and conditions for use, reproduction,\r\n     
+      and distribution as defined by Sections 1 through 9 of this document.\r\n\r\n     
+      \"Licensor\" shall mean the copyright owner or entity authorized by\r\n     
       the copyright owner that is granting the License.\r\n\r\n      \"Legal Entity\"
       shall mean the union of the acting entity and all\r\n      other entities that
       control, are controlled by, or are under common\r\n      control with that
@@ -289,13 +367,13 @@ MonoBehaviour:
       mean an individual or Legal Entity\r\n      exercising permissions granted
       by this License.\r\n\r\n      \"Source\" form shall mean the preferred form
       for making modifications,\r\n      including but not limited to software source
-      code, documentation\r\n      source, and configuration files.\r\n\r\n
+      code, documentation\r\n      source, and configuration files.\r\n\r\n     
       \"Object\" form shall mean any form resulting from mechanical\r\n      transformation
       or translation of a Source form, including but\r\n      not limited to compiled
       object code, generated documentation,\r\n      and conversions to other media
       types.\r\n\r\n      \"Work\" shall mean the work of authorship, whether in
       Source or\r\n      Object form, made available under the License, as indicated
-      by a\r\n      copyright notice that is included in or attached to the work\r\n
+      by a\r\n      copyright notice that is included in or attached to the work\r\n     
       (an example is provided in the Appendix below).\r\n\r\n      \"Derivative Works\"
       shall mean any work, whether in Source or Object\r\n      form, that is based
       on (or derived from) the Work and for which the\r\n      editorial revisions,
@@ -321,7 +399,7 @@ MonoBehaviour:
       been received by the Licensor and\r\n      subsequently incorporated within
       the Work.\r\n\r\n   2. Grant of Copyright License. Subject to the terms and
       conditions of\r\n      this License, each Contributor hereby grants to You
-      a perpetual,\r\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\r\n
+      a perpetual,\r\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\r\n     
       copyright license to reproduce, prepare Derivative Works of,\r\n      publicly
       display, publicly perform, sublicense, and distribute the\r\n      Work and
       such Derivative Works in Source or Object form.\r\n\r\n   3. Grant of Patent
@@ -333,7 +411,7 @@ MonoBehaviour:
       those patent claims licensable\r\n      by such Contributor that are necessarily
       infringed by their\r\n      Contribution(s) alone or by combination of their
       Contribution(s)\r\n      with the Work to which such Contribution(s) was submitted.
-      If You\r\n      institute patent litigation against any entity (including a\r\n
+      If You\r\n      institute patent litigation against any entity (including a\r\n     
       cross-claim or counterclaim in a lawsuit) alleging that the Work\r\n      or
       a Contribution incorporated within the Work constitutes direct\r\n      or
       contributory patent infringement, then any patent licenses\r\n      granted
@@ -346,12 +424,12 @@ MonoBehaviour:
       a copy of this License; and\r\n\r\n      (b) You must cause any modified files
       to carry prominent notices\r\n          stating that You changed the files;
       and\r\n\r\n      (c) You must retain, in the Source form of any Derivative
-      Works\r\n          that You distribute, all copyright, patent, trademark, and\r\n
+      Works\r\n          that You distribute, all copyright, patent, trademark, and\r\n         
       attribution notices from the Source form of the Work,\r\n          excluding
       those notices that do not pertain to any part of\r\n          the Derivative
       Works; and\r\n\r\n      (d) If the Work includes a \"NOTICE\" text file as
       part of its\r\n          distribution, then any Derivative Works that You distribute
-      must\r\n          include a readable copy of the attribution notices contained\r\n
+      must\r\n          include a readable copy of the attribution notices contained\r\n         
       within such NOTICE file, excluding any notices that do not\r\n          pertain
       to any part of the Derivative Works, in at least one\r\n          of the following
       places: within a NOTICE text file distributed\r\n          as part of the Derivative
@@ -362,7 +440,7 @@ MonoBehaviour:
       purposes only and\r\n          do not modify the License. You may add Your
       own attribution\r\n          notices within Derivative Works that You distribute,
       alongside\r\n          or as an addendum to the NOTICE text from the Work,
-      provided\r\n          that such additional attribution notices cannot be construed\r\n
+      provided\r\n          that such additional attribution notices cannot be construed\r\n         
       as modifying the License.\r\n\r\n      You may add Your own copyright statement
       to Your modifications and\r\n      may provide additional or different license
       terms and conditions\r\n      for use, reproduction, or distribution of Your
@@ -374,11 +452,11 @@ MonoBehaviour:
       shall be under the terms and conditions of\r\n      this License, without any
       additional terms or conditions.\r\n      Notwithstanding the above, nothing
       herein shall supersede or modify\r\n      the terms of any separate license
-      agreement you may have executed\r\n      with Licensor regarding such Contributions.\r\n\r\n
-      6. Trademarks. This License does not grant permission to use the trade\r\n
-      names, trademarks, service marks, or product names of the Licensor,\r\n
-      except as required for reasonable and customary use in describing the\r\n
-      origin of the Work and reproducing the content of the NOTICE file.\r\n\r\n
+      agreement you may have executed\r\n      with Licensor regarding such Contributions.\r\n\r\n  
+      6. Trademarks. This License does not grant permission to use the trade\r\n     
+      names, trademarks, service marks, or product names of the Licensor,\r\n     
+      except as required for reasonable and customary use in describing the\r\n     
+      origin of the Work and reproducing the content of the NOTICE file.\r\n\r\n  
       7. Disclaimer of Warranty. Unless required by applicable law or\r\n      agreed
       to in writing, Licensor provides the Work (and each\r\n      Contributor provides
       its Contributions) on an \"AS IS\" BASIS,\r\n      WITHOUT WARRANTIES OR CONDITIONS
@@ -391,31 +469,31 @@ MonoBehaviour:
       no legal theory,\r\n      whether in tort (including negligence), contract,
       or otherwise,\r\n      unless required by applicable law (such as deliberate
       and grossly\r\n      negligent acts) or agreed to in writing, shall any Contributor
-      be\r\n      liable to You for damages, including any direct, indirect, special,\r\n
-      incidental, or consequential damages of any character arising as a\r\n
+      be\r\n      liable to You for damages, including any direct, indirect, special,\r\n     
+      incidental, or consequential damages of any character arising as a\r\n     
       result of this License or out of the use or inability to use the\r\n      Work
       (including but not limited to damages for loss of goodwill,\r\n      work stoppage,
       computer failure or malfunction, or any and all\r\n      other commercial damages
       or losses), even if such Contributor\r\n      has been advised of the possibility
       of such damages.\r\n\r\n   9. Accepting Warranty or Additional Liability. While
       redistributing\r\n      the Work or Derivative Works thereof, You may choose
-      to offer,\r\n      and charge a fee for, acceptance of support, warranty, indemnity,\r\n
-      or other liability obligations and/or rights consistent with this\r\n
-      License. However, in accepting such obligations, You may act only\r\n
-      on Your own behalf and on Your sole responsibility, not on behalf\r\n
+      to offer,\r\n      and charge a fee for, acceptance of support, warranty, indemnity,\r\n     
+      or other liability obligations and/or rights consistent with this\r\n     
+      License. However, in accepting such obligations, You may act only\r\n     
+      on Your own behalf and on Your sole responsibility, not on behalf\r\n     
       of any other Contributor, and only if You agree to indemnify,\r\n      defend,
       and hold each Contributor harmless for any liability\r\n      incurred by,
       or claims asserted against, such Contributor by reason\r\n      of your accepting
-      any such warranty or additional liability.\r\n\r\n   END OF TERMS AND CONDITIONS\r\n\r\n
+      any such warranty or additional liability.\r\n\r\n   END OF TERMS AND CONDITIONS\r\n\r\n  
       Copyright 2024 BasisVR\r\n\r\n   Licensed under the Apache License, Version
       2.0 (the \"License\");\r\n   you may not use this file except in compliance
-      with the License.\r\n   You may obtain a copy of the License at\r\n\r\n
+      with the License.\r\n   You may obtain a copy of the License at\r\n\r\n      
       http://www.apache.org/licenses/LICENSE-2.0\r\n\r\n   Unless required by applicable
       law or agreed to in writing, software\r\n   distributed under the License is
       distributed on an \"AS IS\" BASIS,\r\n   WITHOUT WARRANTIES OR CONDITIONS OF
       ANY KIND, either express or implied.\r\n   See the License for the specific
       language governing permissions and\r\n   limitations under the License.\r\n"
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.basis.openlipsync/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.basis.openlipsync/LICENSE
   - productName: BouncyCastle.Cryptography
     packageName: org.basisvr.bouncycastle
     licensePath: LICENSE
@@ -423,12 +501,12 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2000-2024 The Legion
       of the Bouncy Castle Inc.
 
-
+      
 
       Permission is hereby granted, free
       of charge, to any person obtaining a copy
@@ -448,7 +526,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -456,7 +534,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -478,7 +556,7 @@ MonoBehaviour:
 
       SOFTWARE.
 
-
+      
 
       ---
 
@@ -489,7 +567,7 @@ MonoBehaviour:
       via https://github.com/BasisVR/UpmBuilds
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/org.basisvr.bouncycastle/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/org.basisvr.bouncycastle/LICENSE
   - productName: Cilbox
     packageName: com.cnlohr.cilbox
     licensePath: LICENSE
@@ -497,7 +575,7 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2025 cnlohr
 
@@ -507,7 +585,7 @@ MonoBehaviour:
       Copyright (c)
       2008 - 2011 Novell, Inc. (For original CIL code from cecil)
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -527,7 +605,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -535,7 +613,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -558,18 +636,16 @@ MonoBehaviour:
       SOFTWARE.
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.cnlohr.cilbox/LICENSE
-  - productName: Generator.Equals
-    packageName: org.basisvr.generator.equals
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.cnlohr.cilbox/LICENSE
+  - productName: Emock
+    packageName: jp.lilxyzw.emock
     licensePath: LICENSE
     spdx: MIT
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
 
-
-      Copyright (c) Diego Frata
-
+      Copyright (c) 2026 lilxyzw
 
 
       Permission
@@ -591,7 +667,6 @@ MonoBehaviour:
       to do so, subject to the following conditions:
 
 
-
       The above copyright
       notice and this permission notice shall be included in all
 
@@ -599,6 +674,68 @@ MonoBehaviour:
       substantial portions of the Software.
 
 
+      THE SOFTWARE IS PROVIDED "AS
+      IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
+      IMPLIED, INCLUDING BUT
+      NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
+      FITNESS FOR A PARTICULAR
+      PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+      AUTHORS OR COPYRIGHT
+      HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+      LIABILITY, WHETHER
+      IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+      OUT OF OR
+      IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+      SOFTWARE.
+
+'
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/jp.lilxyzw.emock/LICENSE
+  - productName: FaceCamera
+    packageName: jp.lilxyzw.facecamera
+    licensePath: LICENSE
+    spdx: MIT
+    fullLicenseName: MIT License
+    fullLicenseText: 'MIT License
+
+      
+
+      Copyright (c) 2026 lilxyzw
+
+      
+
+      Permission
+      is hereby granted, free of charge, to any person obtaining a copy
+
+      of
+      this software and associated documentation files (the "Software"), to deal
+
+      in
+      the Software without restriction, including without limitation the rights
+
+      to
+      use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
+      copies
+      of the Software, and to permit persons to whom the Software is
+
+      furnished
+      to do so, subject to the following conditions:
+
+      
+
+      The above copyright
+      notice and this permission notice shall be included in all
+
+      copies or
+      substantial portions of the Software.
+
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -620,7 +757,70 @@ MonoBehaviour:
 
       SOFTWARE.
 
+'
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/jp.lilxyzw.facecamera/LICENSE
+  - productName: Generator.Equals
+    packageName: org.basisvr.generator.equals
+    licensePath: LICENSE
+    spdx: MIT
+    fullLicenseName: MIT License
+    fullLicenseText: 'MIT License
 
+      
+
+      Copyright (c) Diego Frata
+
+      
+
+      Permission
+      is hereby granted, free of charge, to any person obtaining a copy
+
+      of
+      this software and associated documentation files (the "Software"), to deal
+
+      in
+      the Software without restriction, including without limitation the rights
+
+      to
+      use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
+      copies
+      of the Software, and to permit persons to whom the Software is
+
+      furnished
+      to do so, subject to the following conditions:
+
+      
+
+      The above copyright
+      notice and this permission notice shall be included in all
+
+      copies or
+      substantial portions of the Software.
+
+      
+
+      THE SOFTWARE IS PROVIDED
+      "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
+      IMPLIED, INCLUDING
+      BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
+      FITNESS FOR A
+      PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+      AUTHORS
+      OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+      LIABILITY,
+      WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+      OUT
+      OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+      SOFTWARE.
+
+      
 
       ---
 
@@ -631,7 +831,7 @@ MonoBehaviour:
       by BasisVR via https://github.com/BasisVR/UpmBuilds
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/org.basisvr.generator.equals/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/org.basisvr.generator.equals/LICENSE
   - productName: HVR Basis Comms
     packageName: dev.hai-vr.basis.comms
     licensePath: LICENSE
@@ -652,7 +852,7 @@ MonoBehaviour:
       BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\r\nLIABILITY, WHETHER IN AN ACTION
       OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\r\nOUT OF OR IN CONNECTION WITH
       THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\r\nSOFTWARE.\r\n"
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/dev.hai-vr.basis.comms/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/dev.hai-vr.basis.comms/LICENSE
   - productName: Jiggle Physics
     packageName: com.gator-dragon-games.jigglephysics
     licensePath: LICENSE
@@ -660,11 +860,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) naelstrof
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -684,7 +884,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -692,7 +892,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -715,7 +915,7 @@ MonoBehaviour:
       SOFTWARE.
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.gator-dragon-games.jigglephysics/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.gator-dragon-games.jigglephysics/LICENSE
   - productName: K4os.Compression.LZ4
     packageName: org.basisvr.k4os.compression.lz4
     licensePath: LICENSE
@@ -723,11 +923,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2017 Milosz Krajewski
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -747,7 +947,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -755,7 +955,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -777,7 +977,7 @@ MonoBehaviour:
 
       SOFTWARE.
 
-
+      
 
       ---
 
@@ -788,19 +988,19 @@ MonoBehaviour:
       for Unity by BasisVR via https://github.com/BasisVR/UpmBuilds
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/org.basisvr.k4os.compression.lz4/LICENSE
-  - productName: MeaMod.DNS
-    packageName: nuget.meamod.dns
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/org.basisvr.k4os.compression.lz4/LICENSE
+  - productName: lilBasisPatcher
+    packageName: jp.lilxyzw.basispatcher
     licensePath: LICENSE
     spdx: MIT
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
+      
 
+      Copyright (c) 2026 lilxyzw
 
-      Copyright (c) 2021 James Weston
-
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -820,7 +1020,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -828,7 +1028,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -851,19 +1051,19 @@ MonoBehaviour:
       SOFTWARE.
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/nuget.meamod.dns/LICENSE
-  - productName: Newtonsoft.Json
-    packageName: org.basisvr.newtonsoft.json
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/jp.lilxyzw.basispatcher/LICENSE
+  - productName: MeaMod.DNS
+    packageName: nuget.meamod.dns
     licensePath: LICENSE
     spdx: MIT
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
+      
 
+      Copyright (c) 2021 James Weston
 
-      Copyright (c) 2007 James Newton-King
-
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -883,7 +1083,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -891,7 +1091,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -913,7 +1113,70 @@ MonoBehaviour:
 
       SOFTWARE.
 
+'
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/nuget.meamod.dns/LICENSE
+  - productName: Newtonsoft.Json
+    packageName: org.basisvr.newtonsoft.json
+    licensePath: LICENSE
+    spdx: MIT
+    fullLicenseName: MIT License
+    fullLicenseText: 'MIT License
 
+      
+
+      Copyright (c) 2007 James Newton-King
+
+      
+
+      Permission
+      is hereby granted, free of charge, to any person obtaining a copy
+
+      of
+      this software and associated documentation files (the "Software"), to deal
+
+      in
+      the Software without restriction, including without limitation the rights
+
+      to
+      use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
+      copies
+      of the Software, and to permit persons to whom the Software is
+
+      furnished
+      to do so, subject to the following conditions:
+
+      
+
+      The above copyright
+      notice and this permission notice shall be included in all
+
+      copies or
+      substantial portions of the Software.
+
+      
+
+      THE SOFTWARE IS PROVIDED
+      "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
+      IMPLIED, INCLUDING
+      BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
+      FITNESS FOR A
+      PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
+      AUTHORS
+      OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
+      LIABILITY,
+      WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
+      OUT
+      OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+      SOFTWARE.
+
+      
 
       ---
 
@@ -924,7 +1187,7 @@ MonoBehaviour:
       BasisVR via https://github.com/BasisVR/UpmBuilds
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/org.basisvr.newtonsoft.json/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/org.basisvr.newtonsoft.json/LICENSE
   - productName: OpenVR XR Plugin
     packageName: com.valvesoftware.unity.openvr
     licensePath: LICENSE.md
@@ -934,7 +1197,7 @@ MonoBehaviour:
 
       All rights reserved.
 
-
+      
 
       Redistribution
       and use in source and binary forms, with or without modification,
@@ -942,7 +1205,7 @@ MonoBehaviour:
       are
       permitted provided that the following conditions are met
 
-
+      
 
       1.
       Redistributions of source code must retain the above copyright notice, this
@@ -950,7 +1213,7 @@ MonoBehaviour:
       list
       of conditions and the following disclaimer.
 
-
+      
 
       2. Redistributions
       in binary form must reproduce the above copyright notice,
@@ -961,7 +1224,7 @@ MonoBehaviour:
       other
       materials provided with the distribution.
 
-
+      
 
       3. Neither the name
       of the copyright holder nor the names of its contributors
@@ -972,7 +1235,7 @@ MonoBehaviour:
       specific
       prior written permission.
 
-
+      
 
       THIS SOFTWARE IS PROVIDED BY THE
       COPYRIGHT HOLDERS AND CONTRIBUTORS AS IS AND
@@ -1003,16 +1266,16 @@ MonoBehaviour:
 
       SOFTWARE,
       EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.valvesoftware.unity.openvr/LICENSE.md
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.valvesoftware.unity.openvr/LICENSE.md
   - productName: Opus Codec
     packageName: com.avionblock.opussharp
     licensePath: Opus_LICENSE_PLEASE_READ.txt
-    spdx:
-    fullLicenseName:
+    spdx: BSD
+    fullLicenseName: BSD
     fullLicenseText: 'Contributions to the collaboration shall not be considered
       confidential.
 
-
+      
 
       Each contributor represents and warrants that
       it has the right and
@@ -1020,7 +1283,7 @@ MonoBehaviour:
       authority to license copyright in its contributions
       to the collaboration.
 
-
+      
 
       Each contributor agrees to license the
       copyright in the contributions
@@ -1028,41 +1291,41 @@ MonoBehaviour:
       under the Modified (2-clause or 3-clause)
       BSD License or the Clear BSD License.
 
-
+      
 
       Please see the IPR statements
       submitted to the IETF for the complete
 
       patent licensing details:
 
-
+      
 
       Xiph.Org
       Foundation:
 
       https://datatracker.ietf.org/ipr/1524/
 
-
+      
 
       Microsoft
       Corporation:
 
       https://datatracker.ietf.org/ipr/1914/
 
-
+      
 
       Skype
       Limited:
 
       https://datatracker.ietf.org/ipr/1602/
 
-
+      
 
       Broadcom
       Corporation:
 
       https://datatracker.ietf.org/ipr/1526/'
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.avionblock.opussharp/Opus_LICENSE_PLEASE_READ.txt
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.avionblock.opussharp/Opus_LICENSE_PLEASE_READ.txt
   - productName: OpusSharp
     packageName: com.avionblock.opussharp
     licensePath: LICENSE.txt
@@ -1070,11 +1333,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2026 AvionBlock
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -1094,7 +1357,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -1102,7 +1365,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -1125,7 +1388,7 @@ MonoBehaviour:
       SOFTWARE.
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.avionblock.opussharp/LICENSE.txt
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.avionblock.opussharp/LICENSE.txt
   - productName: RNNoise
     packageName: com.xiph.rnnoise
     licensePath: LICENSE
@@ -1133,12 +1396,12 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2023 Yellow Dog
       Man Studios
 
-
+      
 
       Permission is hereby granted, free of charge,
       to any person obtaining a copy
@@ -1158,7 +1421,7 @@ MonoBehaviour:
       furnished to do so, subject
       to the following conditions:
 
-
+      
 
       The above copyright notice and
       this permission notice shall be included in all
@@ -1166,7 +1429,7 @@ MonoBehaviour:
       copies or substantial
       portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED "AS IS",
       WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -1189,7 +1452,7 @@ MonoBehaviour:
       SOFTWARE.
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.xiph.rnnoise/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.xiph.rnnoise/LICENSE
   - productName: SimpleBase
     packageName: org.basisvr.simplebase
     licensePath: LICENSE
@@ -1197,11 +1460,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) Sedat Kapanoglu
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -1221,7 +1484,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -1229,7 +1492,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -1251,7 +1514,7 @@ MonoBehaviour:
 
       SOFTWARE.
 
-
+      
 
       ---
 
@@ -1262,18 +1525,18 @@ MonoBehaviour:
       https://github.com/BasisVR/UpmBuilds
 
 '
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/org.basisvr.simplebase/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/org.basisvr.simplebase/LICENSE
   - productName: Steam Audio
     packageName: com.steam.steamaudio
     licensePath: LICENSE.md
     spdx: Apache-2.0
     fullLicenseName: Apache License 2.0
-    fullLicenseText: "\r\n                                 Apache License\r\n
-      Version 2.0, January 2004\r\n                        http://www.apache.org/licenses/\r\n\r\n
-      TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\r\n\r\n   1. Definitions.\r\n\r\n
-      \"License\" shall mean the terms and conditions for use, reproduction,\r\n
-      and distribution as defined by Sections 1 through 9 of this document.\r\n\r\n
-      \"Licensor\" shall mean the copyright owner or entity authorized by\r\n
+    fullLicenseText: "\r\n                                 Apache License\r\n                          
+      Version 2.0, January 2004\r\n                        http://www.apache.org/licenses/\r\n\r\n  
+      TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\r\n\r\n   1. Definitions.\r\n\r\n     
+      \"License\" shall mean the terms and conditions for use, reproduction,\r\n     
+      and distribution as defined by Sections 1 through 9 of this document.\r\n\r\n     
+      \"Licensor\" shall mean the copyright owner or entity authorized by\r\n     
       the copyright owner that is granting the License.\r\n\r\n      \"Legal Entity\"
       shall mean the union of the acting entity and all\r\n      other entities that
       control, are controlled by, or are under common\r\n      control with that
@@ -1285,13 +1548,13 @@ MonoBehaviour:
       mean an individual or Legal Entity\r\n      exercising permissions granted
       by this License.\r\n\r\n      \"Source\" form shall mean the preferred form
       for making modifications,\r\n      including but not limited to software source
-      code, documentation\r\n      source, and configuration files.\r\n\r\n
+      code, documentation\r\n      source, and configuration files.\r\n\r\n     
       \"Object\" form shall mean any form resulting from mechanical\r\n      transformation
       or translation of a Source form, including but\r\n      not limited to compiled
       object code, generated documentation,\r\n      and conversions to other media
       types.\r\n\r\n      \"Work\" shall mean the work of authorship, whether in
       Source or\r\n      Object form, made available under the License, as indicated
-      by a\r\n      copyright notice that is included in or attached to the work\r\n
+      by a\r\n      copyright notice that is included in or attached to the work\r\n     
       (an example is provided in the Appendix below).\r\n\r\n      \"Derivative Works\"
       shall mean any work, whether in Source or Object\r\n      form, that is based
       on (or derived from) the Work and for which the\r\n      editorial revisions,
@@ -1316,7 +1579,7 @@ MonoBehaviour:
       any individual or Legal Entity\r\n      on behalf of whom a Contribution has
       been received by Licensor and\r\n      subsequently incorporated within the
       Work.\r\n\r\n   2. Grant of Copyright License. Subject to the terms and conditions
-      of\r\n      this License, each Contributor hereby grants to You a perpetual,\r\n
+      of\r\n      this License, each Contributor hereby grants to You a perpetual,\r\n     
       worldwide, non-exclusive, no-charge, royalty-free, irrevocable\r\n      copyright
       license to reproduce, prepare Derivative Works of,\r\n      publicly display,
       publicly perform, sublicense, and distribute the\r\n      Work and such Derivative
@@ -1325,7 +1588,7 @@ MonoBehaviour:
       grants to You a perpetual,\r\n      worldwide, non-exclusive, no-charge, royalty-free,
       irrevocable\r\n      (except as stated in this section) patent license to make,
       have made,\r\n      use, offer to sell, sell, import, and otherwise transfer
-      the Work,\r\n      where such license applies only to those patent claims licensable\r\n
+      the Work,\r\n      where such license applies only to those patent claims licensable\r\n     
       by such Contributor that are necessarily infringed by their\r\n      Contribution(s)
       alone or by combination of their Contribution(s)\r\n      with the Work to
       which such Contribution(s) was submitted. If You\r\n      institute patent
@@ -1333,8 +1596,8 @@ MonoBehaviour:
       in a lawsuit) alleging that the Work\r\n      or a Contribution incorporated
       within the Work constitutes direct\r\n      or contributory patent infringement,
       then any patent licenses\r\n      granted to You under this License for that
-      Work shall terminate\r\n      as of the date such litigation is filed.\r\n\r\n
-      4. Redistribution. You may reproduce and distribute copies of the\r\n
+      Work shall terminate\r\n      as of the date such litigation is filed.\r\n\r\n  
+      4. Redistribution. You may reproduce and distribute copies of the\r\n     
       Work or Derivative Works thereof in any medium, with or without\r\n      modifications,
       and in Source or Object form, provided that You\r\n      meet the following
       conditions:\r\n\r\n      (a) You must give any other recipients of the Work
@@ -1355,26 +1618,26 @@ MonoBehaviour:
       the Derivative Works; or,\r\n          within a display generated by the Derivative
       Works, if and\r\n          wherever such third-party notices normally appear.
       The contents\r\n          of the NOTICE file are for informational purposes
-      only and\r\n          do not modify the License. You may add Your own attribution\r\n
-      notices within Derivative Works that You distribute, alongside\r\n
+      only and\r\n          do not modify the License. You may add Your own attribution\r\n         
+      notices within Derivative Works that You distribute, alongside\r\n         
       or as an addendum to the NOTICE text from the Work, provided\r\n          that
       such additional attribution notices cannot be construed\r\n          as modifying
       the License.\r\n\r\n      You may add Your own copyright statement to Your
       modifications and\r\n      may provide additional or different license terms
       and conditions\r\n      for use, reproduction, or distribution of Your modifications,
-      or\r\n      for any such Derivative Works as a whole, provided Your use,\r\n
-      reproduction, and distribution of the Work otherwise complies with\r\n
+      or\r\n      for any such Derivative Works as a whole, provided Your use,\r\n     
+      reproduction, and distribution of the Work otherwise complies with\r\n     
       the conditions stated in this License.\r\n\r\n   5. Submission of Contributions.
       Unless You explicitly state otherwise,\r\n      any Contribution intentionally
       submitted for inclusion in the Work\r\n      by You to the Licensor shall be
       under the terms and conditions of\r\n      this License, without any additional
       terms or conditions.\r\n      Notwithstanding the above, nothing herein shall
       supersede or modify\r\n      the terms of any separate license agreement you
-      may have executed\r\n      with Licensor regarding such Contributions.\r\n\r\n
-      6. Trademarks. This License does not grant permission to use the trade\r\n
-      names, trademarks, service marks, or product names of the Licensor,\r\n
-      except as required for reasonable and customary use in describing the\r\n
-      origin of the Work and reproducing the content of the NOTICE file.\r\n\r\n
+      may have executed\r\n      with Licensor regarding such Contributions.\r\n\r\n  
+      6. Trademarks. This License does not grant permission to use the trade\r\n     
+      names, trademarks, service marks, or product names of the Licensor,\r\n     
+      except as required for reasonable and customary use in describing the\r\n     
+      origin of the Work and reproducing the content of the NOTICE file.\r\n\r\n  
       7. Disclaimer of Warranty. Unless required by applicable law or\r\n      agreed
       to in writing, Licensor provides the Work (and each\r\n      Contributor provides
       its Contributions) on an \"AS IS\" BASIS,\r\n      WITHOUT WARRANTIES OR CONDITIONS
@@ -1387,22 +1650,22 @@ MonoBehaviour:
       no legal theory,\r\n      whether in tort (including negligence), contract,
       or otherwise,\r\n      unless required by applicable law (such as deliberate
       and grossly\r\n      negligent acts) or agreed to in writing, shall any Contributor
-      be\r\n      liable to You for damages, including any direct, indirect, special,\r\n
-      incidental, or consequential damages of any character arising as a\r\n
+      be\r\n      liable to You for damages, including any direct, indirect, special,\r\n     
+      incidental, or consequential damages of any character arising as a\r\n     
       result of this License or out of the use or inability to use the\r\n      Work
       (including but not limited to damages for loss of goodwill,\r\n      work stoppage,
       computer failure or malfunction, or any and all\r\n      other commercial damages
       or losses), even if such Contributor\r\n      has been advised of the possibility
       of such damages.\r\n\r\n   9. Accepting Warranty or Additional Liability. While
       redistributing\r\n      the Work or Derivative Works thereof, You may choose
-      to offer,\r\n      and charge a fee for, acceptance of support, warranty, indemnity,\r\n
-      or other liability obligations and/or rights consistent with this\r\n
-      License. However, in accepting such obligations, You may act only\r\n
-      on Your own behalf and on Your sole responsibility, not on behalf\r\n
+      to offer,\r\n      and charge a fee for, acceptance of support, warranty, indemnity,\r\n     
+      or other liability obligations and/or rights consistent with this\r\n     
+      License. However, in accepting such obligations, You may act only\r\n     
+      on Your own behalf and on Your sole responsibility, not on behalf\r\n     
       of any other Contributor, and only if You agree to indemnify,\r\n      defend,
       and hold each Contributor harmless for any liability\r\n      incurred by,
       or claims asserted against, such Contributor by reason\r\n      of your accepting
-      any such warranty or additional liability.\r\n\r\n   END OF TERMS AND CONDITIONS\r\n\r\n
+      any such warranty or additional liability.\r\n\r\n   END OF TERMS AND CONDITIONS\r\n\r\n  
       APPENDIX: How to apply the Apache License to your work.\r\n\r\n      To apply
       the Apache License to your work, attach the following\r\n      boilerplate
       notice, with the fields enclosed by brackets \"[]\"\r\n      replaced with
@@ -1410,7 +1673,7 @@ MonoBehaviour:
       text should be enclosed in the appropriate\r\n      comment syntax for the
       file format. We also recommend that a\r\n      file or class name and description
       of purpose be included on the\r\n      same \"printed page\" as the copyright
-      notice for easier\r\n      identification within third-party archives.\r\n\r\n
+      notice for easier\r\n      identification within third-party archives.\r\n\r\n  
       Copyright [yyyy] [name of copyright owner]\r\n\r\n   Licensed under the Apache
       License, Version 2.0 (the \"License\");\r\n   you may not use this file except
       in compliance with the License.\r\n   You may obtain a copy of the License
@@ -1420,7 +1683,7 @@ MonoBehaviour:
       OR CONDITIONS OF ANY KIND, either express or implied.\r\n   See the License
       for the specific language governing permissions and\r\n   limitations under
       the License.\r\n"
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.steam.steamaudio/LICENSE.md
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.steam.steamaudio/LICENSE.md
   - productName: SteamVR
     packageName: com.steam.steamvr
     licensePath: LICENSE
@@ -1430,7 +1693,7 @@ MonoBehaviour:
 
       All rights reserved.
 
-
+      
 
       Redistribution
       and use in source and binary forms, with or without modification,
@@ -1438,7 +1701,7 @@ MonoBehaviour:
       are
       permitted provided that the following conditions are met
 
-
+      
 
       1.
       Redistributions of source code must retain the above copyright notice, this
@@ -1446,7 +1709,7 @@ MonoBehaviour:
       list
       of conditions and the following disclaimer.
 
-
+      
 
       2. Redistributions
       in binary form must reproduce the above copyright notice,
@@ -1457,7 +1720,7 @@ MonoBehaviour:
       other
       materials provided with the distribution.
 
-
+      
 
       3. Neither the name
       of the copyright holder nor the names of its contributors
@@ -1468,7 +1731,7 @@ MonoBehaviour:
       specific
       prior written permission.
 
-
+      
 
       THIS SOFTWARE IS PROVIDED BY THE
       COPYRIGHT HOLDERS AND CONTRIBUTORS AS IS AND
@@ -1499,7 +1762,7 @@ MonoBehaviour:
 
       SOFTWARE,
       EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.steam.steamvr/LICENSE
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.steam.steamvr/LICENSE
   - productName: URP Volumetric Fog
     packageName: com.cqf.urpvolumetricfog
     licensePath: LICENSE.md
@@ -1507,11 +1770,11 @@ MonoBehaviour:
     fullLicenseName: MIT License
     fullLicenseText: 'MIT License
 
-
+      
 
       Copyright (c) 2025 Cristian Qiu
 
-
+      
 
       Permission
       is hereby granted, free of charge, to any person obtaining a copy
@@ -1531,7 +1794,7 @@ MonoBehaviour:
       furnished
       to do so, subject to the following conditions:
 
-
+      
 
       The above copyright
       notice and this permission notice shall be included in all
@@ -1539,7 +1802,7 @@ MonoBehaviour:
       copies or
       substantial portions of the Software.
 
-
+      
 
       THE SOFTWARE IS PROVIDED
       "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -1560,5 +1823,5 @@ MonoBehaviour:
       OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 
       SOFTWARE.'
-    licenseUrl: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/com.cqf.urpvolumetricfog/LICENSE.md
-  urlPrefix: https://github.com/BasisVR/Basis/tree/developer/Basis/Packages/
+    licenseUrl: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/com.cqf.urpvolumetricfog/LICENSE.md
+  urlPrefix: https://github.com/SakiikaVR/SakiikaVR/tree/developer/Basis/Packages/
