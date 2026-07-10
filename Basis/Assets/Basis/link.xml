@@ -49,7 +49,6 @@
     <assembly fullname="HVR.LicenseReview" preserve="all" />
     <assembly fullname="K4os.Compression.LZ4" preserve="all" />
     <assembly fullname="LiteNetLib" preserve="all" />
-    <assembly fullname="SakiikaWorldsProvider" preserve="all" />
     <assembly fullname="MeaMod.DNS" preserve="all" />
     <assembly fullname="Mediapipe.Runtime" preserve="all" />
     <assembly fullname="Microsoft.ML.OnnxRuntime" preserve="all" />
@@ -57,6 +56,7 @@
     <assembly fullname="OpusSharp" preserve="all" />
     <assembly fullname="RNNoiseIntergration" preserve="all" />
     <assembly fullname="RenderAs2DModule" preserve="all" />
+    <assembly fullname="SakiikaWorldsProvider" preserve="all" />
     <assembly fullname="SimpleBase" preserve="all" />
     <assembly fullname="SteamAudioUnity" preserve="all" />
     <assembly fullname="SteamVR" preserve="all" />
@@ -137,6 +137,7 @@
     <assembly fullname="com.cqf.urpvolumetricfog.runtime" preserve="all" />
     <assembly fullname="com.gator-dragon-games.jigglephysics" preserve="all" />
     <assembly fullname="jp.lilxyzw.basispatcher" preserve="all" />
+    <assembly fullname="jp.lilxyzw.emock" preserve="all" />
     <assembly fullname="jp.lilxyzw.facecamera" preserve="all" />
     <assembly fullname="openvr_api" preserve="all" />
     <assembly fullname="opus" preserve="all" />

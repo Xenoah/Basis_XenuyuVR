@@ -704,6 +704,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "jp.lilxyzw.emock": {
+      "version": "file:jp.lilxyzw.emock",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "jp.lilxyzw.facecamera": {
       "version": "file:jp.lilxyzw.facecamera",
       "depth": 0,
