@@ -1,0 +1,18 @@
+{
+    "name": "jp.lilxyzw.basispatcher.Editor",
+    "rootNamespace": "jp.lilxyzw.basispatcher",
+    "references": [
+        "jp.lilxyzw.basispatcher"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

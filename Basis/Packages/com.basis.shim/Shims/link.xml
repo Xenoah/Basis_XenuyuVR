@@ -284,4 +284,8 @@
         <type fullname="HVR.Basis.Comms.OSC.OscDataKind" preserve="all"/>
         <type fullname="HVR.Basis.Comms.OSC.OscMessage" preserve="all"/>
     </assembly>
+    <assembly fullname="jp.lilxyzw.emock">
+        <type fullname="jp.lilxyzw.emock.EmockController" preserve="all"/>
+        <type fullname="jp.lilxyzw.emock.EmockNetwork" preserve="all"/>
+    </assembly>
 </linker>

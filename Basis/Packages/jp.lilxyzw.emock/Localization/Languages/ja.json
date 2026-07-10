@@ -1,0 +1,42 @@
+{
+  "code": "ja",
+  "nativeName": "日本語",
+  "entries": [
+    {
+      "key": "settings.jp.lilxyzw.emock",
+      "value": "Emock"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.changebycontroller",
+      "value": "コントローラーで操作"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.changebycontroller.tooltips",
+      "value": "コントローラーで表情を変更できるようにします。"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.resetuponmoving",
+      "value": "移動時にリセット"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.resetuponmoving.tooltips",
+      "value": "移動時に表情を戻します。主にVIVEコントローラー向けの設定です。"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.stopdistance",
+      "value": "停止距離"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.stopdistance.tooltips",
+      "value": "この距離より離れるとアニメーションを停止します。"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.resettodefault",
+      "value": "デフォルトに戻す"
+    },
+    {
+      "key": "settings.jp.lilxyzw.emock.resettodefault.tooltips",
+      "value": "全てのアバターパラメーターをデフォルトに戻します。"
+    }
+  ]
+}

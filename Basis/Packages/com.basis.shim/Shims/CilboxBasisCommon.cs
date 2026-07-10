@@ -280,6 +280,10 @@ namespace Cilbox
 			"UnityEngine.EventSystems.PointerEventData",
 			"UnityEngine.EventSystems.PointerEventData+InputButton",
 			"UnityEngine.EventSystems.RaycastResult",
+
+			// Emock (lilxyzw)
+			"jp.lilxyzw.emock.EmockController",
+			"jp.lilxyzw.emock.EmockNetwork",
 		};
 
 		protected static readonly HashSet<string> commonWhiteListFields = new HashSet<string>(){
@@ -434,6 +438,10 @@ namespace Cilbox
 				"get_version",
 				"IsPlaying",
 				} },
+
+			// Emock (lilxyzw)
+			{ typeof(jp.lilxyzw.emock.EmockController), new HashSet<string>{ "SetParameter" } },
+			{ typeof(jp.lilxyzw.emock.EmockNetwork),    new HashSet<string>{ "SetIndex" } },
 		};
 
 		protected abstract HashSet<string> ExtraWhiteListType { get; }

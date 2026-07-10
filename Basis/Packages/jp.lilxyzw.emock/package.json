@@ -1,0 +1,11 @@
+{
+  "name": "jp.lilxyzw.emock",
+  "version": "0.2.0",
+  "displayName": "Emock",
+  "description": "Mock animator controller for controlling the avatar's facial expressions.",
+  "license": "MIT",
+  "repo" : "https://lilxyzw.github.io/vpm-repos-basis/vpm.json",
+  "vpmDependencies": {
+    "jp.lilxyzw.basispatcher": "^0.1.0"
+  }
+}

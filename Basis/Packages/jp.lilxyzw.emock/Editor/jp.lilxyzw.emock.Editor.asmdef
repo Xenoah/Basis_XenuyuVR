@@ -1,0 +1,19 @@
+{
+    "name": "jp.lilxyzw.emock.Editor",
+    "rootNamespace": "jp.lilxyzw.emock.Editor",
+    "references": [
+        "jp.lilxyzw.emock",
+        "jp.lilxyzw.basispatcher.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

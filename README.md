@@ -108,7 +108,26 @@
 - **アバターごとの調整** — アバターカスタマイズメニューから、カメラの撮影範囲(Range)と高さオフセット(OffsetY)をアバター単位で保存できます。
 - 表示は日本語/英語に対応しています。
 
-依存プラグインの [lilxyzw/lilBasisPatcher](https://github.com/lilxyzw/lilBasisPatcher)(MIT License)も同梱しています(設定タブ共有・アバター別設定保存の基盤。Editor部分はこのプロジェクトでは不要のため未同梱)。各ライセンス全文は `Basis/Packages/jp.lilxyzw.facecamera/LICENSE` と `Basis/Packages/jp.lilxyzw.basispatcher/LICENSE`、および[LICENSE](LICENSE)のThird-Party Code欄を参照してください。
+## Emock(表情アニメーション)
+
+[lilxyzw/Emock](https://github.com/lilxyzw/Emock)(MIT License)を統合しています。アバターの表情を制御するためのモックAnimatorControllerで、Animatorを使わず軽量に表情の切り替え・同期ができます。
+
+- **仕組み** — オーナー側で条件分岐を解決(`EmockController`)し、アニメーションのインデックスだけをネットワーク送信(`EmockNetwork`)。受信側はそのインデックスのアニメーションを再生(`EmockAnimator`)し、補間はBurstジョブで処理されるため負荷が小さい設計です。
+- **操作** — VRコントローラー(トラックパッド/トリガー/グリップ)または キーボードの `左Shift/右Shift + F1〜F8` で左右の手のパラメーターを切り替えます。
+- **クライアント設定** — 設定メニューの「Plugins」タブ → Emock セクションで「コントローラーで操作」「移動時にリセット」「停止距離」を変更できます(日本語/英語対応)。
+- **アバターメニュー** — アバターに `EmockMenuItem` が入っていれば、アバターカスタマイズメニューにボタン/トグル/ドロップダウンとして表示されます。
+- **導入済みの対応** — Emockコンポーネント4種はアバターの許可リスト(ContentPolice)に登録済みで、Cilbox(ユーザースクリプト)からの `EmockController.SetParameter` / `EmockNetwork.SetIndex` 呼び出しにも対応済みです。アバター制作側は本家の手順どおり [lilEmo](https://github.com/lilxyzw/lilEmo) 等でセットアップしたアバターをそのまま使えます。
+
+## lilBasisPatcher(プラグイン基盤)
+
+依存プラグインの [lilxyzw/lilBasisPatcher](https://github.com/lilxyzw/lilBasisPatcher)(MIT License)を全機能同梱しています。lilxyzw製プラグイン(FaceCamera・Emockなど)が共有するコアライブラリで、以下の機能を提供します。
+
+- **CommonSettings(Plugins設定タブ)** — 複数のプラグインが設定タブを乱立させないよう、設定メニューに共通の「Plugins」タブを1つ追加し、各プラグインがそこに設定UIを登録できるようにします。FaceCameraの設定もこのタブに表示されます。
+- **AvatarSettings(アバター別設定の保存)** — プラグインの設定値をアバターごと(またはグローバル)に永続保存します。余計なファイルを増やさないよう、Vixxyと同じ保存ファイルを共用します。FaceCameraのアバター別Range/OffsetY保存に使われています。
+- **UpdateInvoker(集中Update管理)** — 多数のコンポーネントが個別にUnityの `Update()`/`LateUpdate()` を持つオーバーヘッドを避けるため、常駐の単一コンポーネントが `IManagedUpdate` / `IManagedLateUpdate` 登録済みオブジェクトの更新を一括呼び出しします。
+- **ComponentPatcher(Editor拡張)** — プラグインの独自コンポーネントをBasisのContentPolice許可リスト(アバター/プロップ/シーンにロードを許可するコンポーネントのホワイトリスト)へ安全に追記するエディタユーティリティです。重複登録を防ぎ、結果をダイアログで通知します。プラグイン側からユーザー操作で呼び出して使います。
+
+各ライセンス全文は `Basis/Packages/jp.lilxyzw.facecamera/LICENSE`・`Basis/Packages/jp.lilxyzw.emock/LICENSE`・`Basis/Packages/jp.lilxyzw.basispatcher/LICENSE`、および[LICENSE](LICENSE)のThird-Party Code欄を参照してください。
 
 ## ライセンス
 

@@ -183,3 +183,7 @@ MonoBehaviour:
   - HVR.Vixxy.HVRVixxyMenuItem
   - HVR.Vixxy.HVRVixxyAggregator
   - HVR.Basis.Comms.HVRMeasure
+  - jp.lilxyzw.emock.EmockAnimator
+  - jp.lilxyzw.emock.EmockController
+  - jp.lilxyzw.emock.EmockMenuItem
+  - jp.lilxyzw.emock.EmockNetwork
